@@ -6,6 +6,14 @@ Design-led site with 3D. Two devs working on the same sections.
 
 ## Reminders for Claude — act on these unprompted
 
+**Read `HANDOVER.md` at the start of every session.** It is the running log of
+what happened previously, what is still open, and what the last session knew
+that this one does not.
+
+**Update `HANDOVER.md` at the end of every session.** Add a new entry at the
+top of the log. Same file every time — never start a second one, never rewrite
+old entries.
+
 **Read `docs/COLLABORATION.md` before any git operation.** It is the source of
 truth for how the two devs work together.
 
@@ -85,6 +93,8 @@ Breakpoints are Tailwind defaults: `sm 640` `md 768` `lg 1024` `xl 1280`
 
 ## Docs
 
+- `HANDOVER.md` — running session log. Read at session start, update at
+  session end.
 - `docs/COLLABORATION.md` — git workflow, file ownership, conflict handling.
   Read before pushing.
 
