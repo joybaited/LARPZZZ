@@ -5,7 +5,7 @@ Design-led site with 3D.
 ## Setup
 
 ```bash
-git clone https://github.com/amalbycia/LARPZZZ.git
+git clone https://github.com/joybaited/LARPZZZ.git
 cd LARPZZZ
 npm install
 npm run dev

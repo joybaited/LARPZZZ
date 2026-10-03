@@ -46,7 +46,7 @@ as a shared file and name the rule from `docs/COLLABORATION.md`.
 
 | GitHub | Role |
 |---|---|
-| `amalbycia` | owner |
+| `joybaited` | owner |
 | `snvzyn` | collaborator |
 
 Both edit the same sections. Coordination is verbal, in chat, before work
