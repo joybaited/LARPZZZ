@@ -14,6 +14,11 @@ that this one does not.
 top of the log. Same file every time — never start a second one, never rewrite
 old entries.
 
+**Run `/ponytail` at the start of the session** (level: full). The owner works
+with it on. Lazy senior dev: no speculative abstractions, shortest diff that
+works, native platform features and already-installed deps before new ones.
+Do not over-engineer this site.
+
 **Read `docs/COLLABORATION.md` before any git operation.** It is the source of
 truth for how the two devs work together.
 
