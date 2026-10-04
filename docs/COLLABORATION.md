@@ -48,6 +48,11 @@ This is the case that breaks things, so it gets its own rules.
 don't edit a file that's still moving in a branch you can't see. Let it land
 on `main` first.
 
+This cuts both ways and it is the easy one to miss: **if you want to hand a
+section over, your PR has to land before they can start.** A section that only
+exists on an open branch cannot be worked on by anyone else — there is nothing
+on `main` for them to branch from. Merging is the handover.
+
 **2. Branch off fresh `main`.**
 
 ```bash
@@ -123,10 +128,24 @@ need:
 
 | File | Rule |
 |---|---|
-| `app/page.tsx` | Stubbed up front with all sections. Don't edit it again. |
+| `app/page.tsx` | One import + one tag per new section. Nothing else. |
 | `app/globals.css` | Design tokens only. Agree on changes before touching. |
 | `package.json` | Say it in chat before adding a dependency. |
 | The `<Canvas>` | **One owner.** The other person requests props. |
+
+### `page.tsx`: the one edit that is allowed
+
+The original rule was "stubbed up front with all sections, don't edit it
+again." That turned out not to survive contact — it was stubbed with `Hero`
+only, so every new section has to add itself.
+
+So the rule is narrower now. **Adding a section is one import and one tag, in
+order, and nothing else.** Two people doing that land on adjacent lines and
+git merges it cleanly. What does *not* belong there is section internals,
+layout, wrappers or conditionals — that is what makes it a real conflict.
+
+Say it in chat anyway: "wiring Features into page.tsx". It is three seconds
+and the file is the one place every section meets.
 
 **Design tokens get decided together, up front.** Colors, type scale,
 spacing — all in `globals.css` under `@theme`. If we each invent spacing
