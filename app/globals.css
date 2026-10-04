@@ -34,13 +34,19 @@
   --font-display: "Megion", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Neue Montreal", ui-sans-serif, system-ui, sans-serif;
 
-  /* placeholder palette — phase 1 is black and white only */
+  /* palette */
   --color-ink: #000000;
   --color-paper: #ffffff;
+  --color-haze: #f5f2ff;   /* pale lavender — hero section ground */
 
   /* layout */
   --content-max: 80rem;        /* 1280 */
   --gutter: clamp(1.25rem, 0.46rem + 2.03vw, 2.5rem);   /* 20 -> 40 */
+
+  /* nav inset — 16 @390 -> 48 @1440, then held.
+     fixed 48 everywhere ate 30% of a phone screen; this holds the bar at
+     ~93% of the viewport at every width and leaves 1440 unchanged. */
+  --nav-inset: clamp(1rem, 0.2571rem + 3.0476vw, 3rem);
 
   /* space scale — 390 -> 1440 */
   --space-2xs: clamp(0.25rem, 0.21rem + 0.1vw, 0.313rem);
