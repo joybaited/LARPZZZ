@@ -23,8 +23,18 @@ const PHONES = [
 
 const INTERVAL = 2.5;   // seconds between steps — the wheel holds, then turns
 const TURN = 0.9;       // seconds the turn itself takes, shorter so it rests
-const HUB_DROP = 1;     // hub sits below the box, so only the top of the arc crosses
+/* where the hub sits below the box centre, as a multiple of the radius.
+   1 put the presented phone at the container's TOP edge rather than its
+   middle — the arc's top IS the hub minus one radius. 0 centres it: the
+   presented phone sits at the middle and the others swing out around it. */
+const HUB_DROP = -0.12;
 const LEAN = 26;        // degrees at full side — NOT the spoke angle, see below
+
+/* the arc's radius as a fraction of the box's half-size. the radius is the
+   horizontal swing too, so it is bounded by the box's WIDTH as well as its
+   height — taking height alone made a taller card throw the side phones out
+   past the card's edges, where overflow clipped them in half. */
+const ARC = 0.95;
 
 export default function PhoneWheel() {
   const root = useRef<HTMLUListElement>(null);
@@ -47,8 +57,18 @@ export default function PhoneWheel() {
 
       /* measured, not stated: the card is fluid so a baked number is right at
          one width only. */
+      /* THE RADIUS IS BOUNDED BY WHAT ACTUALLY FITS.
+         a phone at a quarter turn sits at ±radius horizontally, so the widest
+         radius that keeps it whole is (box - phone) / 2. deriving it from the
+         box alone (any fraction of its height or its min dimension) ignores
+         the phone's own width, and the side phones hung off the card at every
+         value I tried. measured from a real spoke, so it follows the clamp on
+         the image rather than restating it. */
       const measure = () => {
-        radius = el.getBoundingClientRect().height / 2;
+        const b = el.getBoundingClientRect();
+        const phone = spokes[0].getBoundingClientRect().width || 0;
+        const fits = (b.width - phone) / 2;
+        radius = Math.max(0, Math.min(fits, (b.height - phone * 1.9) / 2)) * ARC;
       };
 
       /* one function, every phone, derived from state.turn — so the spokes can
@@ -62,7 +82,10 @@ export default function PhoneWheel() {
           const rad = (angle * Math.PI) / 180;
 
           const x = Math.sin(rad) * radius;
-          const y = HUB_DROP * radius - Math.cos(rad) * radius;
+          /* +radius cancels the arc's own offset so the PRESENTED phone (angle
+             0, cos 1) lands at y = 0, the container's centre. HUB_DROP then
+             pushes the whole wheel down from there if wanted. */
+          const y = (HUB_DROP + 1) * radius - Math.cos(rad) * radius;
 
           /* THE LEAN, and it is sin() not the angle. sin is 0 at top and
              bottom and peaks at the sides — upright when presented, leaning
@@ -71,9 +94,12 @@ export default function PhoneWheel() {
           const lean = Math.sin(rad) * LEAN;
 
           const depth = Math.cos(rad);
-          /* never fully gone — a phone that vanishes reads as a swap, not a
-             wheel. */
-          const scale = 0.7 + 0.3 * ((depth + 1) / 2);
+          /* ALL FOUR PHONES STAY RENDERED. The wheel should read as a solid
+             object turning, so the ones behind are smaller and dimmer but
+             never close to gone — 0.82..1 and 0.55..1 rather than fading to
+             0.7 and 0.25, which looked like phones appearing and
+             disappearing. */
+          const scale = 0.82 + 0.18 * ((depth + 1) / 2);
 
           /* written straight to style, not through gsap.set: this runs every
              frame for every phone, and gsap.set parses property names and
@@ -82,7 +108,7 @@ export default function PhoneWheel() {
              scale. */
           spoke.style.transform =
             `translate3d(${x}px, ${y}px, 0) rotate(${lean}deg) scale(${scale})`;
-          spoke.style.opacity = String(0.25 + 0.75 * ((depth + 1) / 2));
+          spoke.style.opacity = String(0.55 + 0.45 * ((depth + 1) / 2));
           spoke.style.zIndex = String(Math.round(depth * 100));
         });
       };
@@ -140,7 +166,7 @@ export default function PhoneWheel() {
         <li
           key={p.src}
           /* every spoke stacked at the centre; the transform places it. */
-          className="col-start-1 row-start-1 will-change-transform"
+          className="col-start-1 row-start-1 flex w-[clamp(104px,33%,156px)] justify-center will-change-transform"
         >
           <img
             src={p.src}
@@ -151,7 +177,7 @@ export default function PhoneWheel() {
             /* NO loading="lazy" — the rail moves the track by transform, and a
                transform does not update the geometry the lazy loader watches.
                Off-screen cards would never fetch at all. */
-            className="h-auto w-[clamp(96px,30%,140px)] max-w-none"
+            className="h-auto w-full max-w-none"
           />
         </li>
       ))}
