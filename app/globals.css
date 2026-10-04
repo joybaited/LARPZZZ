@@ -39,6 +39,14 @@
   --color-paper: #ffffff;
   --color-haze: #f5f2ff;   /* pale lavender — hero section ground */
 
+  /* the palette, owner's. darkest to lightest. named by position rather than
+     by hue so a re-pick does not leave every name lying. */
+  --color-deep: #201e45;
+  --color-plum: #433a67;
+  --color-mauve: #6d6189;
+  --color-lilac: #9d90aa;
+  --color-mist: #cbc9dd;
+
   /* layout */
   --content-max: 80rem;        /* 1280 */
   --gutter: clamp(1.25rem, 0.46rem + 2.03vw, 2.5rem);   /* 20 -> 40 */
