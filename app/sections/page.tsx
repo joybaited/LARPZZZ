@@ -13,6 +13,8 @@ const ROUTES = [
   { href: "/hero", name: "Hero", note: "section 1 — nav, headline, the phone" },
   { href: "/features", name: "Features", note: "section 2 — the card carousel" },
   { href: "/how-it-works", name: "How It Works", note: "section 3 — placeholder" },
+  { href: "/testimonials", name: "Testimonials", note: "section 4 — placeholder" },
+  { href: "/faq", name: "FAQ", note: "section 5 — placeholder" },
   { href: "/tuner", name: "Tuner", note: "tool — positions the 3D phone" },
   { href: "/", name: "Full page", note: "every section, in order" },
 ];
