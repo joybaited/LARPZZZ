@@ -3,15 +3,34 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
-/* Four phone mockups arranged as the spokes of a wheel. The wheel turns a
- * quarter every 2.5s, so one phone swings out of the card as the next swings
- * in. Carried over from LZ-2's wheel.ts — the maths is theirs, the React
- * lifecycle is not.
+/* Four phone mockups turning like the spokes of a wheel, a quarter turn every
+ * 2.5s. Ported 1:1 from LZ-2's wheel.ts and section-02.css — the motion, the
+ * constants and the structural rules are all theirs.
  *
- * THE PHONE TILTS AS IT TRAVELS AND IS UPRIGHT WHEN IT ARRIVES. That is why
- * each phone is its own element rather than a child of a rotating hub: a rigid
- * wheel carries every phone round at the spoke's angle and they sit crooked in
- * the card. Position and lean are derived separately from one shared angle.
+ * ── THE RULE THAT SHAPES THIS ────────────────────────────────────────────
+ *
+ * THE PHONE TILTS AS IT TRAVELS AND IS UPRIGHT WHEN IT ARRIVES.
+ *
+ * Not what a rigid wheel does: on a real wheel a spoke's payload is fixed to
+ * the arm, rotates with it, and arrives at whatever angle the arm holds — the
+ * phones would sit crooked and one would be upside down. So position and lean
+ * are derived SEPARATELY from one shared angle.
+ *
+ * ── THE STRUCTURAL RULES, from LZ-2's stylesheet ─────────────────────────
+ *
+ * 1. EVERY SPOKE SITS AT THE SAME ORIGIN, in one grid cell, and the module
+ *    moves it from there. Grid, not absolute positioning: absolute takes them
+ *    out of flow, the container collapses, and the measured radius is zero —
+ *    a wheel with no size, silently.
+ *
+ * 2. THE PHONE IS HEIGHT-DRIVEN, width derived by aspect-ratio. `width: auto`
+ *    on a replaced element does NOT mean "work it out from my height" — it
+ *    means use the source's own pixel width, which is the bug that stretched
+ *    these in the original. One size to set, and the phone cannot be out of
+ *    proportion.
+ *
+ * 3. THE WHEEL DOES NOT CLIP — the card's own overflow does. The phones are
+ *    deliberately taller than their box and travel past its edges.
  */
 
 const PHONES = [
@@ -21,54 +40,33 @@ const PHONES = [
   { src: "/images/mockup-phone-l@2x.webp", w: 560, h: 1103 },
 ];
 
-const INTERVAL = 2.5;   // seconds between steps — the wheel holds, then turns
-const TURN = 0.9;       // seconds the turn itself takes, shorter so it rests
-/* where the hub sits below the box centre, as a multiple of the radius.
-   1 put the presented phone at the container's TOP edge rather than its
-   middle — the arc's top IS the hub minus one radius. 0 centres it: the
-   presented phone sits at the middle and the others swing out around it. */
-const HUB_DROP = -0.12;
-const LEAN = 26;        // degrees at full side — NOT the spoke angle, see below
-
-/* the arc's radius as a fraction of the box's half-size. the radius is the
-   horizontal swing too, so it is bounded by the box's WIDTH as well as its
-   height — taking height alone made a taller card throw the side phones out
-   past the card's edges, where overflow clipped them in half. */
-const ARC = 0.95;
+/* LZ-2's constants, unchanged. */
+const INTERVAL = 2.5; // seconds between steps — the wheel holds, then turns
+const TURN = 0.9;     // seconds the turn takes, shorter so it rests
+const HUB_DROP = 1;   // hub below the box, so only the top of the arc crosses
+const LEAN = 26;      // degrees at full side — NOT the spoke angle
 
 export default function PhoneWheel() {
   const root = useRef<HTMLUListElement>(null);
 
-  /* gsap.context() scopes every tween created inside it to this component and
-     reverts them all on unmount — which is what @gsap/react's useGSAP wraps.
-     Four lines of useEffect rather than a dependency for them. */
   useEffect(() => {
     const el = root.current;
     if (!el) return;
 
     const ctx = gsap.context(() => {
-
       const spokes = [...el.querySelectorAll<HTMLElement>("li")];
       if (!spokes.length) return;
 
+      /* read from the DOM, so adding a phone re-spaces the wheel on its own. */
       const step = 360 / spokes.length;
       const state = { turn: 0 };
       let radius = 0;
 
-      /* measured, not stated: the card is fluid so a baked number is right at
-         one width only. */
-      /* THE RADIUS IS BOUNDED BY WHAT ACTUALLY FITS.
-         a phone at a quarter turn sits at ±radius horizontally, so the widest
-         radius that keeps it whole is (box - phone) / 2. deriving it from the
-         box alone (any fraction of its height or its min dimension) ignores
-         the phone's own width, and the side phones hung off the card at every
-         value I tried. measured from a real spoke, so it follows the clamp on
-         the image rather than restating it. */
+      /* measured from the element, not stated: the card is fluid, so a baked
+         number is right at one width only. Half the height, so the arc is as
+         tall as the box that holds it. */
       const measure = () => {
-        const b = el.getBoundingClientRect();
-        const phone = spokes[0].getBoundingClientRect().width || 0;
-        const fits = (b.width - phone) / 2;
-        radius = Math.max(0, Math.min(fits, (b.height - phone * 1.9) / 2)) * ARC;
+        radius = el.getBoundingClientRect().height / 2;
       };
 
       /* one function, every phone, derived from state.turn — so the spokes can
@@ -76,65 +74,70 @@ export default function PhoneWheel() {
       const place = () => {
         spokes.forEach((spoke, i) => {
           /* wrapped, so a phone passing the bottom comes round the near side
-             rather than the long way back. unwrapped the angle just grows and
-             loses float precision over a long session. */
+             rather than the long way back. Unwrapped the angle just grows,
+             loses float precision over a long session, and a resize mid-cycle
+             recomputes from a huge number and visibly jolts. */
           const angle = gsap.utils.wrap(0, 360, (i - state.turn) * step);
           const rad = (angle * Math.PI) / 180;
 
           const x = Math.sin(rad) * radius;
-          /* +radius cancels the arc's own offset so the PRESENTED phone (angle
-             0, cos 1) lands at y = 0, the container's centre. HUB_DROP then
-             pushes the whole wheel down from there if wanted. */
-          const y = (HUB_DROP + 1) * radius - Math.cos(rad) * radius;
+          const y = HUB_DROP * radius - Math.cos(rad) * radius;
 
-          /* THE LEAN, and it is sin() not the angle. sin is 0 at top and
-             bottom and peaks at the sides — upright when presented, leaning
-             most as it passes. Using `angle` here is the rigid-wheel version:
-             the phone arrives at 90deg and lies on its side. */
+          /* THE LEAN, and it is sin() not `angle`. sin is 0 at the top and the
+             bottom and peaks at the sides, so a phone is upright when
+             presented and leans most as it passes. Using `angle` is the
+             rigid-wheel version: it arrives at 90deg, lying on its side. */
           const lean = Math.sin(rad) * LEAN;
 
+          /* depth, so a phone arriving behind is smaller and dimmer than the
+             one presented. cos is 1 at the top and -1 at the bottom. */
           const depth = Math.cos(rad);
-          /* ALL FOUR PHONES STAY RENDERED. The wheel should read as a solid
-             object turning, so the ones behind are smaller and dimmer but
-             never close to gone — 0.82..1 and 0.55..1 rather than fading to
-             0.7 and 0.25, which looked like phones appearing and
-             disappearing. */
-          const scale = 0.82 + 0.18 * ((depth + 1) / 2);
+
+          /* never fully gone: a phone that disappears entirely reads as a swap
+             rather than a wheel. */
+          const scale = 0.7 + 0.3 * ((depth + 1) / 2);
 
           /* written straight to style, not through gsap.set: this runs every
-             frame for every phone, and gsap.set parses property names and
-             reads the existing transform back off the element first.
-             transform order is not commutative — translate, THEN lean, THEN
-             scale. */
+             frame for every phone, and gsap.set builds a tween, parses the
+             property names and reads the existing transform back off the
+             element before writing. Transform order is not commutative — move
+             to the point on the arc, THEN lean, THEN scale. */
           spoke.style.transform =
             `translate3d(${x}px, ${y}px, 0) rotate(${lean}deg) scale(${scale})`;
-          spoke.style.opacity = String(0.55 + 0.45 * ((depth + 1) / 2));
+          spoke.style.opacity = String(0.25 + 0.75 * ((depth + 1) / 2));
+          /* the presented phone must paint over the ones behind it. */
           spoke.style.zIndex = String(Math.round(depth * 100));
         });
       };
 
+      /* reduced motion and mobile get a STATIC wheel, not an empty box: the
+         matchMedia block never runs in either case, and without this the four
+         phones stack at the container's origin, unplaced. */
       measure();
       place();
 
-      /* static wheel for reduced motion and small screens — laid out once, no
-         loop. without this the four phones stack at the origin, unplaced. */
       const mm = gsap.matchMedia();
       mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
         measure();
         place();
 
+        /* repeatDelay rather than a longer duration: the pause is dead time
+           between turns, not part of the easing. Rolling it into the duration
+           flattens the ease across the hold and the motion crawls. */
         const tl = gsap.timeline({
           repeat: -1,
           repeatDelay: INTERVAL - TURN,
           repeatRefresh: true,
         });
 
-        /* repeatRefresh + a FUNCTION target, together. `turn: '+=1'` records
-           its start value once, so every repeat replays 0 -> 1 and the wheel
-           snaps back instead of advancing. */
+        /* repeatRefresh AND a function target, together. `turn: '+=1'` records
+           its start value once, so every repeat replays that same 0 -> 1: the
+           wheel turns a quarter, SNAPS BACK, and never gets anywhere. */
         tl.to(state, {
           turn: () => state.turn + 1,
           duration: TURN,
+          /* weighted to the end, so the wheel leaves smartly and settles
+             rather than drifting the last few degrees. */
           ease: "power3.inOut",
           onUpdate: place,
         });
@@ -156,17 +159,22 @@ export default function PhoneWheel() {
   }, []);
 
   return (
+    /* SQUARE, and it does NOT clip — the card does. The module measures this
+       box to get the radius, so it must have a size of its own rather than
+       inheriting whatever the flex column leaves. */
     <ul
       ref={root}
       role="list"
       aria-hidden="true"
-      className="relative m-0 grid h-full w-full list-none place-items-center overflow-hidden p-0"
+      className="relative m-0 grid aspect-square w-full list-none place-items-center overflow-visible p-0"
     >
       {PHONES.map((p) => (
         <li
           key={p.src}
-          /* every spoke stacked at the centre; the transform places it. */
-          className="col-start-1 row-start-1 flex w-[clamp(104px,33%,156px)] justify-center will-change-transform"
+          /* all four in the SAME cell, layered by document order until the
+             module gives each a z-index from its depth. Both properties it
+             writes composite, so the wheel runs off the main thread. */
+          className="col-start-1 row-start-1 will-change-[transform,opacity]"
         >
           <img
             src={p.src}
@@ -175,9 +183,22 @@ export default function PhoneWheel() {
             alt=""
             decoding="async"
             /* NO loading="lazy" — the rail moves the track by transform, and a
-               transform does not update the geometry the lazy loader watches.
-               Off-screen cards would never fetch at all. */
-            className="h-auto w-full max-w-none"
+               transform does not update the geometry the lazy loader watches,
+               so an off-screen card's images never fetch at all. */
+            className="block"
+            /* HEIGHT-DRIVEN, width DERIVED by the ratio. Inline rather than
+               utilities so the height is authoritative: a utility height
+               beside an aspect-ratio let the ratio derive the height from the
+               width instead, landing under the clamp's own floor.
+               max-inline-size lifts the reset's cap, which would silently
+               re-clamp a phone as the wheel scales it up. */
+            style={{
+              blockSize: "clamp(320px, 14rem + 10vh, 520px)",
+              inlineSize: "auto",
+              aspectRatio: "560 / 1103",
+              maxInlineSize: "none",
+              objectFit: "contain",
+            }}
           />
         </li>
       ))}
