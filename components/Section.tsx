@@ -11,6 +11,8 @@ type Props = {
   bleed?: boolean;
   className?: string;
   children?: React.ReactNode;
+  /** for scroll triggers that need to pin or measure the section element. */
+  ref?: React.Ref<HTMLElement>;
 };
 
 /**
@@ -29,9 +31,11 @@ export default function Section({
   bleed = false,
   className = "",
   children,
+  ref,
 }: Props) {
   return (
     <section
+      ref={ref}
       id={id}
       data-section={id}
       data-extra={extra || undefined}
