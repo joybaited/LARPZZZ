@@ -123,7 +123,7 @@ export default function Features() {
          stops ~100px short of the right edge, because the document simply runs
          out. one extra viewport covers the track's travel at this card count. */
       extra={1}
-      className="overflow-hidden bg-haze"
+      className="overflow-hidden bg-plum"
     >
       <div className="min-h-svh pt-[clamp(220px,11rem+24vh,520px)] max-lg:pt-[clamp(150px,8rem+15vw,280px)]">
         <ul
