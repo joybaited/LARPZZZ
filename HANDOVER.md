@@ -38,6 +38,188 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-04 (session 4)
+
+Hero headline built, phone screen swapped, **everything from sessions 3 and 4
+committed and pushed.** Branch `scaffold`, PR open, waiting on @snvzyn to merge.
+
+### Done
+
+- **Hero headline.** `FAKE IT / TILL' YOU / MAKE IT`, three stacked spans in
+  Megion, left of the phone. Size is an inline `clamp(3.25rem, 1.14rem + 5.4vw,
+  9rem)` — one step above `--text-1`, kept out of `globals.css` because a token
+  for a single headline is a shared-file change for nothing.
+- **Screen texture swapped** to the owner's `flip.png` via a new
+  `scripts/swap-screen.mjs`. Flags: `--no-flop`, `--flip`, `--roughness=N`,
+  `--gloss`.
+- **`docs/HERO.md`** — first per-section doc. Every section gets one.
+- **Probes deleted.** `probe.mjs` and `probe2.mjs` are gone, as session 3 asked.
+- **Four commits**, build passing, pushed.
+
+### The screen material — this is where the time went
+
+The OLED material ships **`emissiveStrength: 10`**. That is what washed the
+owner's artwork out to near-white: a 10x emitter clips everything. The original
+texture happened to survive it. Set to `1` — still reads as lit, because
+emissive is still bound.
+
+Roughness ended at **0.4**. It shipped at 0.057 (a mirror), went to 1 (chalk,
+owner said the glass was gone), then 0.4 — "glass but not reflective at all."
+It is one number, tuned by eye, exposed as `--roughness=N`. Not measured.
+
+**The orientation cost three rebuilds and the lesson is worth keeping.** The
+texture needed a **horizontal flop** (mirrored), and I guessed **vertical**
+twice before the owner sent a screenshot that settled it in one look. I had
+sampled top/bottom vs left/right luminance and reasoned from the asymmetry —
+but a phone UI that is near-symmetric in left/right *brightness* says nothing
+about which way its *text* runs. **Pixel statistics cannot see mirroring; eyes
+can.** Ask for a screenshot before reasoning from aggregates about orientation.
+
+Each rebuild ran from a pristine backup, not the previous output, so the screen
+has been through exactly one webp compression pass.
+
+### Open
+
+1. **PR is open and unmerged.** Per `_ref/envy/BRANCHING.md` **@snvzyn merges
+   it**, not the owner.
+2. **@snvzyn has not been told about the shared-file changes.** Two of them:
+   `package.json` (+6 devDependencies — gltf-transform x3, draco3dgltf,
+   meshoptimizer, sharp) and `globals.css` (`--color-haze`, `--nav-inset`).
+   Coordination is verbal and has not happened. **This is the top of the list.**
+3. **`Fade` in `components/Scene.tsx` is a no-op.** It takes children and
+   returns them unchanged, under a doc comment describing a handshake it does
+   not perform — the actual fade is the `opacity` style on the wrapper div.
+   Harmless, committed as-is: it is session 3's code and deleting it is a
+   rewrite, not a tweak. Worth a word with whoever owns the canvas.
+4. **Nothing has been seen rendered by Claude this session.** The headline and
+   the glass were both verified by typecheck, build and byte comparison only.
+   The owner checked the screen by eye; the headline position, size and indent
+   have not been looked at on screen at any width.
+5. **KTX2 is still the real load-speed lever** — unchanged from session 3.
+   ~2.3MB of 3.32MB is textures. Then drop the unused `specularf0` (0.95MB),
+   preload the glb, immutable cache headers.
+6. Everything else from session 3 stands: Vercel, @snvzyn's invite, the owner's
+   docs and writing sample, the old project link.
+
+### Gotchas
+
+- **`emissiveStrength` is the first thing to check when a swapped texture looks
+  washed out.** Not the image, not the colour space, not the compression.
+- **A plain read-and-write of the glb adds ~0.75MB and 65 accessors**, because
+  reading re-expands what `prune()` and `dedup()` had merged. Both scripts
+  re-run those passes before writing. I misread this as a Draco problem first;
+  **the accessor count is the tell, not the file size.**
+- **Rebuild from a pristine backup, never from the previous output**, or the
+  screen texture compounds a webp pass every time.
+- **`--roughness` is a calibration knob, not a constant.** 0 mirrors, 1 is
+  chalk, 0.4 is the current answer. Expect to move it when the lighting changes.
+
+---
+
+## Session — 2026-10-04 (session 3)
+
+Hero section started. 3D phone is on screen, tuned, and animating. Still on
+branch `scaffold`, **nothing committed this session, nothing pushed.**
+
+### Done
+
+- **Section strategy agreed.** Every section is one `<Section>`, standard
+  `100svh`; extra room is asked for with `extra={n}` in viewports and stays
+  *inside* the section. Sections get built one at a time in their own file
+  and wired together at the end. Rules in `docs/SECTIONS.md`.
+- **Nav rectangle** in the hero — a `<nav>`, not a div, because that is what
+  it will be. Empty on purpose. Fluid `--nav-inset` token.
+- **Hero ground colour** `#f5f2ff` (`--color-haze`), sampled from the owner's
+  image, added as a token.
+- **iPhone model: 22.56MB -> 3.15MB (86% off), 2.8MB gzipped.** Geometry was
+  already Draco+meshopt and is only ~51k triangles — **21.3MB of the 22.5MB
+  was uncompressed PNG textures.** Script: `scripts/optimize-model.mjs`.
+- **Tuner at `/tuner`** — sliders plus orbit for rotation, position, size,
+  camera. Prints a config block to paste back. This is how the phone got
+  positioned; it works, keep it.
+- **Phone is live on the homepage** at the owner's tuned angles, verified by
+  reading canvas pixels (19.6% opaque, centred within 1.5%).
+
+### The tuned values — these are the owner's, do not "improve" them
+
+```
+rotation [-18, 159, 6] deg    camera { z: 5.9, fov: 42 }
+fit 0.72 (fraction of viewport height)    position centred, no offset
+```
+
+`fit` was tuned at 0.76 in `/tuner`, where the model sits flat. At the tuned
+angles the silhouette swings taller, so it is scaled back to keep the phone
+off the top and bottom edges. The owner approved 0.72 on screen.
+
+### Open
+
+1. **Nothing is committed.** `scaffold` has the session-2 scaffold commits;
+   everything in this session is working-tree only. Commit before anything
+   else.
+2. **`probe.mjs` and `probe2.mjs` in the repo root are throwaway debug
+   scripts.** Delete them or gitignore them — they should not be committed.
+3. **Replace the phone screen image.** Agreed, not started. The screen is
+   texture **`111`**, 1320x2868, bound to *both* `baseColorTexture` and
+   `emissiveTexture` (the emissive is why it looks lit). Owner is sending a
+   replacement. Needs 1320x2868 or any 1:2.17 portrait; keep q95.
+4. **Load speed — agreed as high priority, searched but not implemented.**
+   ~2.5MB of the remaining 3.3MB is still textures. The real lever is
+   **KTX2/Basis**: WebP decompresses to full RGBA in VRAM, KTX2 stays
+   compressed (4-8x less GPU memory) and would likely reach ~1.5MB. Then:
+   drop the unused `specularf0` (0.95MB, largest remaining), `<link
+   rel="preload">` on the GLB, immutable cache headers.
+5. **Playwright + gltf-transform + sharp + meshoptimizer were installed as
+   devDependencies.** That is a shared-file change to `package.json` — tell
+   @snvzyn.
+6. Everything open from session 2 is still open: Vercel, @snvzyn's invite,
+   owner's docs and writing sample, old project link.
+
+### Gotchas — these cost real time this session
+
+**All of these, plus the full 3D build, are written up in `docs/3D.md`.**
+Read that before touching `Phone.tsx`, `Scene.tsx` or the model pipeline.
+
+
+- **A canvas reads as empty unless you read it inside `requestAnimationFrame`.**
+  WebGL clears the drawing buffer after each frame, so `toDataURL()` and
+  `readPixels()` both return 100% transparent when called normally. An hour
+  went into "the model is invisible" when **the model was rendering fine and
+  the measuring tool was broken.** A plain red box tested the same way also
+  read as empty — that is what proved it. Read pixels inside a double rAF,
+  or set `preserveDrawingBuffer: true`.
+- **Use drei's `<Resize>` and `<Center>`, not hand-rolled bounding-box maths.**
+  Several attempts at "measure the box, divide by the longest axis, recentre"
+  each had a different arithmetic bug and produced a model 6 to 29 units deep
+  swallowing the camera. drei does it correctly in two components.
+- **`Box3.setFromObject` needs `updateMatrixWorld(true)` first** on a freshly
+  cloned gltf, or it returns a wrong box. (Moot now that drei does it.)
+- **The glb root carries a baked 13x scale** and an off-centre origin. Any
+  manual scale multiplies by it.
+- **The model lies flat in the file** — screen normal +Y, length +Z. It needs
+  standing upright; measuring before rotating reports the phone's *thickness*
+  as its height and every fit calculation solves the wrong axis.
+- **`-z-10` on the canvas put it behind the opaque section background.** It is
+  `z-10` now. A fixed canvas behind an opaque section is invisible.
+- **Margin collapse made a white strip above the nav.** The nav's `margin-top`
+  escaped the section and pushed the section down, exposing the white body.
+  Fixed with padding on the section. Do not reintroduce a top margin on a
+  section's first child.
+- **`text-(--text-1)` compiles to `color`, not `font-size`** (from session 2,
+  still true and still worth knowing).
+- **Megion demo is one weight, display only** — unchanged from session 2.
+
+### On section height, since it came up twice
+
+The owner asked whether sections are "Figma standard px". They are not, and
+deliberately: **Figma's 900 height is not a real number.** Browser chrome eats
+~120px, so a 900 frame is 72%-107% of a real viewport (1366x768 -> 648px,
+1920x1080 -> 960px). `100svh` means one screenful for everyone, which is what
+"it adjusts to their screen" actually requires. Widths *do* match the Figma
+spec: content column 1280, gutter 40 at 1440. The phone follows the same rule
+— a fixed fraction of the frame at every width.
+
+---
+
 ## Session — 2026-10-04
 
 App scaffolded. Section architecture built and verified. On branch
