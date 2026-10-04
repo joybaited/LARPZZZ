@@ -5,6 +5,10 @@ doesn't turn into merge hell.
 
 Read this before your first push.
 
+**New here?** `SNV.md` in the repo root is the short version — setup, what you
+are on, and the traps that have already cost somebody an afternoon. This file
+is the rulebook; that one gets you moving.
+
 ---
 
 ## The one rule
