@@ -1,6 +1,7 @@
 import SceneMount from "@/components/SceneMount";
 import Hero from "@/sections/Hero";
 import Features from "@/sections/Features";
+import HowItWorks from "@/sections/HowItWorks";
 
 /**
  * the wire-up. shared file — stubbed up front, sections get added as
@@ -13,6 +14,7 @@ export default function Page() {
       <main>
         <Hero />
         <Features />
+        <HowItWorks />
       </main>
     </>
   );
