@@ -44,7 +44,7 @@ export default function Card({ heading, copy, media }: CardData) {
     /* overflow-hidden performs the crop. `hidden` not `clip` because of the
        radius: a clipped box still paints children over its own rounded
        corners, so square media would poke out past them. */
-    <li className="flex aspect-[5/7] w-[min(78vw,24rem)] shrink-0 snap-start flex-col overflow-hidden rounded-[1.25rem] bg-ink text-paper">
+    <li className="flex aspect-[5/7] w-[min(82vw,28rem)] shrink-0 snap-start flex-col overflow-hidden rounded-[1.25rem] bg-ink text-paper">
       <h3 className="px-(--space-l) pt-(--space-l) text-2 leading-[0.95] tracking-[-0.01em]">
         {heading[0]}
         <br />
@@ -60,7 +60,7 @@ export default function Card({ heading, copy, media }: CardData) {
            shrink inside the flex column — without it a flex child's automatic
            minimum size is its content, and the wrapper would push the card. */
         <div
-          className="relative mt-(--space-m) min-h-0 flex-1 overflow-hidden"
+          className="relative mt-(--space-m) min-h-0 flex-1 overflow-hidden [container-type:inline-size]"
           aria-hidden="true"
         >
           {media.kind === "wheel" ? (
