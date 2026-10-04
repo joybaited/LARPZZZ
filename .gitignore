@@ -33,3 +33,6 @@ yarn-error.log*
 
 # reference docs cloned in, not ours to commit
 _ref/
+
+# throwaway debug scripts
+/*.mjs
