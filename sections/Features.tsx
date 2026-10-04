@@ -25,11 +25,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* multiple of the track's travel that the pin lasts. 1 is one pixel of
    scrolling per pixel of travel; higher holds the section longer and moves the
-   cards more slowly.
-   ponytail: 1 because section two is currently LAST on the page. a ratio above
-   1 asks for more scroll distance than the document has left, the scrub never
-   reaches the end, and the final card stops short of the right edge. raise it
-   once there is a section below to supply the distance. */
+   cards more slowly. LZ-2 uses 1.6, which needs a section below it to supply
+   the distance — see the `extra` note on the Section below. */
 const SCROLL_RATIO = 1;
 const SCRUB = 0.3;
 
@@ -116,24 +113,30 @@ export default function Features() {
   }, []);
 
   return (
-    <Section id="features" ref={section} bleed className="overflow-hidden bg-haze">
-      <div className="flex min-h-svh flex-col justify-center py-(--space-2xl)">
+    <Section
+      id="features"
+      ref={section}
+      bleed
+      /* the rail needs `distance` px of scroll AFTER the pin starts, and the
+         pin starts at the track's centre — so the scroll above that point is
+         distance the cards never travel through. without this the last card
+         stops ~100px short of the right edge, because the document simply runs
+         out. one extra viewport covers the track's travel at this card count. */
+      extra={1}
+      className="overflow-hidden bg-haze"
+    >
+      <div className="min-h-svh pt-[clamp(220px,11rem+24vh,520px)] max-lg:pt-[clamp(150px,8rem+15vw,280px)]">
         <ul
           ref={track}
           role="list"
           /* w-max is what makes the row wider than the viewport — the rail
              measures scrollWidth against it. Below 1024 it is a real scroller
              instead, with snap. */
-          className="flex w-max list-none gap-(--space-l) p-0 ps-(--nav-inset) max-lg:w-auto max-lg:snap-x max-lg:snap-mandatory max-lg:overflow-x-auto"
+          className="flex w-max list-none items-center gap-[clamp(28px,1.75rem+2.2vw,64px)] px-[clamp(32px,2rem+4vw,120px)] py-0 max-lg:w-auto max-lg:snap-x max-lg:snap-mandatory max-lg:gap-[clamp(16px,1rem+1vw,24px)] max-lg:overflow-x-auto max-lg:scroll-px-[clamp(20px,1rem+2vw,32px)] max-lg:px-[clamp(20px,1rem+2vw,32px)]"
         >
           {CARDS.map((c) => (
             <Card key={c.heading.join(" ")} {...c} />
           ))}
-          {/* the trailing gutter as a real element, not padding. a flex row's
-              scrollWidth does not include its own padding-inline-end, so the
-              rail measured short by exactly this much and the last card
-              stopped off the right edge. an element is measured. */}
-          <li aria-hidden="true" className="w-(--nav-inset) shrink-0" />
         </ul>
       </div>
     </Section>
