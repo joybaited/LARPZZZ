@@ -38,6 +38,68 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-04
+
+App scaffolded. Section architecture built and verified. On branch
+`scaffold`, committed, **not pushed, no PR yet.**
+
+### Done
+
+- **Next 16.3.8 + React 19.2.8 + Tailwind v4.** r3f **v9.8.1** + drei v10.7.9
+  + three 0.186.1, GSAP 3.15. `npm run build` passes clean.
+- **Section system** — `components/Section.tsx`. Every section is one
+  `<Section>`: `100svh` standard, `extra={n}` adds n viewports *inside* the
+  section. Rules in `docs/SECTIONS.md`.
+- **Design tokens** in `app/globals.css` — `clamp()` solved 390→1440, so 960
+  and 1280 are correct by construction. This was listed as open last session.
+- **Fonts** — Megion (display) converted OTF→woff2, 33KB. Neue Montreal
+  (body) from the font collection. Self-hosted in `public/fonts`.
+- **One `<Canvas>`** — `components/Scene.tsx`, dynamically imported via
+  `SceneMount`, fixed behind the page, empty until the design arrives.
+- **Reference docs** in `_ref/` (gitignored): envy-standard, smoothly
+  breakdown + 3d-docs, kaktus/phantom. Docs only — binaries stripped, 564K.
+
+### Open
+
+1. **Not pushed.** Branch `scaffold` needs `git pull --rebase origin main`,
+   push, PR — and per `_ref/envy/BRANCHING.md` **the other dev merges it.**
+2. **Megion is the demo font: one weight (Bold), display only.** It cannot
+   carry body text or any other weight. The commercial version is at
+   limitype.com. Fine for this private project; a real blocker if the site
+   ever goes public or commercial.
+3. **Body font is a placeholder decision.** Neue Montreal was picked because
+   it is in the collection and pairs with Megion. Owner said they would say
+   what else is wanted — this is the thing to confirm.
+4. **Palette is black and white only** (phase 1, per `_ref/envy/METHOD.md`).
+   Deliberate, not unfinished.
+5. **Old project link** not yet provided — owner will send it for elements to
+   bring in.
+6. **Vercel still not set up.** Unchanged from session 1.
+7. **@snvzyn's invite** may still be pending accept.
+
+### Gotchas
+
+- **`text-(--text-1)` compiles to `color`, not `font-size`.** Tailwind cannot
+  tell which property an arbitrary custom property belongs to and guesses
+  colour. Cost real time this session — the h1 was silently body-sized and
+  black-on-black with no error. Type tokens therefore live in Tailwind's
+  `--text-*` namespace so `text-1`/`text-2`/`text-base` are real utilities.
+  Written up in `docs/SECTIONS.md`.
+- **`next dev` appends a block to `CLAUDE.md` and re-adds it every run.**
+  It is committed deliberately — deleting it only makes the tree dirty again.
+  Disable with `agentRules: false` in `next.config.ts` if it becomes annoying.
+- **`create-next-app` refuses a folder with capitals** ("LARPZ-FINAL"). It was
+  scaffolded in a temp dir named `larpzzz` and moved in, keeping our
+  `.gitignore`, `README.md` and `CLAUDE.md` rather than its generated ones.
+- **`_ref/` is excluded in `tsconfig.json`.** Its snippets import deps we do
+  not have (spline, rive) and failed the build's typecheck until excluded.
+- **`npm audit` reports 5 high.** It is `braces`→`eslint-config-next`, dev-only
+  lint tooling, not shipped code. The "fix" downgrades to v14. Left alone.
+- **Section `extra` is not a gap.** It belongs to the section so scroll
+  triggers measure against the right box. Do not turn it into spacer divs.
+
+---
+
 ## Session — 2026-10-03
 
 First session. Repo setup and collaboration docs only. No application code.
