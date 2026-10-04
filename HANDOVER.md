@@ -40,8 +40,9 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ## Session — 2026-10-04 (session 4)
 
-Hero headline built, phone screen swapped, **everything from sessions 3 and 4
-committed and pushed.** Branch `scaffold`, PR open, waiting on @snvzyn to merge.
+Hero headline built, phone screen swapped, **sessions 2-4 merged to `main`.**
+Work split mid-session: @snvzyn takes the hero, the owner takes Features.
+Two PRs open (#2 Features, #3 SNV.md).
 
 ### Done
 
@@ -54,7 +55,16 @@ committed and pushed.** Branch `scaffold`, PR open, waiting on @snvzyn to merge.
   `--gloss`.
 - **`docs/HERO.md`** — first per-section doc. Every section gets one.
 - **Probes deleted.** `probe.mjs` and `probe2.mjs` are gone, as session 3 asked.
-- **Four commits**, build passing, pushed.
+- **Features section** — empty placeholder on `bg-haze`, wired into
+  `page.tsx`. PR #2.
+- **`SNV.md`** — start-here file for @snvzyn, linked from `COLLABORATION.md`.
+  PR #3.
+- **`COLLABORATION.md` corrected twice.** The `page.tsx` rule said "stubbed up
+  front with all sections, don't edit it again" — it never was, so every
+  section has to add itself; narrowed to one import + one tag. And the missed
+  half of "wait for their PR to merge": **merging is the handover**, because a
+  section on an open branch cannot be handed to anyone.
+- Build and typecheck passing throughout.
 
 ### The screen material — this is where the time went
 
@@ -78,28 +88,80 @@ can.** Ask for a screenshot before reasoning from aggregates about orientation.
 Each rebuild ran from a pristine backup, not the previous output, so the screen
 has been through exactly one webp compression pass.
 
+### Then the work split, and `main` happened
+
+Mid-session the owner said **@snvzyn is taking the hero** and the owner is on
+Features. That made the open PR a blocker rather than paperwork: the hero only
+existed on `scaffold`, so there was nothing on `main` for him to branch from.
+
+**PR #1 was merged by the owner, on their explicit instruction.** It was put to
+them that `COLLABORATION.md` requires an approval, that `_ref/envy/BRANCHING.md`
+says @snvzyn merges, and that nothing in it had been reviewed or seen rendered.
+They said merge anyway — they own the repo. **Do not re-litigate this**, but do
+not treat it as the new normal either: it was a deliberate one-off to unblock
+a handover.
+
+`main` now has the scaffold, the phone, the hero and all docs. `scaffold` is
+deleted, local and remote.
+
+### Where everything is
+
+| branch | what | state |
+|---|---|---|
+| `main` | scaffold, phone, hero, docs | PR #1 merged |
+| `feat/features` | Features placeholder, haze ground | **PR #2 open** |
+| `docs/snv` | `SNV.md` + link from COLLABORATION.md | **PR #3 open** |
+
+Both open PRs are branched off `main` and are clean single-purpose diffs.
+
+### Features section
+
+`sections/Features.tsx` — empty `<Section id="features" className="bg-haze">`,
+one viewport, content column, no extra. `bg-haze` matches the hero so the two
+read as one ground rather than a white seam mid-scroll.
+
+Verified served on `localhost:3000`: both sections carry `bg-haze` at `100svh`,
+and `.bg-haze` compiles to `background-color: var(--color-haze)`. That last
+check was not paranoia — the `text-(--text-1)` trap in this project was exactly
+a class resolving to the wrong property, so classes get verified in the
+compiled css, not assumed.
+
+### `SNV.md`
+
+New file in the repo root, linked from the top of `COLLABORATION.md`. Setup,
+what he is on, what to stay out of while the owner is in PR #2, and the three
+traps that have cost real time. **It is in the house style, not the owner's
+voice** — the writing sample still has not arrived, so it is a best guess and
+the owner should skim it.
+
 ### Open
 
-1. **PR is open and unmerged.** Per `_ref/envy/BRANCHING.md` **@snvzyn merges
-   it**, not the owner.
-2. **@snvzyn has not been told about the shared-file changes.** Two of them:
-   `package.json` (+6 devDependencies — gltf-transform x3, draco3dgltf,
-   meshoptimizer, sharp) and `globals.css` (`--color-haze`, `--nav-inset`).
-   Coordination is verbal and has not happened. **This is the top of the list.**
-3. **`Fade` in `components/Scene.tsx` is a no-op.** It takes children and
-   returns them unchanged, under a doc comment describing a handshake it does
-   not perform — the actual fade is the `opacity` style on the wrapper div.
-   Harmless, committed as-is: it is session 3's code and deleting it is a
-   rewrite, not a tweak. Worth a word with whoever owns the canvas.
-4. **Nothing has been seen rendered by Claude this session.** The headline and
-   the glass were both verified by typecheck, build and byte comparison only.
-   The owner checked the screen by eye; the headline position, size and indent
-   have not been looked at on screen at any width.
-5. **KTX2 is still the real load-speed lever** — unchanged from session 3.
-   ~2.3MB of 3.32MB is textures. Then drop the unused `specularf0` (0.95MB),
-   preload the glb, immutable cache headers.
-6. Everything else from session 3 stands: Vercel, @snvzyn's invite, the owner's
-   docs and writing sample, the old project link.
+1. **PR #2 and PR #3 are both unmerged.** Per `_ref/envy/BRANCHING.md`
+   @snvzyn merges. The owner merged #1 themselves to unblock the handover;
+   that was a one-off, not a precedent.
+2. **@snvzyn still has not been told about the shared-file changes** —
+   `package.json` (+6 devDependencies, he needs `npm install`) and
+   `globals.css` (`--color-haze`, `--nav-inset`). This is in `SNV.md` now, but
+   that file is itself sitting in an unmerged PR. **Verbal coordination has
+   still not happened. Top of the list.**
+3. **A dev server is already running on port 3000** (PID was 19468 this
+   session), started outside this session. A second `next dev --port 3000`
+   fails with `EADDRINUSE` and the failure is quiet — `curl` still returns 200,
+   from the *other* server. **Check what is already listening before concluding
+   your own server came up.** It cost a wrong "it is up" this session.
+4. **Nothing has been reviewed by a second person, and nothing has been seen
+   at 768 or 1024.** The hero headline's size, indent and top offset have never
+   been looked at rendered at any width. Still no Vercel, so no preview URLs —
+   `COLLABORATION.md` says review on the preview, and that workflow does not
+   exist yet. **This is the gap that matters most now that code is on `main`.**
+5. **`Fade` in `components/Scene.tsx` is a no-op** — returns its children
+   unchanged under a comment describing a handshake it does not perform. On
+   `main` now. Harmless; worth a word with whoever owns the canvas.
+6. **KTX2 is still the real load-speed lever.** ~2.3MB of 3.32MB is textures.
+   Then drop the unused `specularf0` (0.95MB), preload the glb, immutable
+   cache headers.
+7. Everything else stands: Vercel, @snvzyn's invite, the owner's docs and
+   writing sample, the old project link.
 
 ### Gotchas
 
@@ -113,6 +175,14 @@ has been through exactly one webp compression pass.
   screen texture compounds a webp pass every time.
 - **`--roughness` is a calibration knob, not a constant.** 0 mirrors, 1 is
   chalk, 0.4 is the current answer. Expect to move it when the lighting changes.
+- **A 200 from `curl` does not mean your server started.** See open item 3.
+- **`git stash pop` after switching branches brings the files with you.** Moving
+  work between branches mid-session left Features staged on `scaffold` briefly.
+  Check `git status` after every pop.
+- **Verify a Tailwind class in the compiled css, not by reading the markup.**
+  The class being present in `class=` says nothing about what it compiled to.
+
+---
 
 ---
 
