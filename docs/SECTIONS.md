@@ -48,6 +48,32 @@ spacer div, and not margin on a neighbour. this matters for two reasons:
 It renders as `data-extra` on the element, so it is visible in devtools and
 greppable.
 
+## one route per section
+
+**Every section has its own route, and they are wired into `page.tsx` only at
+the end.** `/sections` lists them.
+
+| route | what |
+|---|---|
+| `/sections` | the index — start here |
+| `/hero` | section 1, on its own |
+| `/features` | section 2, on its own |
+| `/how-it-works` | section 3, on its own |
+| `/` | every section, in order |
+
+A workbench route is four lines: import the section, render it in a `<main>`.
+They are **not part of the site** — same as `/tuner`. They exist so a section
+can be built and looked at without the ones around it, and without the 3D
+phone sitting over the top of it.
+
+**`/hero` mounts `SceneMount` and the others do not.** The phone lives in the
+shared canvas, which `page.tsx` normally mounts; without it the hero renders
+with no phone, which is not the hero. The other sections do not want it in
+the way, which is the point of having the route at all.
+
+Adding a section: a file in `sections/`, a route folder, and one row in
+`app/sections/page.tsx`.
+
 ## writing one
 
 ```tsx
