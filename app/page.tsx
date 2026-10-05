@@ -4,6 +4,7 @@ import Features from "@/sections/Features";
 import HowItWorks from "@/sections/HowItWorks";
 import Testimonials from "@/sections/Testimonials";
 import Faq from "@/sections/Faq";
+import Pricing from "@/sections/Pricing";
 
 /**
  * the wire-up. shared file — stubbed up front, sections get added as
@@ -19,6 +20,7 @@ export default function Page() {
         <HowItWorks />
         <Testimonials />
         <Faq />
+        <Pricing />
       </main>
     </>
   );

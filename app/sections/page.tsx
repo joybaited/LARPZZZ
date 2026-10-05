@@ -15,6 +15,7 @@ const ROUTES = [
   { href: "/how-it-works", name: "How It Works", note: "section 3 — placeholder" },
   { href: "/testimonials", name: "Testimonials", note: "section 4 — placeholder" },
   { href: "/faq", name: "FAQ", note: "section 5 — placeholder" },
+  { href: "/pricing", name: "Pricing", note: "section 6 — placeholder" },
   { href: "/tuner", name: "Tuner", note: "tool — positions the 3D phone" },
   { href: "/", name: "Full page", note: "every section, in order" },
 ];
