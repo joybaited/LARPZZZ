@@ -17,6 +17,7 @@ const ROUTES = [
   { href: "/faq", name: "FAQ", note: "section 5 — placeholder" },
   { href: "/pricing", name: "Pricing", note: "section 6 — placeholder" },
   { href: "/tuner", name: "Tuner", note: "tool — positions the 3D phone" },
+  { href: "/faq-tuner", name: "FAQ tuner", note: "tool — places the FAQ pills" },
   { href: "/", name: "Full page", note: "every section, in order" },
 ];
 
