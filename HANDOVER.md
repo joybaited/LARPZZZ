@@ -38,6 +38,177 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-05 (session 6)
+
+A design session. Pricing added, Features restyled, Testimonials built, FAQ
+headed. **Nothing committed — all of it is working-tree only on
+`feat/features`.**
+
+⚠ **This file does not contain session 5.** That entry is on branch
+`docs/handover-s4` (PR #4, unmerged), so the log reads 4 -> 6 here. Read it
+there, or merge #4.
+
+### Done
+
+- **Pricing — a new section 6.** Three cards carried over from LZ-2's section
+  04, plus `sections/Pricing.tsx`, `app/pricing/`, a row in `/sections`, and
+  the import+tag in `page.tsx`. Cards are DELIBERATELY EMPTY — they are empty
+  in LZ-2 too, and nothing was invented.
+- **Features restyled.** Cards wider and shorter, heading and copy moved to the
+  foot, media re-placed above a temporary splitter line.
+- **Testimonials built.** Two marquee rows, opposite directions, carried over
+  from LZ-2's section 05.
+- **FAQ.** Megion, centred, one step above the hero's headline size.
+
+### The owner's working style — READ THIS BEFORE THE NEXT SESSION
+
+They design by iterating in small steps, and they said both of these outright:
+
+1. **"dont gimme a description and waste time, ill ask you if i need one."**
+   Make the change, show the result, stop. No summaries of what was just done,
+   no feature tours.
+2. **"dont typecheck and waste time, save it for later, when its really
+   needed."** Skip the per-edit `tsc`. The build catches it.
+3. **"ill just describe and u js apply it to all cards"** — card edits go in
+   the ONE shared rule in `Card.tsx`, never per card.
+4. **Ponytail is a plugin.** Invoke the skill, do not just imitate the style.
+
+### Features — what the restyle actually did
+
+All of it is in `components/Card.tsx`, which is the single shared rule.
+
+- **Card is now two independent dials**, `--card-h` and `--card-r`. LZ-2 writes
+  the ratio inline as `5 / 7`, which ties width to height — shorten at a fixed
+  ratio and the card gets NARROWER. The owner asked for shorter AND wider in
+  one pass, so they had to come apart. Now `clamp(440px, 21rem + 30vh, 775px)`
+  at ratio 0.84.
+- **Heading and copy at the foot**, heading one line (`heading.join(" ")`, the
+  `[string, string]` prop is unchanged), ~34px.
+- **⚠ THE HEADING IS PINNED, NOT THE BLOCK.** The six headings must line up
+  across the rail. Bottom-pinning the text block lined up the last line of
+  COPY instead: card two runs to three lines where the others take two, so its
+  taller block grew upward and carried its heading ~25px above the rest.
+  `mt-auto` is on the HEADING and the copy box is a fixed 3 lines
+  (`calc(3 * 1.35em)`). **Bottom-pinning anything whose height depends on copy
+  length cannot hold an alignment.**
+- **A temporary splitter line** at `mt-[70%]`, to be removed. It is the
+  owner's styling guide.
+- **⚠ PERCENTAGE MARGINS RESOLVE AGAINST WIDTH, IN BOTH AXES.** That is CSS,
+  not a typo. The splitter's `mt-[70%]` is 70% of the card's WIDTH, so at ratio
+  0.84 it lands at ~59% of the height. An earlier pass gave the media
+  `bottom: 30%`, which resolves against HEIGHT — the two met at different
+  places and the media ran past the line into the heading. The media's height
+  is now `calc(var(--card-h) * var(--card-r) * 0.7)`, stated against the same
+  basis. **If the line and a sibling disagree, check what each percentage is
+  measured against before touching either number.**
+- **Media is absolute, spanning card top to the line**, so it adds no height
+  and cannot move the splitter. An earlier pass made the margin conditional on
+  `media` — that let the line drift and the owner caught it. The offset is
+  unconditional now.
+- **⚠ THE VIDEOS ARE 720x720 SQUARE**, not tall. `object-contain` in a wide
+  region pillarboxes them, which is why they read as small. They are sized by
+  WIDTH at `w-[78%]` with `object-cover`, centred by translate — 418px
+  rendered, inside the 720px source even at 2x DPR, so it downscales and stays
+  sharp. **Nothing was re-encoded; the webm files are byte-identical.**
+
+### Testimonials — built, placeholder copy
+
+`sections/Testimonials.tsx`. Two rows, 40s and 52s so they never beat in sync,
+row two `animation-direction: reverse`. Each row holds the set TWICE and
+travels one set's width PLUS one gap — drop the gap term and the loop jumps by
+one gap every pass.
+
+- **CSS, not GSAP, and that is LZ-2's reasoning kept.** Every other animation
+  here is scroll-linked or measured; this one is neither. A CSS animation runs
+  on the compositor with no mount, teardown, resize handler or ScrollTrigger
+  refresh. **It becomes a client component the day it needs hover-pause.**
+- **It is a server component.** No state, no effect, no handler — so a fetch
+  can go straight in it later with no round trip.
+- **The data shape IS the integration.** The owner wants these from an external
+  source. The section renders `Testimonial[]`; swapping the array for a fetch
+  is one line and the markup does not move. Not built: API client, env vars,
+  caching, fallback UI — **which source wins decides all four.**
+- **⚠ Google Places caps at 5 reviews per place.** That is the real constraint
+  and the reason duplicating a small set is the right shape anyway. Telegram
+  has no reviews product — it would be a bot reading channel messages, and
+  moderation lands on us.
+- `line-clamp-4`, not 5: at this card height a 5th line is half-cut by the
+  floor. Copy is placeholder and varied in length on purpose, so the spacing is
+  tested against something honest.
+
+### Open
+
+1. **NOTHING IS COMMITTED.** Nine files, listed below. Commit before anything
+   else.
+2. **PR #2 and PR #4 are still open and unmerged.**
+3. **@snvzyn has committed NOTHING — verified three ways** this session: remote
+   branches, every commit author across all branches, and all four PR authors.
+   They DO have `push` access (so session 1's "invite pending" is resolved);
+   they simply have not started. The shared-file coordination is therefore
+   one-directional for now, which is the good case.
+4. **Shared files touched this session — `app/page.tsx` and `app/globals.css`.**
+   That makes four outstanding shared-file changes nobody has told @snvzyn
+   about: `package.json`, `globals.css`, `app/page.tsx`, and now the marquee
+   keyframe. **Top of the list for three sessions running.**
+5. **Section 3 (How It Works) is still an empty placeholder.** Two answers
+   still outstanding: what the actual steps are, and haze vs plum for the
+   remaining sections. Session 5's recorded mistake was building it from LZ-2's
+   content without asking — do not repeat it.
+6. **The FAQ workbench sits 15px left of the visible centre.** NOT a bug in the
+   section: `scrollbar-gutter: stable` on `:root` reserves 15px, and `/faq`
+   does not scroll so no scrollbar fills it. On `/` the page DOES scroll, so it
+   is exactly centred there. The owner said leave it.
+7. **The temporary splitter line in `Card.tsx` is still in.** It is a styling
+   guide and comes out when the cards are done.
+8. Everything else from sessions 4 and 5 stands: KTX2, Vercel, the owner's
+   docs and writing sample, the old project link, the `Fade` no-op in
+   `Scene.tsx`, and the 3D phone rendering over section two's cards.
+
+### Uncommitted files
+
+```
+M app/globals.css        marquee keyframe + prefers-reduced-motion  SHARED
+M app/page.tsx           Pricing import + tag                       SHARED
+M app/sections/page.tsx  Pricing row
+M components/Card.tsx    the restyle — all of it
+M sections/Faq.tsx       Megion heading
+M sections/Features.tsx  media re-enabled, note rewritten
+M sections/Testimonials.tsx  the marquee
+?? app/pricing/          workbench route
+?? sections/Pricing.tsx  the three cards
+```
+
+### Gotchas
+
+- **Percentage margins resolve against the containing block's INLINE size in
+  BOTH axes.** `mt-[70%]` is 70% of the width. This cost the most time this
+  session and is the single most useful thing to remember.
+- **Bottom-pinning a block whose height depends on copy length cannot hold a
+  cross-card alignment.** Pin the element that must line up; give the variable
+  one a fixed box.
+- **A flex item's default `min-width: auto` refuses to shrink below its
+  content** — `min-w-0` is what makes `flex-1` actually work in a row that has
+  to fit. This is why Pricing scales where LZ-2's version overflows below
+  ~1200px (its open item 14).
+- **`object-contain` pillarboxes a SQUARE source in a wide region.** Check the
+  source's real dimensions before reaching for a fit mode; I assumed the phone
+  videos were tall and they are 720x720.
+- **A heredoc died on an apostrophe again**, writing the handover — the same
+  failure session 5 recorded. Use the Write or Edit tool for anything with
+  prose in it. The failed heredoc wrote nothing, which was checked rather than
+  assumed.
+- **Playwright scripts must run from the repo root**, or `import { chromium }`
+  fails to resolve. Write to `./.s.mjs`, run, `rm -f`.
+- **`document.querySelectorAll('li')` on `/features` now also catches Pricing's
+  cards** on the full page. Filter by `li.querySelector('h3')`.
+- **LZ-2's squiggle figures were ported into Pricing and then dropped** at the
+  owner's call. A 900px box rotated 90deg is 900px WIDE, so each spanned most
+  of the row and read as a pink sliver between opaque cards. The asset was
+  deleted, not left orphaned. **Measurements looked fine while the render was
+  obviously wrong — look at it.**
+
+---
+
 ## Session — 2026-10-04 (session 4)
 
 Hero headline built, phone screen swapped, **everything from sessions 3 and 4
