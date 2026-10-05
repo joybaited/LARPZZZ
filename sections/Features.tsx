@@ -30,6 +30,13 @@ gsap.registerPlugin(ScrollTrigger);
 const SCROLL_RATIO = 1;
 const SCRUB = 0.3;
 
+/* The media, back on after the restyle — it was parked for a few passes while
+ * the cards were sized and the text moved to the foot. Five of the six carry
+ * one; card three never had any.
+ *
+ * It now fills the region ABOVE the splitter rather than the space under the
+ * copy, which is where the restyle left it. Card.tsx holds that layout and the
+ * per-media dials. */
 const CARDS: CardData[] = [
   {
     heading: ["Winter", "Blankets"],
