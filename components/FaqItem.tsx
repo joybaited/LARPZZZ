@@ -16,10 +16,17 @@ export default function FaqItem({
   /* closed lie, in degrees. opening rotates it back to 0 — so they can be
      scattered at angles and straighten as they expand. */
   tilt = 0,
+  /* ⚠ THE OPEN WIDTH, IN PX. Without it the pill opens to its PARENT's width,
+     which is right in a normal column and wrong the moment the pill is placed
+     absolutely — an absolute parent is sized by the pill itself, so there is
+     nothing to expand into and it grows tall and narrow instead. Set this
+     whenever the pill is positioned freely. */
+  openW,
 }: {
   q: string;
   a: string;
   tilt?: number;
+  openW?: number;
 }) {
   const body = useRef<HTMLDivElement>(null);
   const el = useRef<HTMLDetailsElement>(null);
@@ -88,7 +95,7 @@ export default function FaqItem({
          open into. both read before anything is written, so neither is a
          forced reflow mid-tween. */
       closedW.current = d.getBoundingClientRect().width;
-      const full = d.parentElement!.clientWidth;
+      const full = openW ?? d.parentElement!.clientWidth;
       d.open = true;
       gsap
         .timeline({ defaults: { duration: 0.62, ease: "expo.out" } })
