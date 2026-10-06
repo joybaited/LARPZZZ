@@ -38,6 +38,111 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-05 (session 7)
+
+The FAQ section, end to end: pills, their animation, a tuner to place them,
+and the owner's arrangement baked in. **Six commits, tree clean, nothing
+pushed.** Branch `feat/features`.
+
+### Done
+
+- **FAQ pills.** Native `<details name="faq">` for the semantics, GSAP for the
+  motion. They hug their question closed, then straighten, elongate and expand
+  into a card. Six of them, scattered around a centred Megion wordmark.
+- **Opening one moves the others.** Neighbours push away along the vector from
+  the open pill, scaled by distance and by how much the answer actually grew;
+  the open pill lifts so a low one does not push its answer off the bottom.
+- **`/faq-tuner`** — drag pills to place them, dials for tilt, x, y, open width
+  and size. Prints a config block to paste back. Listed at `/sections`.
+- **Four earlier sections committed**: the Features restyle, Pricing,
+  Testimonials and the FAQ work. Sessions 6 and 7 are both in these commits.
+
+### The owner's working style — this is now in CLAUDE.md, obey it
+
+1. **Ponytail is a PLUGIN. Invoke the skill** (`ponytail:ponytail`, full) at
+   session start AND before every build or design task. They asked three times,
+   the third in caps, because I kept writing in the style without loading it.
+   Also saved to memory.
+2. **No descriptions.** "dont gimme a description and waste time, ill ask you
+   if i need one." Make the change, show the result, stop.
+3. **No per-edit typechecks.** "save it for later, when its really needed." The
+   build catches it.
+4. They iterate in small steps and will say "a tiny bit more" repeatedly. Take
+   it literally, change one number, show it.
+
+### The FAQ mechanism — read before touching FaqItem.tsx
+
+- **The close has to be intercepted.** The browser collapses a `<details>` the
+  instant `open` flips, so the exit tween never runs. `preventDefault`,
+  animate, set `open = false` in `onComplete`.
+- **`name` makes the BROWSER close the siblings**, behind the tween, leaving
+  their height, radius and width at the open values. A `toggle` listener resets
+  them, guarded by `gsap.isTweening` so it cannot fight a live tween.
+- **Height, width, rotation and radius are ONE timeline.** The radius was a CSS
+  transition first — a different clock, so the corner always trailed and read
+  as laggy.
+- **The open width can never be less than the closed width.** An `openW` below
+  the hugged width squeezes the QUESTION onto two lines on open and snaps it
+  back on close. `Math.max(openW, closedWidth)`, and the question is
+  `whitespace-nowrap` so no width change can re-break it.
+- **A pill near the right edge opened straight past the section.** The width is
+  clamped to the room available (24px gutter); if that would take it under 72%
+  of the configured width it slides left instead of going narrow.
+- **A sibling's close must not cancel the new pill's push.** Opening B makes
+  the browser close A, which fires A's `onToggle(false)` a moment after B has
+  already moved everything. Only the pill that owns the layout may reset it —
+  the `active` ref in `Faq.tsx`.
+- **The push is measured with the push subtracted.** A rect read while the
+  pills are displaced includes the previous push, so switching pills would
+  compound the offsets and the arrangement would drift apart with every click.
+
+### Gotchas — these cost real time
+
+- **`getBoundingClientRect()` ON A ROTATED ELEMENT RETURNS THE INFLATED
+  BOUNDING BOX OF THE ROTATION.** This bit three separate times this session:
+  a tuner drag where a -20deg pill moved 23px for 100px of cursor travel; a
+  "dead space inside the closed pill" that did not exist; and a line-count
+  check that reported 4 lines where there was 1. **Use `Range.getClientRects()`
+  for line counts, and derive drag offsets from stored coordinates, never from
+  a rotated rect.**
+- **Percentage margins resolve against the containing block's INLINE size in
+  BOTH axes.** `mt-[70%]` is 70% of the WIDTH. Mixing that with a `bottom: 30%`
+  (which resolves against height) is why the card media ran past its splitter.
+- **I twice "fixed" things that were not broken** — a `<p>` margin and a
+  rotation origin — because I reasoned from a measurement instead of checking
+  what the number meant. Both were reverted. **Confirm the fault exists before
+  fixing it.**
+- **A heredoc died on an apostrophe again**, writing this file. Session 6
+  recorded the same thing. Use the Write or Edit tool for anything with prose.
+- **Playwright scripts must run from the repo root** or `import { chromium }`
+  will not resolve. Write `./.s.mjs`, run, `rm -f`.
+
+### Open
+
+1. **NOTHING IS PUSHED.** Six commits sit on `feat/features`.
+   `git pull --rebase origin main` has NOT been run and `main` has moved since
+   this branch was cut.
+2. **PR #2 and PR #4 are still open and unmerged.**
+3. **@snvzyn has committed nothing** — verified three ways in session 6. They
+   have push access and have not started.
+4. **Four shared-file changes nobody has told @snvzyn about**: `package.json`,
+   `globals.css` (palette, marquee keyframe, reduced-motion),
+   `app/page.tsx` (six sections wired), and the FAQ work. **Top of the list for
+   four sessions.**
+5. **The FAQ answers are all "New answer."** The owner has not written them.
+   The lift barely shows because of it — `grown` is ~36px for one line.
+6. **Section 3 (How It Works) is still an empty placeholder.** Still waiting on
+   what the steps are, and on haze vs plum for the remaining sections.
+7. **The temporary splitter line in `Card.tsx` is still in.** It is a styling
+   guide and comes out when the cards are done.
+8. **`transformOrigin: center center` in the tuner is dead code** — it only
+   restates the default. I offered to strip it and the owner moved on. Harmless.
+9. Everything else from sessions 4-6 stands: KTX2, Vercel, the owner's docs and
+   writing sample, the old project link, the `Fade` no-op in `Scene.tsx`, and
+   the 3D phone rendering over section two's cards.
+
+---
+
 ## Session — 2026-10-05 (session 6)
 
 A design session. Pricing added, Features restyled, Testimonials built, FAQ
