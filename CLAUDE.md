@@ -37,9 +37,14 @@ Workbench tools like `/tuner` and `/faq-tuner`. Every one of them:
   against.
 - **Positions are percentages, not pixels**, or a placement tuned at one window
   size is wrong at every other.
-- **A tuner never imports or writes the section it tunes.** It prints a config
-  block to copy; the section is edited by hand from it. That is what stops a
-  tuner breaking the thing it is tuning.
+- **A tuner never WRITES the section it tunes.** It prints a config block to
+  copy; the section is edited by hand from it. That is what stops a tuner
+  breaking the thing it is tuning.
+- **A tuner SHOULD import the section's exported config to seed itself**, so it
+  always opens on what is live. `/faq-tuner` reads `PILLS` from `Faq.tsx`.
+  Keeping a second copy by hand is how they drift — these two had already
+  reached four pills against six, with a width 104px out, which would have
+  produced an arrangement built on the wrong measurements.
 
 **Read `docs/COLLABORATION.md` before any git operation.** It is the source of
 truth for how the two devs work together.
