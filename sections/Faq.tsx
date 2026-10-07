@@ -19,12 +19,12 @@ import FaqItem from "@/components/FaqItem";
  *
  * Answers are still placeholder — the owner has not written them. */
 export const PILLS = [
-  { q: "What is Larpzwallet?", a: "New answer.", x: 36.5, y: 23.3, tilt: 0, openW: 550, size: 27.5 },
-  { q: "Do i need a seed phrase or a real wallet to use it ?", a: "New answer.", x: 34.6, y: 82.4, tilt: -0.3, openW: 490, size: 20 },
-  { q: "Will it look exactly like the real crypto apps?", a: "New answer.", x: 5.2, y: 19.4, tilt: -20, openW: 520, size: 20 },
-  { q: "Does it work on Iphone and Android?", a: "New answer.", x: 66.3, y: 17.6, tilt: 16.7, openW: 520, size: 20 },
-  { q: "Can i add custom tokens and memecoins?", a: "New answer.", x: 8, y: 64.6, tilt: 14.8, openW: 520, size: 20 },
-  { q: "Is my payment anonymous", a: "New answer.", x: 68.4, y: 63.3, tilt: -17, openW: 520, size: 20 },
+  { q: "What is Larpzwallet?", a: "New answer.", x: 37.4, y: 21, tilt: 0, openW: 550, size: 27.5 },
+  { q: "Do i need a seed phrase or a real wallet to use it ?", a: "New answer.", x: 35.1, y: 78.5, tilt: -0.3, openW: 490, size: 20 },
+  { q: "Will it look exactly like the real crypto apps?", a: "New answer.", x: 6.3, y: 16.2, tilt: -20, openW: 520, size: 20 },
+  { q: "Does it work on Iphone and Android?", a: "New answer.", x: 65, y: 16.4, tilt: 16.7, openW: 520, size: 20 },
+  { q: "Can i add custom tokens and memecoins?", a: "New answer.", x: 3.9, y: 59.4, tilt: 14.8, openW: 520, size: 20 },
+  { q: "Is my payment anonymous", a: "New answer.", x: 78.8, y: 59.8, tilt: -17, openW: 520, size: 20 },
 ];
 
 /* how far the nearest neighbour is pushed, in px, and how far the opening pill
