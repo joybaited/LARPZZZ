@@ -38,6 +38,197 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-07 (session 9)
+
+The Pricing cards laid out for real, the Benefits list reworked, a `/no-hero`
+route, and **everything from sessions 7, 8 and 9 committed.** Branch
+`feat/features`, pushed, PR open.
+
+### Done
+
+- **Three pricing tiers: Starter (Free→$14) / Monthly ($44) / Lifetime
+  ($149).** Arranged in `/pricing-tuner`, pasted back, then tuned by hand
+  against the render at four widths.
+- **Layout follows the owner's reference**: heading, price, suffix, CTA in the
+  MIDDLE, then the feature list. Left-aligned on a 7% gutter.
+- **The "Benefits" header was removed** at the owner's call and the list
+  resized into the space: 15px → 17px, row step 5.3% → 7.2%.
+- **`/no-hero`** — every section in order except the hero. A second view, NOT
+  an edit to `app/page.tsx`.
+- **`snv.md` deleted.** `main` already had `SNV.md` from PR #3 and Windows
+  treats the two as one path. The owner chose main's.
+
+### ⚠ THREE BUGS IN PriceEl AND THE CONFIG — read before tuning
+
+1. **A LEFT-ALIGNED ELEMENT GOES AT `x: 50` WITH `w: 86`, NOT AT THE GUTTER.**
+   `PriceEl` anchors on the element's CENTRE. `x: 7` puts the centre at 7%, so
+   half an 86%-wide block hangs 115px off the left edge. `align: "left"` does
+   not move the anchor — the WIDTH does the alignment. Every text block in the
+   config is at `x: 50`.
+2. **`min(Npx, 50%)` ON A BORDER RADIUS TURNS A PILL INTO AN ELLIPSE.** A
+   percentage radius resolves PER-AXIS, so 50% of a 304x56 box rounds the
+   horizontal by 152px. It is a plain px radius now; the browser already
+   clamps one that exceeds the box, so `radius: 999` is a true pill at any
+   card size. The old cap was written to stop blobs and did something else.
+3. **A WRAPPED LINE CANNOT HOLD A FIXED POSITION BELOW IT.** At 768 the card
+   is 214px and three feature lines wrapped into the row beneath. Same failure
+   the Features cards hit with a bottom-pinned block. Copy is now short enough
+   to hold one line at 214px — that is why the strings read terse.
+
+### Gotchas
+
+- **⚠ A PRICE AT 62px HAS A ~78px LINE BOX, SO AN OVERLAP CHECK LIES.** Every
+  sweep flags the price against `/month` and `once` on cards 2 and 3 at every
+  width. The GLYPHS are clear — the render proves it. Do not chase those two;
+  this is the inflated-box trap sessions 7 and 8 both recorded, in its third
+  disguise.
+- **⚠ I "FIXED" THE ANCHOR ONCE AND CHANGED NOTHING.** A regex for `x: 7,`
+  never matched because the generator had written `x: 7.0,`. The re-measure
+  returned byte-identical offsets, which is the tell: *a real change that
+  moves nothing means the edit did not land.* Confirm the write before
+  re-reasoning about the layout.
+- **`clip` in a Playwright screenshot is VIEWPORT-relative.** Slicing a 7492px
+  page needs `fullPage: true` ON EACH CLIPPED SHOT or it throws "clipped area
+  is outside the resulting image".
+- **The page is 7492px with the marquee settled, not 5400.** An early
+  `networkidle` capture measures before the FAQ pills lay out. Wait ~1.2s.
+
+### Open
+
+1. **PR #2 and PR #4 are still open and unmerged.** #4 still holds session 5's
+   handover entry, so this log still reads 4 → 6.
+2. **⚠ @snvzyn STILL HAS NOT BEEN TOLD** about any shared-file change —
+   `package.json`, `globals.css`, `app/page.tsx`, the FAQ work,
+   `app/sections/page.tsx`. **Top of the list for six sessions.** They have
+   push access; `SNV.md` landing on main (PR #3) is the first sign of movement.
+3. **Section 3 (How It Works) is still empty** and now reads as a dead
+   screenful on `/no-hero` — a purple band with nothing in it. Still waiting
+   on the steps, and on haze vs plum.
+4. **Features overflows right at 1440** on `/no-hero`, cut mid-card. Expected
+   for the marquee; worth a look on the carousel.
+5. **FAQ answers are all still "New answer."**
+6. **The temporary splitter line in `Card.tsx` is still in.**
+7. **Card 1's `7 days` suffix is `show: false`**, ready to switch on.
+8. Everything else from sessions 4-8 stands: KTX2, Vercel, the owner's docs and
+   writing sample, the `Fade` no-op in `Scene.tsx`.
+
+---
+
+## Session — 2026-10-07 (session 8)
+
+A canvas editor for the Pricing cards, built from how real editors work, plus
+`snv.md` for the collaborator. **Committed in session 9** — see above. Branch
+`feat/features`.
+
+### Done
+
+- **`/pricing-tuner`** — a real little design tool. Four shapes (text, box,
+  ellipse, line), drag, eight resize handles, snapping with guides, arrow
+  nudge, undo/redo, duplicate, z-order, show/hide, full properties panel
+  (corner radius, opacity, rotation, weight, tracking, fill, border, align,
+  strike/italic/caps). Listed at `/sections`.
+- **`components/PriceEl.tsx`** — ONE renderer shared by the section and the
+  tuner. This is the point: `/faq-tuner` draws its own dead copy of the pill
+  and every class has to be kept in step by hand. Here there is nothing to
+  drift.
+- **`sections/Pricing.tsx`** now exports `CARDS` (three independent cards) and
+  renders them. The placeholder content was stripped at the owner's call — an
+  empty slate they fill in the tuner.
+- **`snv.md`** — orientation for @snvzyn. What exists, where, the `/sections`
+  workbench, tokens, the tuner rules, the gotchas. Deliberately does NOT
+  duplicate `docs/COLLABORATION.md`; it points at it.
+- **FAQ pill positions** updated from the owner's tuner config.
+- **`/sections` notes corrected** — Testimonials, FAQ and Pricing had all said
+  "placeholder" while being built.
+
+### The owner's brief, in their words
+
+- **"fully independnt per card and no fixed elements"** — each card owns its
+  own element list. Do not refactor this into one shared layout with three sets
+  of values; it was asked for explicitly.
+- **"js gimme fake placeholder button or pill options i can resize and arrange
+  and name"** — hence four generic shapes, not named slots. A button is a box
+  with `radius: 999` and a fill. There is no `kind: "button"`.
+- **"dont name it copy copy copy"** — duplicates are numbered like any other
+  element.
+
+### Why Figma round-tripping was refused
+
+The owner asked whether they could export to Figma, edit there, and bring it
+back. Searched; the answer is no, and the reasoning is worth keeping. Figma's
+own community calls code-to-design plugins best-effort hacks, and HTML import
+documents that not all CSS properties or element types survive. **The cards are
+built on `clamp()`, `flex-1 min-w-0` and `svh` — Figma has no concept of any of
+them** and would flatten everything to fixed pixels at one width. Two lossy
+hops around a round trip. The tuner renders the real section at the real
+viewport, which is fidelity Figma structurally cannot give here.
+
+### The resize engine — read before touching the tuner
+
+Taken from Konva's text-resize doc and Figma's handle behaviour:
+
+- **Corner handles scale the FONT, side handles set the WRAP WIDTH.** Konva
+  bakes the transformer's scale into the node (`width: width * scaleX,
+  scaleX: 1`); a corner does the same thing with `fontSize` as the target.
+- **⚠ THE FIRST VERSION COULD NOT ENLARGE TEXT AT ALL.** New text has no `w`,
+  and the handle filter only gave it e/w — which resize the wrap and never the
+  type. That was the owner's bug report.
+- **⚠ THE REFERENCE DISTANCE IS CAPTURED AT POINTERDOWN, NOT READ LIVE.**
+  Reading the element's rect each pointermove divides by a box that is itself
+  shrinking, so the factor runs away: a -25px drag took 37.7px type to 5.7px.
+  Same class of bug as the FAQ push being measured with the push still applied.
+- **⚠ THE CENTRE MOVES BY HALF THE SIZE CHANGE APPLIED, not half the cursor
+  travel.** Clamping w/h at a minimum while the centre followed the cursor is
+  what "distorted" a shrinking box — w/h stopped at 1 but x walked from 50 to
+  -7, carrying the box off the card.
+- **⚠ A FIXED-WIDTH TEXT FRAME HAD NO HEIGHT**, so all six handles collapsed
+  onto one line and grabbing a side handle hit a corner. The selection frame
+  carries an invisible copy of the text for its real height.
+- **Shift-aspect must RE-PIN after forcing the ratio**, or the anchored corner
+  drifts. Alt resizes from the centre.
+- **Snapping** is 6px, against the card's edges/centre and every other
+  element's edges/centres — the thresholds real tools use.
+- **Names are `<kind> <n>`, numbered from the highest already used for that
+  kind**, not the array length. Length collides after a delete, and names are
+  the selection handle, so a collision points the panel at the wrong element.
+
+### Gotchas — these cost real time
+
+- **⚠ A HEREDOC EATS A BACKSLASH LAYER.** `new RegExp("\\b...")` written into a
+  Playwright script via `cat <<'EOF'` silently never matches, so test after
+  test reported failures that were not real. **Write test scripts with the
+  Write tool, not a heredoc.** Sessions 5, 6 and 7 all recorded a heredoc
+  failing on prose; this is the same trap with a different disguise.
+- **An element wrapper with `inset-0` fills the whole card.** The first tuner
+  gave each element one, so six wrappers stacked and the topmost swallowed
+  every click — you always dragged the last element whatever you aimed at.
+  Hit-test with `document.elementFromPoint` to catch this.
+- **`border-radius` needs capping**, `min(Npx, 50%)`. 90px on a 28x25 box reads
+  as a blob and looks like the box is distorting.
+- **A Playwright script with no `browser.close()` hangs the tool call** and
+  turns into an orphaned background task. Always `try/finally`.
+- **I twice "fixed" maths that was already correct** — the `ux*ux` anchor term
+  looked wrong on reading and tested fine. **Confirm the fault exists before
+  fixing it.** Sessions 6 and 7 recorded the same lesson.
+
+### Open
+
+1. ~~NOTHING IS COMMITTED.~~ Done in session 9. `snv.md` was dropped in
+   favour of main's `SNV.md`.
+2. ~~Everything from session 7 is still unpushed.~~ Pushed in session 9.
+3. **PR #2 and PR #4 are still open and unmerged.**
+4. ~~AT 768 THE PRICING COPY OVERFLOWS THE CARD.~~ Fixed in session 9: the
+   rows carry `w: 86` and the copy is short enough to hold one line at 214px.
+5. ~~Cards 2 and 3 are empty.~~ All three are laid out.
+6. **Four shared-file changes @snvzyn has not been told about**, now five with
+   `app/sections/page.tsx`. **Top of the list for five sessions.** They have
+   push access and have still committed nothing.
+7. Everything else from sessions 4-7 stands: Section 3 empty, FAQ answers still
+   "New answer.", the `Card.tsx` splitter, KTX2, Vercel, the owner's docs and
+   writing sample, the `Fade` no-op in `Scene.tsx`.
+
+---
+
 ## Session — 2026-10-05 (session 7)
 
 The FAQ section, end to end: pills, their animation, a tuner to place them,
