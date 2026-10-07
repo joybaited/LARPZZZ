@@ -13,11 +13,13 @@ const ROUTES = [
   { href: "/hero", name: "Hero", note: "section 1 — nav, headline, the phone" },
   { href: "/features", name: "Features", note: "section 2 — the card carousel" },
   { href: "/how-it-works", name: "How It Works", note: "section 3 — placeholder" },
-  { href: "/testimonials", name: "Testimonials", note: "section 4 — placeholder" },
-  { href: "/faq", name: "FAQ", note: "section 5 — placeholder" },
-  { href: "/pricing", name: "Pricing", note: "section 6 — placeholder" },
+  { href: "/testimonials", name: "Testimonials", note: "section 4 — the marquee" },
+  { href: "/faq", name: "FAQ", note: "section 5 — the pills" },
+  { href: "/pricing", name: "Pricing", note: "section 6 — three cards" },
   { href: "/tuner", name: "Tuner", note: "tool — positions the 3D phone" },
   { href: "/faq-tuner", name: "FAQ tuner", note: "tool — places the FAQ pills" },
+  { href: "/pricing-tuner", name: "Pricing tuner", note: "tool — lays out the pricing cards" },
+  { href: "/no-hero", name: "No hero", note: "every section except the hero, in order" },
   { href: "/", name: "Full page", note: "every section, in order" },
 ];
 
