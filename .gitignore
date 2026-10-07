@@ -33,3 +33,9 @@ yarn-error.log*
 
 # reference docs cloned in, not ours to commit
 _ref/
+
+# throwaway debug scripts at the repo root. NOT a bare *.mjs: eslint.config.mjs
+# and postcss.config.mjs live here and are real files.
+/probe*.mjs
+/debug*.mjs
+/tmp-*.mjs

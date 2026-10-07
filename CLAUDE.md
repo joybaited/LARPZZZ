@@ -14,10 +14,37 @@ that this one does not.
 top of the log. Same file every time — never start a second one, never rewrite
 old entries.
 
-**Run `/ponytail` at the start of the session** (level: full). The owner works
-with it on. Lazy senior dev: no speculative abstractions, shortest diff that
-works, native platform features and already-installed deps before new ones.
-Do not over-engineer this site.
+**Ponytail is ON for everything. It is a PLUGIN — invoke the actual skill
+(`ponytail:ponytail`, level: full). Do not imitate the style from memory.**
+
+Invoke it at the start of the session, and again before any build or design
+task — every time, not once. The owner has had to ask for this repeatedly;
+treat a drift back to building without it as a mistake.
+
+Lazy senior dev: no speculative abstractions, shortest diff that works, native
+platform features and already-installed deps before new ones. Do not
+over-engineer this site.
+
+### Tuners
+
+Workbench tools like `/tuner` and `/faq-tuner`. Every one of them:
+
+- **The panel FLOATS over the stage and can be hidden.** Never a column beside
+  it — that takes its width off the stage, so the stage is no longer the shape
+  of the real page and every value tuned against it is wrong on the page.
+- **The stage is the full viewport**, and it carries the real section's ground
+  and any fixed element (a heading, the nav) so there is something to lay out
+  against.
+- **Positions are percentages, not pixels**, or a placement tuned at one window
+  size is wrong at every other.
+- **A tuner never WRITES the section it tunes.** It prints a config block to
+  copy; the section is edited by hand from it. That is what stops a tuner
+  breaking the thing it is tuning.
+- **A tuner SHOULD import the section's exported config to seed itself**, so it
+  always opens on what is live. `/faq-tuner` reads `PILLS` from `Faq.tsx`.
+  Keeping a second copy by hand is how they drift — these two had already
+  reached four pills against six, with a width 104px out, which would have
+  produced an arrangement built on the wrong measurements.
 
 **Read `docs/COLLABORATION.md` before any git operation.** It is the source of
 truth for how the two devs work together.

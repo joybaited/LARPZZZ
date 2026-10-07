@@ -39,6 +39,14 @@
   --color-paper: #ffffff;
   --color-haze: #f5f2ff;   /* pale lavender — hero section ground */
 
+  /* the palette, owner's. darkest to lightest. named by position rather than
+     by hue so a re-pick does not leave every name lying. */
+  --color-deep: #201e45;
+  --color-plum: #433a67;
+  --color-mauve: #6d6189;
+  --color-lilac: #9d90aa;
+  --color-mist: #cbc9dd;
+
   /* layout */
   --content-max: 80rem;        /* 1280 */
   --gutter: clamp(1.25rem, 0.46rem + 2.03vw, 2.5rem);   /* 20 -> 40 */
@@ -75,4 +83,36 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   -webkit-font-smoothing: antialiased;
+}
+
+/* the testimonial marquee — sections/Testimonials.tsx.
+ *
+ * ⚠ TRAVELS ONE SET'S WIDTH PLUS ONE GAP. -100% is the <ul>'s own width, which
+ * is one set; the duplicate set is a SIBLING, so it is not counted. Without the
+ * --gap term the loop jumps by one gap every pass and reads as a stutter.
+ *
+ * LINEAR, and it matters: any easing varies the speed across the cycle, so the
+ * loop point becomes visible as a hesitation even though the geometry is exact.
+ * Row two plays this same keyframe with animation-direction: reverse — which
+ * also reverses the timing function, harmless only because linear is its own
+ * mirror. Give row two its own keyframe if the timing ever stops being linear.
+ *
+ * The duration and direction are set per row in the component. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-100% - var(--gap))); }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+/* ⚠ KILLS THE TRAVEL, DOES NOT HIDE THE CARDS. The marquee is decoration, so
+   at this setting it simply sits still and stays readable. !important because
+   the duration is set inline per row. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
