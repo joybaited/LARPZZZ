@@ -41,8 +41,28 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 ## Session — 2026-10-07 (session 9)
 
 The Pricing cards laid out for real, the Benefits list reworked, a `/no-hero`
-route, and **everything from sessions 7, 8 and 9 committed.** Branch
-`feat/features`, pushed, PR open.
+route, and **everything from sessions 7, 8 and 9 committed, pushed, and in
+PR #5.** Branch **`feat/pricing-layout`** — NOT `feat/features`, see below.
+
+### ⚠ START HERE: THE BRANCH CHANGED, AND WHY
+
+`feat/features` already existed on the remote with 12 of the owner's older
+commits. The mandatory `git pull --rebase origin main` replayed them onto the
+new `main`, which gave every one of them a NEW SHA, so a normal push was
+rejected as non-fast-forward. The only way onto that branch was a force-push.
+
+**@snvzyn was about to push the hero to `feat/features`.** Force-pushing a
+rewritten history onto a branch somebody is about to publish to is how their
+commits disappear. So the work went to a NEW branch instead and
+`feat/features` was left exactly as it was.
+
+- Every commit that is on `origin/feat/features` is also in this history,
+  verified by comparing commit SUBJECTS, not SHAs — after a rebase the SHAs
+  never match and comparing them says "12 commits lost" when nothing is.
+- **Do not force-push `feat/features`** until @snvzyn's hero has landed and
+  they say so.
+- **The owner is waiting on that push and will say when it is done.** That is
+  the next thing to ask about at the start of the session.
 
 ### Done
 
@@ -77,6 +97,18 @@ route, and **everything from sessions 7, 8 and 9 committed.** Branch
 
 ### Gotchas
 
+- **⚠ AFTER A REBASE, `git log HEAD..origin/<branch>` LISTS COMMITS THAT ARE
+  NOT MISSING.** A rebase rewrites SHAs, so every replayed commit reads as
+  absent from the remote's point of view — it reported 12 "lost" commits when
+  nothing was lost. **Compare commit SUBJECTS, not SHAs**, before concluding
+  anything is gone:
+  `comm -23 <(git log origin/<b> --format=%s|sort) <(git log HEAD --format=%s|sort)`.
+  Empty output means nothing is only on the remote.
+- **⚠ A NON-FAST-FORWARD PUSH IS A QUESTION, NOT AN OBSTACLE.** The fix is
+  always `--force-with-lease` and it is sometimes the wrong thing to do. Ask
+  who else is on that branch FIRST — here the answer was "@snvzyn is pushing
+  the hero to it shortly," which turned a routine force-push into a new
+  branch.
 - **⚠ A PRICE AT 62px HAS A ~78px LINE BOX, SO AN OVERLAP CHECK LIES.** Every
   sweep flags the price against `/month` and `once` on cards 2 and 3 at every
   width. The GLYPHS are clear — the render proves it. Do not chase those two;
@@ -95,21 +127,35 @@ route, and **everything from sessions 7, 8 and 9 committed.** Branch
 
 ### Open
 
-1. **PR #2 and PR #4 are still open and unmerged.** #4 still holds session 5's
+1. **⚠ WAITING ON @snvzyn'S HERO PUSH.** The owner said it is coming and that
+   they will say when. Until it lands: do not touch `feat/features`, do not
+   force-push it, and do not branch off it. `sections/Hero.tsx`,
+   `components/Scene.tsx`, `components/Phone.tsx` and the `<Canvas>` are all
+   theirs right now — stay out of those files.
+2. **PR #5 is open** — `feat/pricing-layout` → `main`. Three PRs open at once
+   now (#2, #4, #5). Per `docs/COLLABORATION.md` the OTHER dev merges, and a
+   blocked PR blocks them, so this wants chasing.
+3. **PR #2 and PR #4 are still open and unmerged.** #4 still holds session 5's
    handover entry, so this log still reads 4 → 6.
-2. **⚠ @snvzyn STILL HAS NOT BEEN TOLD** about any shared-file change —
+4. **⚠ `docs/COLLABORATION.md` AND `CLAUDE.md` DISAGREE ABOUT `page.tsx`.**
+   CLAUDE.md says it is stubbed up front and must not be edited again; the doc
+   says adding a section is one import and one tag and is explicitly allowed,
+   and says the original rule "did not survive contact." The doc reads as the
+   newer decision. **Ask the owner which stands** — session 9 sidestepped it
+   with a separate route and did not resolve it.
+5. **⚠ @snvzyn STILL HAS NOT BEEN TOLD** about any shared-file change —
    `package.json`, `globals.css`, `app/page.tsx`, the FAQ work,
    `app/sections/page.tsx`. **Top of the list for six sessions.** They have
    push access; `SNV.md` landing on main (PR #3) is the first sign of movement.
-3. **Section 3 (How It Works) is still empty** and now reads as a dead
+6. **Section 3 (How It Works) is still empty** and now reads as a dead
    screenful on `/no-hero` — a purple band with nothing in it. Still waiting
    on the steps, and on haze vs plum.
-4. **Features overflows right at 1440** on `/no-hero`, cut mid-card. Expected
+7. **Features overflows right at 1440** on `/no-hero`, cut mid-card. Expected
    for the marquee; worth a look on the carousel.
-5. **FAQ answers are all still "New answer."**
-6. **The temporary splitter line in `Card.tsx` is still in.**
-7. **Card 1's `7 days` suffix is `show: false`**, ready to switch on.
-8. Everything else from sessions 4-8 stands: KTX2, Vercel, the owner's docs and
+8. **FAQ answers are all still "New answer."**
+9. **The temporary splitter line in `Card.tsx` is still in.**
+10. **Card 1's `7 days` suffix is `show: false`**, ready to switch on.
+11. Everything else from sessions 4-8 stands: KTX2, Vercel, the owner's docs and
    writing sample, the `Fade` no-op in `Scene.tsx`.
 
 ---
