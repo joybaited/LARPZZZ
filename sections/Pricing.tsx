@@ -97,7 +97,16 @@ export type PriceEl = {
   strike?: boolean;
   caps?: boolean;
   tracking?: number;
+  /* the face. omitted = the body font (Neue Montreal), which is what every
+     existing element already renders as, so adding this changes nothing that
+     is already laid out. "display" is Megion. */
+  font?: "display" | "sans";
   show?: boolean;
+  /* HERO ONLY. `in: "nav"` means x/y are percentages OF THE NAV BAR, not of
+     the section — the nav is the nearest positioned ancestor, so <PriceEl>
+     resolves against it with no change to the renderer. Unused by Pricing;
+     it lives here because this is where the shared element type lives. */
+  in?: "nav";
 };
 
 /* `fill` is the card's own background. Only the middle card sets one —

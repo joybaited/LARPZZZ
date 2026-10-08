@@ -73,9 +73,18 @@
   --text-1:    clamp(2.75rem, 1.08rem + 4.29vw, 7.5rem);
 }
 
-:root {
-  scrollbar-gutter: stable;
-}
+/* ⚠ NO `scrollbar-gutter: stable` HERE. It reserved 15px down the right of
+   every page whether or not a scrollbar was there, so a full-bleed section was
+   15px narrower than the viewport and everything centred in it sat 7.5px left
+   of true centre — session 6 recorded exactly that on /faq and it is what
+   threw the hero off. The gutter is gone; the layout is the real viewport
+   width now.
+
+   What it was for: stopping a layout shift when a page grows past one
+   screenful and the scrollbar appears. On this site every section is 100svh
+   and the page always scrolls, so the scrollbar is always there anyway and
+   there is nothing to stabilise. A workbench route that does NOT scroll (/faq,
+   /hero) now matches the real page instead of differing from it by 15px. */
 
 body {
   background: var(--color-paper);

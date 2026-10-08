@@ -1,7 +1,7 @@
 # hero
 
 the first section. a nav rectangle, a stacked headline, and the phone — which
-is not in this file, because it lives in the shared canvas behind the page.
+this file now mounts, because the canvas is absolute and belongs to the hero.
 
 `sections/Hero.tsx`. read `SECTIONS.md` first for the section rules and
 `3D.md` before touching the phone.
@@ -12,14 +12,20 @@ is not in this file, because it lives in the shared canvas behind the page.
 
 ```
 <Section id="hero" bleed>
+  <SceneMount /> the one <Canvas>, absolute, filling this section
   <nav>          empty rectangle, --nav-inset either side
   <h1>           three stacked lines, Megion
 </Section>
 ```
 
-the phone appears to be in the hero. it is not: it is rendered by the one
-`<Canvas>` in `components/Scene.tsx`, fixed behind the whole page. the hero
-does not know about it and must not try to own it.
+the phone is rendered by the one `<Canvas>` in `components/Scene.tsx`, which
+this section mounts. it is **absolute**, so it fills the hero and scrolls away
+with it.
+
+it was `fixed` and mounted in `page.tsx` until session 10. that pinned it to
+the viewport: the phone followed the reader down all 7492px of the page and
+sat on top of section two's cards. **do not put it back to `fixed`** — and if
+a workbench route mounts its own `<SceneMount />`, there will be two canvases.
 
 **the section is `bleed`.** it opts out of the 1280 content column, because the
 nav runs wider than that column at 1440. everything inside therefore sets its
@@ -65,6 +71,75 @@ these four numbers are the ones that get nudged: size, leading, indent, top
 offset. all four are in one `className` on the `<h1>`. nudging them is a tweak
 and needs no conversation; replacing the stack with a different layout or
 animating it is a rewrite and does — `COLLABORATION.md`.
+
+---
+
+## /hero-tuner
+
+The workbench for this section. `/sections` lists it. It carries the real nav,
+the real headline and the **real `<Canvas>`** — the same `<SceneMount>` the
+page mounts, driven by props — so what is arranged there is what ships.
+
+Add text, buttons (a box with `radius: 999` and a fill), ellipses and lines;
+drag them, resize them from eight handles, recolour the ground, resize the nav
+and its corner radius, retype the headline, and tune every number on the phone
+including the entrance spring, the idle float, the wobble and the mouse
+parallax. Copy the config block and edit this section by hand from it — the
+tuner never writes `Hero.tsx`.
+
+**⚠ IT SAVES TO `sessionStorage`, AND THAT IS DELIBERATE.** The brief was
+"keep it on refresh, lose it on a hard refresh". **That is not implementable:**
+a hard refresh and a soft one both report
+`PerformanceNavigationTiming.type === "reload"` and no browser exposes
+ctrl+shift+R. `sessionStorage` is the honest version of the same intent — it
+survives EVERY refresh, hard or soft, and clears when the tab closes. The
+`reset` button is the explicit throw-it-away, and it asks first.
+
+**⚠ TWO BUGS THAT ONLY A HIT-TEST FINDS.** Both made every drag silently do
+nothing, with no error anywhere:
+
+1. **A wrapper `<div>` around an absolute `<PriceEl>` measures 1425x0.** Its
+   centre lands somewhere else entirely — here, on the canvas. The wrapper is
+   `display: contents` so it generates no box.
+2. **A positioned wrapper becomes the containing block.** `relative z-20` on a
+   0-high wrapper made a `height: 6%` element resolve to `200x0`. Percentages
+   have to resolve against the STAGE, so the wrapper must not be positioned.
+
+`document.elementFromPoint` at the element's own centre is the check that
+catches both. Session 8 recorded the same class of bug in `/pricing-tuner`
+(`inset-0` wrappers swallowing every click).
+
+**⚠ THE STAGE IS THE REAL HERO, MEASURED — AND A LERP IS NOT A `clamp()`.**
+The nav and the headline are fluid on the page, so the tuner holds them as
+min/max pairs and resolves them the way the css does. Three things this got
+wrong before it was measured against the render at four widths:
+
+1. **The headline is 96px at 1440, not 144.** `clamp(3.25rem, 1.14rem + 5.4vw,
+   9rem)` never reaches its 9rem ceiling at either design width. Seeding the
+   ceiling made the tuner's headline half again too big, and anything arranged
+   against it would have been wrong on the page.
+2. **The nav is 48 -> 57, not 48 -> 60.** `--space-xl`'s 3.75rem ceiling is
+   only reached above 1440.
+3. **Interpolating linearly between the two ends was 8px out at 768.** A real
+   `clamp()` holds its floor until the `vw` term overtakes it, so it is flat
+   and then rises — it is not a straight line between the endpoints. The
+   tuner states the actual token formulas (`TOK` in the file) instead. It was
+   correct at 390 and 1440 and wrong in between, which is the dangerous kind
+   of wrong: both the widths you check look right.
+
+Verified equal to `/hero` at **390, 768, 1024 and 1440** on nav x/y/height and
+headline x/y/size. Re-run that comparison if `globals.css` changes.
+
+**⚠ THE NAV AND THE HEADLINE DRAG TOO**, with the same outline, pointer
+capture and arrow-nudge as an element — a tuner where half the things on
+screen can only be moved by typing a number is not a tuner. A drag moves BOTH
+ends of their clamp by the same px, so the 390 -> 1440 ramp is preserved
+rather than skewed.
+
+**⚠ THE CANVAS IS `-z-10` IN THE TUNER, `z-10` ON THE PAGE.** `Scene.tsx` sets
+z-10 so the canvas is not hidden behind an opaque section background (session
+3). Inside the tuner's stage that painted it OVER every element. The stage
+`isolate`s and the canvas goes behind.
 
 ---
 

@@ -62,6 +62,7 @@ export default function PriceEl({ el }: { el: El }) {
           fontSize: `${el.size ?? 15}px`,
           fontWeight: el.weight ?? 600,
           letterSpacing: `${el.tracking ?? 0}em`,
+          fontFamily: el.font === "display" ? "var(--font-display)" : undefined,
           textTransform: el.caps ? "uppercase" : undefined,
         }}
         /* min-w-0 so a long label cannot push the box wider than its own w,
@@ -78,16 +79,34 @@ export default function PriceEl({ el }: { el: El }) {
       style={{
         ...pos,
         width: el.w ? `${el.w}%` : undefined,
+        /* ⚠ AN AUTO-WIDTH TEXT STILL NEEDS A CEILING. Without one a long
+           string is one `max-content` line that runs off the section. 92%
+           keeps it inside the gutter and lets it break naturally; give the
+           element a real `w` (drag a side handle) to control where. */
+        maxWidth: el.w ? undefined : "92%",
         color: el.color ?? "#ffffff",
         fontSize: `${el.size ?? 16}px`,
         fontWeight: el.weight ?? 400,
         letterSpacing: `${el.tracking ?? 0}em`,
+        /* ⚠ MEGION IS ONE WEIGHT (BOLD) AND DISPLAY ONLY. Picking it ignores
+           the weight dial — there is no light or regular cut to fall back to,
+           so the browser would synthesise one and it would look wrong. */
+        fontFamily: el.font === "display" ? "var(--font-display)" : undefined,
         textAlign: el.align ?? "center",
         textTransform: el.caps ? "uppercase" : undefined,
         fontStyle: el.italic ? "italic" : undefined,
         textDecoration: el.strike ? "line-through" : undefined,
       }}
-      className={`absolute leading-tight ${el.w ? "whitespace-pre-wrap" : "whitespace-pre"}`}
+      /* ⚠ `pre-wrap` EITHER WAY, SO LONG COPY WRAPS INSTEAD OF RUNNING OFF.
+         It used to be `whitespace-pre` without a width, which never breaks a
+         line — a long string just ran past the section with no way to tell
+         except by looking. Typed newlines are still honoured (that is the
+         `pre` half of pre-wrap), so a deliberate break is still a break.
+
+         Auto-width text is unaffected in practice: with no `w` the box is
+         `max-content`, so there is nothing to wrap against until it hits
+         `maxWidth` below. */
+      className="absolute leading-tight whitespace-pre-wrap"
     >
       {el.text}
     </div>

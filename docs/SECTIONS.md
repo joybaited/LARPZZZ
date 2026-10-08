@@ -66,10 +66,10 @@ They are **not part of the site** — same as `/tuner`. They exist so a section
 can be built and looked at without the ones around it, and without the 3D
 phone sitting over the top of it.
 
-**`/hero` mounts `SceneMount` and the others do not.** The phone lives in the
-shared canvas, which `page.tsx` normally mounts; without it the hero renders
-with no phone, which is not the hero. The other sections do not want it in
-the way, which is the point of having the route at all.
+**`<Hero>` mounts the canvas itself, so `/hero` gets the phone for free.**
+No workbench route should add its own `<SceneMount />` — that would render a
+second `<Canvas>`. The other sections never see it, which is the point of
+having the routes at all.
 
 Adding a section: a file in `sections/`, a route folder, and one row in
 `app/sections/page.tsx`.
@@ -122,9 +122,15 @@ utilities.
 
 ## the 3D canvas
 
-**one `<Canvas>`, in `components/Scene.tsx`, mounted once in `page.tsx`.** It
-is fixed behind the page. Sections do not create canvases — they drive the
-shared one through scroll triggers.
+**one `<Canvas>`, in `components/Scene.tsx`, mounted once — by `<Hero>`.**
+Sections do not create canvases; they drive the shared one through scroll
+triggers.
+
+It is **`absolute`, not `fixed`**, so it fills the section that mounts it and
+scrolls away with it. It used to be fixed and mounted in `page.tsx`, which
+pinned it to the viewport — the phone rode down the whole page and sat over
+section two's cards. If a later design needs the phone to persist across
+sections, that is a conversation, not a change back to `fixed`.
 
 If a design needs 3D in several separate sections, raise it. That is a
 different architecture, not a second canvas.

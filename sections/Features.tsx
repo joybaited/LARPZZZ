@@ -116,7 +116,33 @@ export default function Features() {
       });
     }, section);
 
-    return () => ctx.revert();
+    /* ⚠ THREE autoPlay loop VIDEOS DECODE FOREVER, ON OR OFF SCREEN.
+       measured at the page bottom with this section thousands of px away:
+       all three still playing, ~121 decoded frames each per 2.5s. the
+       browser does not stop them, and `preload` only governs the first
+       fetch, not playback.
+
+       native <video> play/pause on an IntersectionObserver — no state, no
+       re-render, and it stays out of Card.tsx, which is a server component
+       and a shared file. 300px rootMargin so a card is already running
+       before it is scrolled to. */
+    const vids = sec.querySelectorAll("video");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const v = e.target as HTMLVideoElement;
+          if (e.isIntersecting) v.play().catch(() => {});
+          else v.pause();
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    vids.forEach((v) => io.observe(v));
+
+    return () => {
+      io.disconnect();
+      ctx.revert();
+    };
   }, []);
 
   return (

@@ -112,6 +112,32 @@ Not installed yet — scaffolding comes after the repo is wired up.
 sites get heavy. If a design calls for 3D in several separate sections, raise
 it — that is a different architecture, not a bigger canvas.
 
+### ⚠ `public/models/iphone.glb` is a BINARY WITH THREE WRITERS. Do not rebuild it.
+
+The committed glb is the only copy of @snvzyn's seam fix (PR #6, merged
+2026-10-07). **Three scripts write that same path and each one overwrites the
+other two's work:**
+
+| Script | Author | Reads from |
+|---|---|---|
+| `scripts/optimize-model.mjs` | ours | the original 22.5MB source |
+| `scripts/swap-screen.mjs` | ours | a pristine backup |
+| `scripts/apply-all-fixes.mjs` | @snvzyn | a hardcoded path on THEIR machine |
+
+- **Running any of ours silently destroys their fix.** It is a binary, so a
+  diff shows only "Bin 3314596 -> 3304716 bytes" and code review cannot see
+  what was lost.
+- **`apply-all-fixes.mjs` cannot be re-run by anyone.** Its input is
+  `C:/Users/SREE HARI/.gemini/.../scratch/head-iphone.glb` — an absolute path
+  in a temp scratch directory on their machine. Once that is cleared the fix is
+  not reproducible from source at all. Do not "fix" the path by pointing it at
+  our backup; that backup predates their work.
+- **So: the glb is the artifact, not the scripts.** Before any model work, ask
+  @snvzyn — it is their change and the `<Canvas>` has one owner. If a rebuild
+  is genuinely needed, back up the committed glb first and say so.
+- **Rebuild from a pristine backup, never from the previous output**, or the
+  screen texture compounds a webp compression pass every time.
+
 ---
 
 ## Layout

@@ -17,6 +17,7 @@ const ROUTES = [
   { href: "/faq", name: "FAQ", note: "section 5 — the pills" },
   { href: "/pricing", name: "Pricing", note: "section 6 — three cards" },
   { href: "/tuner", name: "Tuner", note: "tool — positions the 3D phone" },
+  { href: "/hero-tuner", name: "Hero tuner", note: "tool — lays out the hero" },
   { href: "/faq-tuner", name: "FAQ tuner", note: "tool — places the FAQ pills" },
   { href: "/pricing-tuner", name: "Pricing tuner", note: "tool — lays out the pricing cards" },
   { href: "/no-hero", name: "No hero", note: "every section except the hero, in order" },

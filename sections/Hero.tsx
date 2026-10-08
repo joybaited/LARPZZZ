@@ -1,36 +1,184 @@
 import Section from "@/components/Section";
+import SceneMount from "@/components/SceneMount";
+import PriceEl from "@/components/PriceEl";
+import type { PriceEl as El } from "@/sections/Pricing";
+/* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
+   dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
+   `undefined` at module-eval — session 10 hit exactly this with PHONE_TUNE.
+   A type erases at compile time and cannot be undefined. */
+import type { PhoneTune } from "@/components/Phone";
 
-/** phase 1 placeholder. black and white, shapes only, no content. */
+/* ⚠ ARRANGED IN /hero-tuner. This block is the layout — the tuner prints it
+ * and it is pasted here by hand, which is what stops a tuner breaking the
+ * section it tunes. /hero-tuner imports it to seed itself, so the two cannot
+ * drift.
+ *
+ * ⚠ PAIRS ARE [value at 390, value at 1440] IN PX, and they are CLAMPS, not
+ * a straight line between the ends — see `fluid` below. A single px value
+ * would be right at one width and wrong at every other, which is the whole
+ * reason the tokens in globals.css are clamps.
+ *
+ * ⚠ els x/y ARE PERCENTAGES, and `in: "nav"` makes them percentages OF THE
+ * NAV instead of the section. <PriceEl> is absolute, so the nav being
+ * `relative` is what makes that work — do not remove it.
+ */
+export const HERO = {
+  bg: "#EAC2FF",
+  nav: { h: [48, 57], radius: 8, inset: [16, 48], y: [4.8, 10.8], fill: "#3D065F", show: true },
+  headline: {
+    lines: ["Fake it", "Till' you", "Make it"],
+    color: "#3D065F",
+    min: 52,
+    max: 96,
+    x: [64, 102],
+    y: [232.8, 264.8],
+    leading: 0.9,
+    show: true,
+  },
+  phone: {
+    rotation: [-6.3, 156.9, 5.7],
+    position: [0.05, -0.21, 0.16],
+    fit: 0.71,
+    camera: { z: 5.9, fov: 42 },
+    entrance: { zeta: 0.65, wn: 10, fromScale: 0.2, overshoot: 1.15, fromYaw: -25, fromRoll: 22, settleAt: 1.4, settleOver: 0.4 },
+    idle: { floatHz: 0.2, floatAmp: 0.025, wobble: 1 },
+    parallax: { yaw: 9.7, pitch: 5, damp: 0.39 },
+  },
+  els: [
+    { name: "box 1", kind: "box", text: "Button", x: 94.1, y: 50, w: 9.7, h: 74, size: 18.3, radius: 235.3, weight: 600, fill: "#EAC2FF", color: "#3D065F", in: "nav" },
+    { name: "text 1", kind: "text", text: "LARPZ WALLET", x: 50.9, y: 50, size: 28.7, weight: 400, align: "center", font: "display", color: "#EAC2FF", in: "nav" },
+    { name: "text 2", kind: "text", text: "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.", x: 82, y: 50, w: 30, h: 0, size: 22, weight: 400, align: "center", color: "#3D065F" },
+    { name: "box 3", kind: "box", text: "Button", x: 89.5, y: 64, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
+    { name: "box 4", kind: "box", text: "Button", x: 74.5, y: 64, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
+    { name: "text 3", kind: "text", text: "Text", x: 78.8, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
+    { name: "text 4", kind: "text", text: "Text", x: 85.2, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
+    { name: "text 5", kind: "text", text: "Text", x: 72.4, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
+    { name: "line 1", kind: "line", x: 3.4, y: 33.5, w: 2.7, size: 2, fill: "#EAC2FF", in: "nav" },
+    { name: "line 2", kind: "line", x: 3.4, y: 50, w: 2.9, size: 2, fill: "#EAC2FF", in: "nav" },
+    { name: "line 3", kind: "line", x: 3.4, y: 66.6, w: 2.7, size: 2, fill: "#EAC2FF", in: "nav" },
+  ] as El[],
+};
+
+/* ⚠ A PAIR IS A `clamp()`, NOT A LERP BETWEEN THE ENDS — and css already
+   does this, so it is a css `clamp()` and not a resize listener. Solve the
+   preferred line through (390, min) and (1440, max) the way the tokens do,
+   then let clamp hold the floor and the ceiling. Interpolating linearly in js
+   was 8px out at 768: correct at both design widths and wrong in between,
+   which is the dangerous kind of wrong. */
+const fluid = ([min, max]: number[]) => {
+  const m = ((max - min) / (1440 - 390)) * 100; /* vw coefficient */
+  const b = min - (m * 390) / 100; /* px intercept */
+  return `clamp(${min}px, ${b.toFixed(2)}px + ${m.toFixed(3)}vw, ${max}px)`;
+};
+
+/* ⚠ THE HEADLINE DOES NOT USE `fluid`. Its css is the one session 4 wrote —
+   clamp(3.25rem, 1.14rem + 5.4vw, 9rem) — and that vw term is STEEPER than
+   the line through (390, 52) and (1440, 96), so between the ends it sits
+   BELOW it: 59.7px at 768, not 67.8. /hero-tuner states the same formula
+   (`headClamp`), so this is what the arrangement was tuned against. The
+   min/max in HERO are that clamp solved at the two design widths; they are
+   the ceiling and floor, not the line. */
+const headSize = (min: number, max: number) =>
+  `clamp(${min}px, 1.14rem + 5.4vw, ${max}px)`;
+
+/* ⚠ HERO.phone IS GROUPED FOR READING; PhoneTune IS FLAT. Flattened here
+   rather than reshaping either side: the tuner prints the grouped block and
+   <Phone> wants one object of dials.
+
+   ⚠ AND IT IS PASSED EXPLICITLY, NOT LEFT TO PHONE_TUNE's DEFAULT.
+   Phone.tsx still holds session 3's pose — rotation [-18, 159, 6], fit 0.72,
+   floatHz 0.4 — and this config is the re-tune: [-6.3, 156.9, 5.7], fit 0.71,
+   floatHz 0.2, plus a position offset it has no default for. Mounting
+   <SceneMount /> bare renders the OLD angles, silently and without an error,
+   which is the whole reason this prop exists. */
+const PHONE: PhoneTune = {
+  rotX: HERO.phone.rotation[0],
+  rotY: HERO.phone.rotation[1],
+  rotZ: HERO.phone.rotation[2],
+  posX: HERO.phone.position[0],
+  posY: HERO.phone.position[1],
+  posZ: HERO.phone.position[2],
+  fit: HERO.phone.fit,
+  ...HERO.phone.entrance,
+  ...HERO.phone.idle,
+  ...HERO.phone.parallax,
+};
+
 export default function Hero() {
+  const { nav, headline: h } = HERO;
+
   return (
-    <Section id="hero" bleed className="bg-haze pt-(--space-m)">
+    <Section id="hero" bleed>
+      {/* ⚠ THE GROUND IS AN INLINE STYLE, NOT A TAILWIND CLASS. `bg-[${...}]`
+          with an interpolated value generates NOTHING — Tailwind scans source
+          text and never evaluates it, so the class silently does not exist.
+          It rides on an absolute div rather than a `style` prop on <Section>,
+          which has none and already uses style for its own minBlockSize. */}
+      <div className="absolute inset-0 -z-20" style={{ background: HERO.bg }} />
       {/*
-        nav. a rectangle for now, but built as a nav because that is what it
-        is — it will hold items later. empty until told otherwise.
+        the 3D phone. The canvas is absolute and belongs to THIS section — it
+        is not mounted in page.tsx, so it cannot ride down the page over
+        section two's cards (see docs/HERO.md).
 
-        full-bleed: it sits inside the section's own width with its own
-        inset, rather than inside the 1280 content column. widen or narrow
-        by changing --nav-inset alone.
+        Its wrapper in Scene.tsx is z-10, so the nav, headline and elements
+        are z-20 to paint above it, and the ground is -z-20 to stay behind.
+
+        ⚠ <PhoneBox>, the grey stand-in, is still in the repo and is what
+        /hero-tuner shows by default — WebGL every frame makes the stage heavy
+        to lay out against. Swap it back in here the same way if that is
+        wanted while designing.
       */}
-      <nav
-        aria-label="Main"
-        className="mx-(--nav-inset) h-(--space-xl) rounded-lg bg-ink"
-      />
+      <SceneMount tune={PHONE} camZ={HERO.phone.camera.z} fov={HERO.phone.camera.fov} />
 
       {/*
-        headline. left of the phone, which the canvas centres — so this
-        occupies the left half and stops there. stacked in three lines:
-        the breaks are the design, not wrapping, hence spans not a width.
-        indented past the nav's left edge — nav inset plus one step.
-
-        size is a step above text-1, kept fluid on the same 390 -> 1440
-        solve so it scales with everything else.
+        nav. ⚠ ABSOLUTE, NOT IN FLOW. It was `pt-(--space-m)` with the bar in
+        flow; the tuned y is 4.8 -> 10.8px, well above --space-m's 24 -> 30, so
+        a flow margin cannot place it. `relative` is load-bearing: the `in:
+        "nav"` elements are absolute with % x/y and resolve against this bar.
       */}
-      <h1 className="mt-(--space-3xl) ml-[calc(var(--nav-inset)+var(--space-l))] font-display text-[clamp(3.25rem,1.14rem+5.4vw,9rem)] leading-[0.9] uppercase">
-        <span className="block">Fake it</span>
-        <span className="block">Till&rsquo; you</span>
-        <span className="block">Make it</span>
-      </h1>
+      {nav.show && (
+        <nav
+          aria-label="Main"
+          className="absolute z-20"
+          style={{
+            left: fluid(nav.inset),
+            right: fluid(nav.inset),
+            top: fluid(nav.y),
+            height: fluid(nav.h),
+            borderRadius: `${nav.radius}px`,
+            background: nav.fill,
+          }}
+        >
+          {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
+        </nav>
+      )}
+
+      {/*
+        headline. Three stacked spans — the breaks are the design, not
+        wrapping. ⚠ TOP-LEFT ANCHORED, like the tuner: the tuned y IS the top
+        of the block, so no centring transform.
+      */}
+      {h.show && (
+        <h1
+          className="absolute z-20 m-0 font-display uppercase"
+          style={{
+            left: fluid(h.x),
+            top: fluid(h.y),
+            color: h.color,
+            fontSize: headSize(h.min, h.max),
+            lineHeight: h.leading,
+          }}
+        >
+          {h.lines.map((l, i) => (
+            <span key={i} className="block">
+              {l}
+            </span>
+          ))}
+        </h1>
+      )}
+
+      {/* stage-level elements. the nav's own are rendered inside it above. */}
+      {HERO.els.map((el, i) => (el.in === "nav" ? null : <PriceEl key={i} el={el} />))}
     </Section>
   );
 }
