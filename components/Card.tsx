@@ -94,10 +94,15 @@ export default function Card({ heading, copy, media }: CardData) {
         /* ⚠ ONE TOKEN, TWO USERS. The media's height and the spacer's margin
            both have to land on this exact fraction or they stop meeting — the
            comments below said so, but nothing enforced it and it was written
-           twice. Tightened 0.70 -> 0.64: at 0.70 the phone's own pixels ran
-           out well above the boundary and left a ~76px dead band over the
-           heading. */
-        "--card-m": "0.74",
+           twice, as 0.7 and as 70%.
+
+           ⚠ THIS IS THE GAP ABOVE THE HEADING, and it is the dial for it.
+           Raising it moves the media's bottom edge DOWN, toward the text, so
+           the heading crowds the video; lowering it opens that gap. The foot
+           padding cannot do this job — `mt-auto` on the heading means the
+           text block is pinned to the card's floor, so changing pb slides the
+           whole block rather than the space above it. */
+        "--card-m": "0.70",
         blockSize: "var(--card-h)",
         inlineSize: "calc(var(--card-h) * var(--card-r))",
       } as React.CSSProperties}
