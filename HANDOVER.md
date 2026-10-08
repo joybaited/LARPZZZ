@@ -38,6 +38,131 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-09 (session 12)
+
+Sessions 10 and 11's work finally **committed**. The Features restyle started
+and **handed off to Antigravity unfinished — its spacing is broken.** The FAQ
+put on the hero's palette and **verified in a browser**.
+
+### ⚠ START HERE
+
+1. **`sections/Features.tsx` and `components/Card.tsx` ARE MID-RESTYLE AND THE
+   SPACING IS BROKEN.** Kez is fixing them in Antigravity from
+   `ANTIGRAVITY-FEATURES.md` (repo root, written this session). **Do not touch
+   either file** until that lands — you would be the third writer.
+2. **The Features changes are UNCOMMITTED on purpose.** They are the broken
+   ones. The FAQ work and the sessions 10-11 catch-up commit are separate and
+   clean.
+3. **The live palette is `#EAC2FF` (ground) and `#3D065F` (text)** and it is
+   now hardcoded in **four** files: `Hero.tsx`, `Card.tsx`, `Faq.tsx`,
+   `FaqItem.tsx`. Kez was asked about promoting it to `globals.css` tokens and
+   said **not now** — globals.css is shared and @snvzyn still has not been told
+   about last session's change to it.
+
+### Done
+
+- **Two commits landed.** `b4abede` carries sessions 10-11 entire (21 files:
+  the HERO config, /hero-tuner seeding itself, the phone back, the purple
+  palette, the self-hosted hdri, the scrollbar-gutter removal, docs/3D.md).
+  `d84a276` is the FAQ palette.
+- **FAQ on the hero's palette, verified.** Section ground + text swapped; the
+  pills **inverted** to solid `#3D065F` with `#EAC2FF` text — the hero nav's
+  own treatment. The border was dropped: at full opacity the fill is the edge.
+  The answer's `opacity-70` went to `85` because 70% of pink on purple pulls
+  toward the fill and reads muddy rather than quiet.
+- **Features restyle applied but NOT verified** — see below.
+
+### ⚠ THE FEATURES RESTYLE IS APPLIED, UNVERIFIED, AND BROKEN
+
+What was changed in `components/Card.tsx`: the splitter rule **removed** (the
+`mt-[70%]` spacer **stays** — it defines where the media region ends and the
+media's `blockSize` is stated against the same 70%, so deleting it leaves the
+media with no bottom edge to size to); colours to `bg-[#EAC2FF]
+text-[#3D065F]`; `--card-h` back up to `clamp(500px, 24rem + 34vh, 880px)`;
+the heading to **Megion + uppercase** at `clamp(30px,1.5rem+1.3vw,46px)`; the
+copy to `clamp(17px,0.95rem+0.6vw,23px)`.
+
+In `sections/Features.tsx`: top padding down to `clamp(120px,6rem+13vh,300px)`,
+plus `anticipatePin: 1` and a `document.fonts.ready` refresh.
+
+**Why the spacing broke, most likely:** the heading is pinned by `mt-auto` so
+all six line up, and the copy sits in a **fixed** `3 * 1.35em` box below it —
+that fixed box is what holds the alignment. Making the heading bigger AND a
+different face AND uppercase all at once eats the room the copy needs. Full
+diagnosis is in `ANTIGRAVITY-FEATURES.md`.
+
+**Second-order risk nobody has checked:** bigger cards mean a wider
+`scrollWidth`, so `extra={1}` on the Section may no longer buy enough scroll
+for the last card to reach the right edge.
+
+### ⚠ THE FAQ PILLS OVERFLOW THE SECTION AND ARE CLIPPED — PRE-EXISTING
+
+Measured this session, **not** caused by the palette swap:
+
+| width | pills past the right edge |
+|---|---|
+| 1440 | "Is my payment anonymous" +21px |
+| 1024 | "Does it work…" +56px, "Is my payment…" +113px |
+| 768 | "Do i need…" +17px, "Does it work…" +146px, "Is my payment…" +167px |
+
+The section is `overflow-hidden`, so they are cut off.
+
+**The cause is structural, not a bad number.** A pill's `x` is a **percentage**
+of the section (so the arrangement holds at any width — that is the tuner rule)
+but its **width is intrinsic**: it hugs its question text, in px. A percentage
+left edge plus a fixed width means the right edge drifts outward as the
+viewport narrows. `FaqItem` already solves exactly this **on open** — clamp the
+width to the room left, and if that would squeeze it below 72%, slide the pill
+left instead. **Nothing does it closed.**
+
+Left alone deliberately: these are Kez's tuned values from `/faq-tuner` and
+re-arranging them is a design call, not a mechanical fix. **Ask before
+touching.** The lazy fix is probably to reuse the same clamp-then-slide the
+open path already has, applied at rest.
+
+### Gotchas
+
+- **⚠ `getBoundingClientRect()` ON A ROTATED PILL RETURNS THE ROTATED BOUNDING
+  BOX, NOT THE ELEMENT'S BOX.** A closed pill's answer body is `height: 0`, but
+  rect-height read 137px, 101px, 100px, 77px on the tilted ones — purely the
+  rotation of a ~450px-wide zero-height box. **This session chased it as a
+  "2px padding leak" bug that did not exist.** Read `getComputedStyle().height`
+  when you want the element's own height.
+- **⚠ A FULL-PAGE SCREENSHOT SCALED DOWN INVENTS SEAMS.** A lighter band
+  appeared across two pills in the 1440 shot and read as a compositor seam from
+  `will-change: transform`. Cropping the same region at native resolution
+  showed it is **not there**. Crop tight before believing a visual artifact.
+- **`npm run dev` backgrounded with `&` reports "exited with code 0"** while
+  the server keeps running. Check the port, not the task status.
+- A Playwright script still cannot live in the scratchpad (it cannot resolve
+  the project's deps) — repo root, run, delete. Same rule as before.
+- **Writing `.tsx` with a python heredoc needs the file-tool route** when the
+  content has `⚠` in it: printing it back to a cp1252 console throws
+  `UnicodeEncodeError` even though the file itself is fine.
+
+### Open
+
+1. **⚠ FEATURES IS BROKEN AND OWNED BY ANTIGRAVITY RIGHT NOW.** See above.
+2. **⚠ THE FAQ PILLS CLIP AT EVERY WIDTH.** Needs Kez's call.
+3. **⚠ `app/globals.css` EDITED, @snvzyn STILL NOT TOLD.** Nine sessions. Now
+   committed in `b4abede`, so it is no longer just a local change.
+4. **The palette hex is in four files.** Kez said leave it for now.
+5. **The FAQ answers are all still `"New answer."`** — six of them.
+6. **The Features card copy is still placeholder lorem.**
+7. Everything else from sessions 4-11 stands: the phone clipped at the bottom
+   (needs Kez), the nav's placeholder labels, PRs #2/#4/#5 open, the
+   `/pricing-tuner` 0-height wrapper bug, section 3 empty, KTX2, the
+   `page.tsx` disagreement between CLAUDE.md and COLLABORATION.md.
+
+### Branch
+
+Still `feat/pricing-layout`, now **three commits** ahead on top of what was
+already there. **Nothing has been pushed.** Features' uncommitted changes sit
+on top. Before any push: `git pull --rebase origin main`, and check this is
+branched off fresh `main` — the branch name no longer describes what is on it.
+
+---
+
 ## Session — 2026-10-09 (session 11)
 
 The hero's tuned layout baked in and wired to the config, the 3D phone put
