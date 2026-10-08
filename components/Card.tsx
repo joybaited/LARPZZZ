@@ -84,11 +84,20 @@ export default function Card({ heading, copy, media }: CardData) {
          cards that are nearly the same size read as a mistake rather than a
          design.
 
-         --card-h  was clamp(500px, 24rem + 34vh, 880px). Down ~12%.
+         --card-h  the restyle took it down ~12%; Kez asked for the cards
+                   enlarged again, so it is back to clamp(500px, 24rem +
+                   34vh, 880px) and the type inside went up with it.
          --card-r  was 5/7 = 0.714 inline. Now 0.84 — wider. */
       style={{
-        "--card-h": "clamp(440px, 21rem + 30vh, 775px)",
-        "--card-r": "0.84",
+        "--card-h": "clamp(430px, 20rem + 29vh, 720px)",
+        "--card-r": "0.88",
+        /* ⚠ ONE TOKEN, TWO USERS. The media's height and the spacer's margin
+           both have to land on this exact fraction or they stop meeting — the
+           comments below said so, but nothing enforced it and it was written
+           twice. Tightened 0.70 -> 0.64: at 0.70 the phone's own pixels ran
+           out well above the boundary and left a ~76px dead band over the
+           heading. */
+        "--card-m": "0.74",
         blockSize: "var(--card-h)",
         inlineSize: "calc(var(--card-h) * var(--card-r))",
       } as React.CSSProperties}
@@ -96,26 +105,26 @@ export default function Card({ heading, copy, media }: CardData) {
          derives the height, so the same 0.84 holds at every size rather than
          the old 5/7 surviving on mobile. */
       /* `relative` is what the media anchors to — it is absolute and spans
-         from the card's top to the splitter. */
-      className="relative flex max-w-[82vw] shrink-0 snap-start flex-col overflow-hidden rounded-[1.25rem] bg-ink text-paper max-lg:!h-auto max-lg:!w-[min(82vw,21.5rem)] max-lg:aspect-[0.84]"
+         from the card's top to the media/text boundary. */
+      className="relative flex max-w-[82vw] shrink-0 snap-start flex-col overflow-hidden rounded-[1.25rem] bg-[#EAC2FF] text-[#3D065F] max-lg:!h-auto max-lg:!w-[min(82vw,21.5rem)] max-lg:aspect-[0.84]"
     >
-      {/* ⚠ THE MEDIA FILLS THE REGION ABOVE THE SPLITTER — Kez's.
+      {/* ⚠ THE MEDIA FILLS THE REGION ABOVE THE TEXT — Kez's.
           It used to sit AFTER the copy and climb back up into it with a
           negative margin, which is LZ-2's arrangement; the restyle moved the
           text to the card's foot, so that space no longer exists and the
           negative-margin dials went with it.
 
-          ⚠ ABSOLUTE, SO IT ADDS NO HEIGHT. The splitter's own `mt-[70%]` is
-          what defines where the line sits, and the media must not be the
-          thing that decides it — as a flex child it would push the line down
-          by its own height and the offset would stop meaning anything. It is
-          taken out of flow and told to span from the card's top to the line
-          instead, so the line stays exactly where its margin puts it and the
-          media sizes itself to whatever room that leaves.
+          ⚠ ABSOLUTE, SO IT ADDS NO HEIGHT. The spacer's own `mt-[70%]` is
+          what defines where the boundary sits, and the media must not be the
+          thing that decides it — as a flex child it would push the boundary
+          down by its own height and the offset would stop meaning anything.
+          It is taken out of flow and told to span from the card's top to that
+          boundary instead, so the boundary stays exactly where its margin
+          puts it and the media sizes itself to whatever room that leaves.
 
-          `bottom: 30%` is the splitter's `mt-[70%]` expressed from the other
+          `bottom: 30%` is the spacer's `mt-[70%]` expressed from the other
           end — both resolve against the card's WIDTH, so they meet at the
-          same place and track each other. Move the line and this follows.
+          same place and track each other. Move the spacer and this follows.
 
           ⚠ NOT `aspect-square`. LZ-2 sizes the media by its 1:1 source and
           lets the card's overflow eat the excess; here the region is a known
@@ -128,15 +137,15 @@ export default function Card({ heading, copy, media }: CardData) {
              The GAP dial is not used here — it was the negative climb into
              the copy, and there is no copy above this any more. */
           /* ⚠ THE HEIGHT IS 70% OF THE CARD'S WIDTH, NOT ITS HEIGHT, because
-             that is what the splitter's `mt-[70%]` resolves against — a
+             that is what the spacer's `mt-[70%]` resolves against — a
              percentage margin uses the containing block's INLINE size in both
              axes. An earlier pass set `bottom: 30%`, which resolves against
              the HEIGHT instead, so the two met at different places and the
-             media ran past the line into the heading. Both are stated against
-             the width now and the bottom edge lands exactly on the rule. */
+             media ran past the boundary into the heading. Both are stated
+             against the width now and the bottom edges land together. */
           style={{
             insetInline: `calc(clamp(28px, 1.5rem + 1vw, 44px) - ${BLEED[media.kind]})`,
-            blockSize: "calc(var(--card-h) * var(--card-r) * 0.7)",
+            blockSize: "calc(var(--card-h) * var(--card-r) * var(--card-m))",
           }}
           /* `isolate` gives it its own stacking context so nothing inside can
              paint over the text below, and `clip` crops the wheel's phones,
@@ -160,18 +169,44 @@ export default function Card({ heading, copy, media }: CardData) {
                  source's own pixel width, not "fill the container".
                  max-w-none because the reset's max-width:100% beats width and
                  would silently re-cap the bleed. */
-              /* ⚠ THE SOURCES ARE 720x720 SQUARE. In a region wider than it is
-                 tall, `contain` fits them to the HEIGHT and pillarboxes the
-                 rest — which is why they read as small. This sizes the square
-                 by the WIDTH instead and lets the card crop the overflow top
-                 and bottom, so the video fills the region.
+              /* ⚠ THE SOURCES ARE TRANSPARENT (VP9 + yuva420p) AND HAVE NO
+                 RADIUS. They used to be opaque with a black surround, which
+                 was invisible on the old `bg-ink` card and became a black box
+                 the moment the card went purple. They were re-encoded from the
+                 1080px originals with the alpha plane kept.
 
-                 ⚠ NO UPSCALING PAST THE SOURCE. 720px wide is the native
-                 frame; the region is ~469 CSS px, so even at 2x DPR this is
-                 inside the source's own pixels and stays sharp. Nothing is
-                 re-encoded and the files are untouched — the enlargement is
-                 CSS layout, not a resample. */
-              className="absolute top-1/2 left-1/2 block aspect-square w-[78%] max-w-none -translate-x-1/2 -translate-y-1/2 rounded-[0.75rem] object-cover"
+                 ⚠ ffprobe REPORTS `yuv420p` ON A TRANSPARENT VP9 FILE. The
+                 alpha rides in a side-channel the probe does not report, so
+                 the pixel format is NOT how you check this — the repo's old
+                 files and the transparent originals both read `yuv420p`.
+                 Decode a frame with `-vcodec libvpx-vp9 -pix_fmt rgba` and
+                 read the alpha values; opaque gives one value, transparent
+                 gives ~250 with the corners at 0.
+
+                 No `rounded-*` here any more: the radius existed to round the
+                 black box's corners. With transparency there is no box, and a
+                 radius would clip the subject instead.
+
+                 ⚠ `object-contain`, AND THE REASON FLIPPED WHEN THEY GAINED
+                 ALPHA. This used to be `cover` at 78% width, because the
+                 sources were opaque: `contain` in a region wider than it is
+                 tall fits them to the HEIGHT and pillarboxes the rest, and a
+                 pillarbox of BLACK read as the video being small in a box.
+
+                 Transparent, a pillarbox is nothing at all — just card. So
+                 `contain` now costs nothing and is strictly better: `cover`
+                 on a square in a wide region crops the phone's top and
+                 bottom, which is the one thing that must not happen to the
+                 subject. 88% so it fills the region rather than floating in
+                 it.
+
+                 ⚠ NO UPSCALING PAST THE SOURCE. 720px is the native frame.
+                 At 1440 the card is ~580 wide, so 88% is ~510 CSS px and
+                 `contain` fits to the region's HEIGHT (~311) anyway — well
+                 inside the source even at 2x DPR. Nothing is re-encoded and
+                 the files are untouched; the enlargement is CSS layout, not
+                 a resample. */
+              className="absolute top-1/2 left-1/2 block aspect-square w-[88%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
             />
           ) : (
             <img
@@ -190,25 +225,25 @@ export default function Card({ heading, copy, media }: CardData) {
         </div>
       )}
 
-      {/* ⚠ TEMPORARY SPLITTER — to be removed. Kez's, for styling.
-          A full-bleed horizontal rule across the card.
+      {/* THE MEDIA/TEXT BOUNDARY. The visible rule that used to sit here is
+          gone — Kez's, the line between the copy and the media above it was
+          removed. The SPACER stays, because it is not decoration: it is what
+          defines where the media region ends and the text block begins, and
+          the media's own `blockSize` is stated against the same 70% so the
+          two meet. Delete this and the media has no bottom edge to size to.
 
           ⚠ THE OFFSET IS A PERCENTAGE OF THE CARD'S WIDTH, NOT ITS HEIGHT.
           A percentage margin resolves against the containing block's INLINE
           size in both axes — that is CSS, not a typo — so this is the dial
           but it is not a height fraction. At --card-r 0.84 the card is 0.84
           as wide as it is tall, so 50% of the width lands at ~42% of the
-          height, and each point here moves the line ~0.84 points down the
-          card. 70% sits it at ~59% of the height, above the heading.
+          height, and each point here moves the boundary ~0.84 points down
+          the card. 70% sits it at ~59% of the height, above the heading.
 
-          `h-px` not `border-t`: a border would sit inside the card's own
-          rounded corners and the radius would nick both ends. This is its own
-          box, so it runs edge to edge.
-
-          ⚠ THE OFFSET IS UNCONDITIONAL. It defines where the line sits on all
-          six cards, with or without media — the media fills the region above
-          it and never moves it. */}
-      <div className="mt-[70%] h-px w-full shrink-0 bg-paper/30" aria-hidden="true" />
+          ⚠ THE OFFSET IS UNCONDITIONAL. It defines the boundary on all six
+          cards, with or without media — the media fills the region above it
+          and never moves it. */}
+      <div style={{ marginBlockStart: "calc(var(--card-m) * 100%)" }} className="shrink-0" aria-hidden="true" />
 
       {/* ⚠ THE HEADING IS PINNED, NOT THE BLOCK. Kez's — the six headings
           must line up across the rail.
@@ -229,13 +264,13 @@ export default function Card({ heading, copy, media }: CardData) {
           bottom edge than a three-line one. Keeping both the headings and the
           last copy line aligned is only possible if every copy is the same
           length, which is a content constraint, not a layout one. */}
-      <div className="flex min-h-0 flex-1 flex-col px-[clamp(28px,1.5rem+1vw,44px)] pb-[clamp(34px,1.8rem+1.2vw,52px)]">
+      <div className="flex min-h-0 flex-1 flex-col px-[clamp(26px,1.4rem+0.9vw,40px)] pb-[clamp(12px,0.6rem+0.4vw,18px)]">
         {/* ⚠ ONE LINE, NOT TWO — Kez's. The `heading` prop is still the
             [string, string] pair LZ-2 split across a <br />; it is joined
             with a space here instead, so the data is unchanged and the break
             is a rendering decision. `text-balance` keeps a heading that is
             too long for the card from dropping one short word alone. */}
-        <h3 className="mt-auto text-[clamp(25px,1.25rem+1vw,36px)] leading-[1.05] tracking-[-0.01em] text-balance">
+        <h3 className="mt-auto font-display text-[clamp(27px,1.35rem+1.1vw,39px)] leading-[1.0] tracking-[-0.015em] text-balance uppercase">
           {heading.join(" ")}
         </h3>
 
@@ -244,14 +279,16 @@ export default function Card({ heading, copy, media }: CardData) {
             heading, so without a fixed box card two's third line would push
             its heading up and undo the alignment.
 
-            3 lines x 1.35 leading, in em so it tracks the font size. A copy
+            3 lines x 1.4 leading, in em so it tracks the font size. ⚠ THIS
+            MUST MATCH  BELOW — they are the same number stated
+            twice, and a box shorter than the leading clips every copy. A copy
             that runs longer than three lines will overflow it — the card
             already clips, and at that point the copy wants shortening rather
             than the box growing, since growing it is what broke the
             alignment. The gap above was clamp(8px, 0.4rem+0.4vw, 14px). */}
         <p
-          style={{ blockSize: "calc(3 * 1.35em)" }}
-          className="mt-[clamp(16px,0.8rem+0.8vw,26px)] max-w-[34ch] text-[clamp(16px,0.9rem+0.5vw,20px)] leading-[1.35]"
+          style={{ blockSize: "calc(3 * 1.4em)" }}
+          className="mt-[clamp(10px,0.5rem+0.5vw,16px)] max-w-[36ch] text-[clamp(16px,0.9rem+0.45vw,20px)] leading-[1.4]"
         >
           {copy}
         </p>

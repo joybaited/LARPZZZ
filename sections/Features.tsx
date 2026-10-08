@@ -107,6 +107,11 @@ export default function Features() {
                positioned below them. */
             refreshPriority: 1,
             scrub: SCRUB,
+            /* the pin engages one frame early. without it a fast scroll — a
+               trackpad fling or a jump to an anchor — paints one frame with
+               the section still in flow before the pin takes, which reads as
+               a flash. 1 is GSAP's own recommended value. */
+            anticipatePin: 1,
             invalidateOnRefresh: true,
             onToggle: (self) => {
               trk.style.willChange = self.isActive ? "transform" : "auto";
@@ -126,6 +131,19 @@ export default function Features() {
        re-render, and it stays out of Card.tsx, which is a server component
        and a shared file. 300px rootMargin so a card is already running
        before it is scrolled to. */
+    /* ⚠ THE RAIL MEASURES BEFORE THE FONTS SWAP IN. Both faces are
+       `font-display: swap`, so the first paint uses a fallback and the real
+       metrics arrive later. The card's copy box is `3 * 1.35em`, so the swap
+       changes the card's HEIGHT — and the width derives from the height via
+       --card-r, so the track's scrollWidth changes with it. Travel distance
+       was measured against a layout that no longer exists, and the last card
+       stops short or overshoots.
+
+       `invalidateOnRefresh` re-reads the distance, but nothing was CALLING
+       refresh — that is the half that was missing. Native promise, already
+       resolved on a warm cache, so this is a no-op on most loads. */
+    document.fonts?.ready.then(() => ScrollTrigger.refresh());
+
     const vids = sec.querySelectorAll("video");
     const io = new IntersectionObserver(
       (entries) => {
@@ -156,9 +174,16 @@ export default function Features() {
          stops ~100px short of the right edge, because the document simply runs
          out. one extra viewport covers the track's travel at this card count. */
       extra={1}
-      className="overflow-hidden bg-plum"
+      className="overflow-hidden bg-[#3D065F]"
     >
-      <div className="min-h-svh pt-[clamp(220px,11rem+24vh,520px)] max-lg:pt-[clamp(150px,8rem+15vw,280px)]">
+      {/* ⚠ THE PADDING IS THE ONLY THING SETTING THE CARDS' VERTICAL PLACE.
+          The track is `items-center` in a `min-h-svh` box, so the cards sit
+          at the centre of whatever room the padding leaves — pt pushes them
+          DOWN and the slack lands under them. Kez asked for less room below
+          the cards, so the top padding comes down and the cards ride higher,
+          which takes the gap at the foot with it. There is no pb to cut: the
+          space under the cards is centring slack, not padding. */}
+      <div className="min-h-svh pt-[clamp(100px,5rem+10vh,220px)] max-lg:pt-[clamp(80px,4rem+8vw,140px)]">
         <ul
           ref={track}
           role="list"
