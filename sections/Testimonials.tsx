@@ -86,7 +86,11 @@ function Card({ t }: { t: Testimonial }) {
        top and the footer to the floor, leaving a hole in the middle on any
        quote shorter than the card. The quote sits at the top, the footer gets
        `mt-auto`, and a short quote simply leaves the gap where it belongs. */
-    <li className="flex h-[clamp(240px,12rem+6.5vw,360px)] w-[clamp(340px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-paper p-[clamp(24px,1.2rem+1.4vw,36px)] text-ink">
+    /* ⚠ THE CARD IS THE INVERSE OF THE GROUND, not a tint of it — the same
+       treatment as the FAQ pills and the hero nav. It was `bg-paper text-ink`
+       on a `bg-deep` section; the section is now the hero's `#EAC2FF` ground,
+       so a white card would glare against it. */
+    <li className="flex h-[clamp(240px,12rem+6.5vw,360px)] w-[clamp(340px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(24px,1.2rem+1.4vw,36px)] text-[#EAC2FF]">
       {/* scales with the card, so the quote fills it rather than floating in
           it. line-clamp keeps a long one from pushing the footer out. */}
       {/* 4, not 5: at this height a 5th line is half-cut by the card's floor —
@@ -94,9 +98,19 @@ function Card({ t }: { t: Testimonial }) {
       <p className="line-clamp-4 text-[clamp(18px,0.95rem+0.7vw,24px)] leading-[1.35]">
         {t.quote}
       </p>
+      {/* ⚠ THE NAME IS THE CARD'S HEADING, AND IT IS THE ONLY MEGION HERE.
+          Kez's: the display face carries the name, the quote and the handle
+          stay in Neue Montreal — setting the quote in Megion too would make
+          the card all display type and nothing would read as the heading.
+
+          No `font-medium` on it: Megion ships one weight (Bold) and is
+          display-only, so there is no weight to set. Same note as the FAQ.
+
+          The size is in `em`, so it scales off the footer's own clamp rather
+          than needing a second clamp of its own. */}
       <footer className="mt-auto pt-[clamp(12px,0.6rem+0.6vw,20px)] text-[clamp(14px,0.8rem+0.3vw,17px)]">
-        <p className="font-medium">{t.name}</p>
-        {t.detail && <p className="opacity-60">{t.detail}</p>}
+        <p className="font-display text-[1.15em] leading-[1.1] uppercase">{t.name}</p>
+        {t.detail && <p className="opacity-80">{t.detail}</p>}
       </footer>
     </li>
   );
@@ -137,7 +151,7 @@ export default function Testimonials() {
   return (
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
-    <Section id="testimonials" bleed className="bg-deep text-paper">
+    <Section id="testimonials" bleed className="bg-[#EAC2FF] text-[#3D065F]">
       <div className="flex min-h-[100svh] flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
         <Row />
         <Row reverse />
