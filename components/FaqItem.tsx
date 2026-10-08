@@ -193,7 +193,13 @@ export default function FaqItem({
          GSAP writes an inline width over it during the tween — the inline
          value is cleared on close so this takes over again. */
       style={{ fontSize: `${size}px` }}
-      className="group w-fit max-w-full overflow-hidden rounded-[999px] border border-ink/15 bg-paper/60 px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-paper open:bg-paper"
+      /* ⚠ THE PILL IS THE INVERSE OF THE GROUND, NOT A TINT OF IT. It was
+         `bg-paper/60` with `border-ink/15` — alpha over white, which against
+         the purple ground reads as washed lilac with no edge rather than as a
+         pill. Solid `#3D065F` with `#EAC2FF` text is the hero nav's own
+         treatment (purple bar, pink labels), so the two sections match.
+         No border: at full opacity the fill is the edge. */
+      className="group w-fit max-w-full overflow-hidden rounded-[999px] bg-[#3D065F] text-[#EAC2FF] px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-[#4d0878] open:bg-[#4d0878]"
     >
       <summary
         onClick={toggle}
@@ -222,7 +228,12 @@ export default function FaqItem({
             configured openW, so the answer forced the pill past its own open
             width and the text re-wrapped mid-tween — the misalignment. The
             pill's width is the only thing that should decide the measure. */}
-        <p className="pb-[1em] text-[0.82em] leading-[1.4] opacity-70">{a}</p>
+        {/* ⚠ opacity-70 WAS TUNED FOR DARK-ON-WHITE. Against the pill's
+            purple fill, dropping the pink text to 70% pulls it toward the
+            fill rather than toward a lighter grey — it reads muddy, not
+            quiet. 85% keeps the answer subordinate to the question while
+            staying legible on the dark ground. */}
+        <p className="pb-[1em] text-[0.82em] leading-[1.4] opacity-85">{a}</p>
       </div>
     </details>
   );
