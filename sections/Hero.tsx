@@ -2,6 +2,7 @@ import Section from "@/components/Section";
 import SceneMount from "@/components/SceneMount";
 import PriceEl from "@/components/PriceEl";
 import HoverGhost from "@/components/HoverGhost";
+import NavMenu from "@/components/NavMenu";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -58,10 +59,23 @@ export const HERO = {
     { name: "text 3", kind: "text", text: "Text", x: 78.8, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
     { name: "text 4", kind: "text", text: "Text", x: 85.2, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
     { name: "text 5", kind: "text", text: "Text", x: 72.4, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
-    { name: "line 1", kind: "line", x: 3.4, y: 33.5, w: 2.7, size: 2, fill: "#EAC2FF", in: "nav" },
-    { name: "line 2", kind: "line", x: 3.4, y: 50, w: 2.9, size: 2, fill: "#EAC2FF", in: "nav" },
-    { name: "line 3", kind: "line", x: 3.4, y: 66.6, w: 2.7, size: 2, fill: "#EAC2FF", in: "nav" },
   ] as El[],
+
+  /* ⚠ THE HAMBURGER REPLACED THREE `kind: "line"` ELEMENTS. They were
+     decorative aria-hidden divs at x 3.4 — they looked like a menu and did
+     nothing: no button, no state, no keyboard path. The button lives in
+     <NavMenu> because it needs both, and this is only its placement.
+
+     x/y are percentages OF THE NAV, like an `in: "nav"` element.
+
+     ⚠ THE ITEMS ARE STILL PLACEHOLDERS. The nav's three "Text" labels have
+     been unwritten for several sessions; these are the same placeholders in
+     a different shape, not new content. */
+  menu: {
+    x: 4.6,
+    y: 50,
+    items: ["Text", "Text", "Text"],
+  },
 
   /* ⚠ THE NAV WORDMARK, AND THE GHOST THAT APPEARS ON HOVER. It was a
      three-cell roller that alternated the two forever; Kez dropped the
@@ -248,6 +262,18 @@ export default function Hero() {
           }}
         >
           {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
+
+          {/* ⚠ A CLIENT COMPONENT, like <HoverGhost> and for the same reason:
+              this section is a server component and the button needs state
+              and handlers. The three lines it replaced needed neither, which
+              is exactly why they were not a menu. */}
+          <NavMenu
+            x={HERO.menu.x}
+            y={HERO.menu.y}
+            color={HERO.wordmark.color}
+            items={HERO.menu.items}
+            panelFill={HERO.nav.fill}
+          />
 
           {/* ⚠ A CLIENT COMPONENT, AND ONLY BECAUSE OF TWO HANDLERS. This
               section is a server component, so an onMouseEnter here is the
