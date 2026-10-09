@@ -97,6 +97,26 @@ export const HERO = {
       delay: "-3s",
       z: 20,
     },
+    {
+      name: "lock",
+      src: "/images/sticker-lock.webp",
+      alt: "",
+      x: 62.5,
+      y: 17,
+      w: 9.5,
+      rise: 13,
+      drift: 7,
+      tilt: "1.8deg",
+      /* ⚠ A DIFFERENT PERIOD FROM THE BALLOONS, not a rounder number. At
+         11s and 9s the two would meet every 99s; the odd value keeps them
+         from ever syncing up into one shared beat, which is the thing that
+         makes a pair of floats read as a single animation. The negative
+         delay also starts it mid-cycle, so they are not aligned on load. */
+      dur: "8.5s",
+      delay: "-5s",
+      rotate: "9deg",
+      z: 20,
+    },
   ],
 };
 
