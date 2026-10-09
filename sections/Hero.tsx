@@ -78,9 +78,10 @@ export const HERO = {
      the element the animation does not touch. `tilt` is the float's own
      rocking about whatever angle this sets.
 
-     ⚠ z IS ABOUT THE CANVAS. Scene.tsx's wrapper is z-10, so z-20 puts a
-     sticker IN FRONT of the phone and z-0 behind it. The balloons sit in
-     front at the phone's foot, as in Kez's reference. */
+     ⚠ z IS ABOUT THE CANVAS. Scene.tsx's wrapper is z-10, so anything above
+     that paints IN FRONT of the phone and anything below it BEHIND. The
+     balloons are 20 and sit in front at the phone's foot; the padlock is 5
+     and tucks behind the model at its top right. */
   stickers: [
     {
       name: "balloons",
@@ -102,7 +103,7 @@ export const HERO = {
       src: "/images/sticker-lock.webp",
       alt: "",
       x: 62.5,
-      y: 17,
+      y: 22,
       w: 9.5,
       rise: 13,
       drift: 7,
@@ -115,7 +116,12 @@ export const HERO = {
       dur: "8.5s",
       delay: "-5s",
       rotate: "9deg",
-      z: 20,
+      /* ⚠ BEHIND THE PHONE — Kez's. Scene.tsx's canvas wrapper is z-10, so
+         anything under that paints behind the model and anything over it in
+         front. 5, not 0: the ground is -z-20 and a 0 would still clear it,
+         but leaving a gap above the ground means a sticker can later be
+         slipped between the two without renumbering this one. */
+      z: 5,
     },
   ],
 };
