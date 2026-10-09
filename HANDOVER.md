@@ -38,6 +38,161 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-09 (session 13)
+
+Everything from sessions 1-12 **pushed to `main`** at the owner's instruction,
+then a new branch `tweak/hero-kez` opened and 14 commits of hero work done on
+it: two floating stickers, the wordmark's hover reveal, a real hamburger menu,
+and the nav's real labels. **Nothing on this branch is pushed.**
+
+### ⚠ START HERE
+
+1. **`main` NOW HAS EVERYTHING UP TO SESSION 12.** 32 commits, 46 files,
+   pushed as a fast-forward. The owner said @snvzyn had agreed to work on
+   `main`, so the "nothing goes directly on main" rule was waived **by the
+   owner, for that push**. It is not a standing change — `docs/COLLABORATION.md`
+   still says what it says.
+2. **The current branch is `tweak/hero-kez`, 14 commits ahead of `main`,
+   UNPUSHED.** It is on GitHub as a branch but the recent commits are local.
+3. **`app/globals.css` WAS EDITED AGAIN** — one sticker keyframe added, the
+   roller keyframe added then removed. It is a SHARED FILE and @snvzyn has
+   still not been told, now across ten sessions.
+4. **The dev server is stopped.** Port 3000 free.
+
+### Done
+
+- **Pushed sessions 1-12 to `main`** (`b4abede` through `edc62f1`). Local
+  `main` fast-forwarded to match.
+- **Two floating stickers on the hero**, from the owner's nubank set:
+  balloons at the phone's foot (in front, `z: 20`) and a padlock at its top
+  right (behind, `z: 5`). CSS keyframe, config-driven from `HERO.stickers`.
+- **The nav wordmark swaps to the Phantom ghost on hover.** Built first as a
+  three-cell vertical roller, then replaced when the owner dropped the
+  animation.
+- **A real hamburger menu** replacing three decorative lines.
+- **The nav's real labels**: Features / Pricing / Buy / Reviews + Login, and
+  Buy / Login on the two hero buttons.
+
+### ⚠ TWO LIVE BUGS FOUND AND FIXED THAT WERE NOT IN THE BRIEF
+
+1. **THE WORDMARK WAS NEVER POSITIONED.** `<HoverGhost>` carried `absolute
+   inline-grid` as Tailwind classes with `left`/`top` in the style prop.
+   **`inline-grid` won the cascade, computed position was `static`, and the
+   left, top and centring translate were ALL silently ignored** — the
+   wordmark sat in flow against the hamburger instead of centred, with no
+   error. Position is an inline style now, which no class can override.
+   **The general trap: a Tailwind display utility can beat a position
+   utility, and the style prop's `left` does nothing on a static box.**
+2. **The card videos' transparency, carried into this session's assets.**
+   See the ffprobe note below.
+
+### ⚠ ffprobe LIES ABOUT VP9 ALPHA — THIS COST TIME TWICE
+
+`ffprobe` reports `pix_fmt=yuv420p` on a **transparent** VP9 file. The alpha
+rides in a side-channel it does not report, so **the pixel format is not how
+you check this.** The repo's broken opaque videos and the good transparent
+originals both read `yuv420p`.
+
+To actually check: decode a frame with `-vcodec libvpx-vp9 ... -pix_fmt rgba`
+and read the alpha values. One distinct value = opaque; ~250 with the corners
+at 0 = transparent.
+
+Also: **`-vcodec libvpx-vp9` is an INPUT decoder flag.** Passing it before a
+GIF input makes every frame fail to decode and writes a 0-byte file with a
+cryptic "Unspecified internal error". It belongs only before VP9 input.
+
+### The hero's sticker and wordmark machinery
+
+All config-driven from `HERO` in `sections/Hero.tsx`:
+
+- **`HERO.stickers[]`** — x/y are percentages of the SECTION and place the
+  sticker's CENTRE; `w` is a percentage of its width. `rise`/`drift`/`tilt`
+  are the float, `dur`/`delay` its period. **`z` is about the canvas:
+  `Scene.tsx`'s wrapper is z-10, so above that is in front of the phone and
+  below it is behind.**
+  - ⚠ **The two stickers run at 11s and 8.5s deliberately.** 9s would
+    realign with 11s every 99s and the pair would read as one animation.
+  - ⚠ **A resting rotation goes on the WRAPPER, not the image** — the float
+    keyframe rewrites `rotate()` on the image every frame and would wipe it.
+  - ⚠ **The wrapper is positioned and the image is animated, two elements.**
+    On one, the keyframe's `translate3d(0,0,0)` at 0% wipes the `-50%,-50%`
+    centring and the sticker jumps to its own corner on frame one.
+- **`HERO.wordmark`** — the hover swap. `ghost` is the video height, `ghostY`
+  nudges it.
+- **`HERO.navLinks`** and **`HERO.menu.items`** — the real labels.
+
+### ⚠ THE WORDMARK ROLLER WAS BUILT AND THEN DELETED — DO NOT REBUILD IT
+
+It was a three-cell `[wordmark, ghost, wordmark]` track translating up, with
+4s holds. It worked and the geometry was exact (three equal cells, one cell =
+33.3333% of the track, so the state at 100% was the state at 0% and the loop
+had no seam). **The owner then asked for a plain hover reveal instead**, so
+the track, its keyframe and its reduced-motion rule were removed.
+
+Worth knowing if a roller is ever wanted again: **three cells, not two.** Two
+has to jump a full cell to restart and it shows every pass.
+
+**And the bug it caused:** with the clip relaxed to one axis, the ghost was
+let grow to 66px inside a 54px cell with a -6 nudge, which put 12px of ghost
+**above its own cell and into the wordmark's**, visible through the whole
+hold. The owner reported it as "I can see it underneath" and asked for gifler.
+**It was geometry, not playback — a library would not have helped, and a
+paused frame in the wrong cell looks the same as a playing one.**
+
+### Gotchas
+
+- **⚠ `querySelector('nav .group')` MATCHES THE HAMBURGER, NOT THE WORDMARK.**
+  Both carry `group`. This session reported a wordmark/burger overlap at all
+  seven widths that was really the burger measured against itself. Use
+  `nav div.group`. **A selector that matches two things silently returns the
+  first.**
+- **⚠ PLAYWRIGHT'S ELEMENT SCREENSHOT NEVER SETTLES ON AN ANIMATED ELEMENT.**
+  It waits for stability and times out after ~30s on "element is not stable".
+  Inject `animation-play-state: paused` first. Hit on the testimonial marquee
+  and again on the wordmark roller.
+- **⚠ A DOWNSCALED FULL-PAGE SCREENSHOT INVENTS ARTIFACTS.** A "seam" across
+  two FAQ pills was not in a native-resolution crop. Crop tight before
+  believing a visual defect.
+- **⚠ `getBoundingClientRect()` ON A ROTATED ELEMENT RETURNS THE ROTATED BOX.**
+  A closed FAQ pill's `height: 0` body read as 137px. Use
+  `getComputedStyle().height` for the element's own height.
+- **Two Tailwind durations on one property**: the resting state's duration
+  governs the way BACK, the hovered state's governs the way OUT. `duration-0`
+  + `group-hover:duration-[420ms]` = slow fade out, instant return.
+- **`overflow: hidden` on one axis forces the other to `auto`** per the CSS
+  spec, which silently makes a scroll container. Use `clip` for one-axis
+  clipping.
+- **`npm run dev` backgrounded with `&` reports "exited with code 0"** while
+  the server keeps running. Check the port, not the task status.
+
+### Open
+
+1. **⚠ `tweak/hero-kez` IS 14 COMMITS AHEAD AND UNPUSHED.** Push before any
+   further work, and `git pull --rebase origin main` first.
+2. **⚠ `app/globals.css` EDITED AGAIN, @snvzyn STILL NOT TOLD.** Ten sessions.
+3. **⚠ THE PHANTOM GHOST IS 155KB, UP FROM 71KB.** The 60fps version is
+   motion-interpolated — the frames are invented, not real. It is in the nav,
+   so it loads on every page. Dropping back to the native 33.3fps halves it.
+4. **The hamburger menu's panel items are the same four nav labels.** Whether
+   the mobile menu should carry the Login CTA too was not asked.
+5. **The MetaMask reference could not be read.** metamask.io is JS-rendered,
+   so a text fetch returns no CSS and the searches surfaced their fox-logo
+   repo instead. The menu follows the documented accessible pattern, which is
+   what theirs follows, but **it is not a verified copy of their animation.**
+   DevTools on metamask.io would give the real easing and timings.
+6. **The FAQ pills still overflow the section at every width** (session 12).
+7. **Everything else from sessions 4-12 stands**: the phone clipped at the
+   bottom, the FAQ answers still "New answer.", the Features copy still
+   lorem, `/pricing-tuner`'s 0-height wrapper bug, section 3 empty, KTX2, the
+   `page.tsx` disagreement between CLAUDE.md and COLLABORATION.md.
+
+### Branch
+
+`tweak/hero-kez`, branched off fresh `main` at `31115e7`, **14 commits ahead,
+not pushed.** Working tree clean. Dev server stopped.
+
+---
+
 ## Session — 2026-10-09 (session 12)
 
 Sessions 10 and 11's work finally **committed**. The Features restyle started
