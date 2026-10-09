@@ -1,6 +1,7 @@
 import Section from "@/components/Section";
 import SceneMount from "@/components/SceneMount";
 import PriceEl from "@/components/PriceEl";
+import HoverGhost from "@/components/HoverGhost";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -62,39 +63,29 @@ export const HERO = {
     { name: "line 3", kind: "line", x: 3.4, y: 66.6, w: 2.7, size: 2, fill: "#EAC2FF", in: "nav" },
   ] as El[],
 
-  /* ⚠ THE NAV WORDMARK ROLLER. The wordmark rises out of the bar as the
-     Phantom ghost rises in, then the ghost rises out as the wordmark returns
-     — one continuous upward travel, looping forever.
+  /* ⚠ THE NAV WORDMARK, AND THE GHOST THAT APPEARS ON HOVER. It was a
+     three-cell roller that alternated the two forever; Kez dropped the
+     animation, so the wordmark simply sits there and the ghost fades in
+     beside it while the pointer is over it.
 
-     x/y are percentages OF THE NAV, like an `in: "nav"` element, and it is
-     centred on that point. `cell` is the height of one face in px: the track
-     is three of them and the clip shows exactly one, so this is also the
-     height of the window the faces move through. `dur` is the whole cycle,
-     including both holds. The motion is one keyframe in globals.css.
+     x/y are percentages OF THE NAV, like an `in: "nav"` element, and the
+     wordmark is centred on that point. `ghost` is the video's height in px
+     and `ghostX`/`ghostY` place it relative to the wordmark's right edge, so
+     it hangs off the end of the word rather than covering it.
 
-     ⚠ `ghost` MUST NOT EXCEED `cell`, AND `ghostY` MUST KEEP IT INSIDE. This
-     was briefly 66 in a 54 cell with a -6 nudge, which put 12px of ghost
-     ABOVE its own cell — straight into the wordmark's cell, where it showed
-     through during the hold. The window clips vertically precisely so each
-     face is alone; a face taller than the window defeats that.
-
-     ⚠ SO SIZE COMES FROM `ghostScale`, NOT FROM HEIGHT. It scales the video
-     about its centre, and because the clip is vertical-only the extra width
-     spills sideways harmlessly while the height is still cut at the cell
-     edge. That is how it reads bigger than the bar without ever appearing in
-     a neighbouring cell. `ghostY` nudges within the cell; keep
-     `ghost/2 * ghostScale + |ghostY|` under `cell/2`. */
+     ⚠ NO CLIP ANY MORE, SO `ghost` IS NOT CAPPED BY A CELL. The roller's
+     window was what forced the ghost to stay under ~54px and what made it
+     bleed into the neighbouring cell when it did not. With the roller gone
+     the ghost can be any size; the only limit is taste and the nav bar it
+     overhangs. */
   wordmark: {
     text: "LARPZ WALLET",
     src: "/video/phantom.webm",
     x: 50.9,
     y: 50,
     size: 28.7,
-    cell: 54,
     ghost: 54,
-    ghostY: 0,
-    ghostScale: 1,
-    dur: "9s",
+    ghostY: -5,
     color: "#EAC2FF",
   },
 
@@ -258,103 +249,23 @@ export default function Hero() {
         >
           {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
 
-          {/* ⚠ THE ROLLER. Three cells — wordmark, ghost, wordmark — and the
-              track travels exactly two of them, landing on a cell identical
-              to the first. That is what makes the loop seamless: the state at
-              100% IS the state at 0%, so there is no reset to see. Two cells
-              would have to jump a full cell to restart and it would show
-              every pass.
+          {/* ⚠ A CLIENT COMPONENT, AND ONLY BECAUSE OF TWO HANDLERS. This
+              section is a server component, so an onMouseEnter here is the
+              "Event handlers cannot be passed to Client Component props"
+              error. The fade itself is still pure CSS inside it — the
+              handlers exist only to start and stop playback, which no
+              `autoPlay` can do without decoding forever behind opacity:0. */}
+          <HoverGhost
+            text={HERO.wordmark.text}
+            src={HERO.wordmark.src}
+            size={HERO.wordmark.size}
+            color={HERO.wordmark.color}
+            ghost={HERO.wordmark.ghost}
+            ghostY={HERO.wordmark.ghostY}
+            x={HERO.wordmark.x}
+            y={HERO.wordmark.y}
+          />
 
-              ⚠ THE CLIP IS ONE CELL TALL AND CLIPS VERTICALLY ONLY. The faces
-              are not hidden by opacity — they are physically outside the
-              window. An opacity cross-fade would show both at once through
-              each other, which is the thing that reads as cheap here. The
-              horizontal axis stays visible so the ghost's alpha is not cut
-              into a rectangle; see the wrapper below.
-
-              ⚠ THE HEIGHTS ARE EXPLICIT AND IDENTICAL, in px from `cell`. If
-              a cell could size itself to its own content the three would
-              differ — a line of Megion and a square video are not the same
-              height — and the 33.3333% travel would land mid-cell. Equal
-              cells are what the percentages depend on.
-
-              aria-label carries the wordmark so the nav still announces one
-              name; the cells are aria-hidden so it is not read three times. */}
-          <div
-            aria-label={HERO.wordmark.text}
-            role="img"
-            /* ⚠ CLIPPED ON ONE AXIS ONLY. `overflow-hidden` clips BOTH, and
-               the vertical clip is the only one the roll needs — the
-               horizontal one was cutting the ghost's alpha into a hard
-               rectangle, which reads as a box around it even though nothing
-               paints a background here.
-
-               `overflow-y: clip` + `overflow-x: visible` is the pair that
-               does this. It has to be `clip`, not `hidden`: `hidden` on one
-               axis forces the other to `auto` per the CSS overflow spec, so
-               the combination silently becomes a scroll container and clips
-               anyway. `clip` carries no such rule. */
-            className="absolute -translate-x-1/2 -translate-y-1/2"
-            style={{
-              left: `${HERO.wordmark.x}%`,
-              top: `${HERO.wordmark.y}%`,
-              height: `${HERO.wordmark.cell}px`,
-              overflowY: "clip",
-              overflowX: "visible",
-            }}
-          >
-            <div
-              className="animate-wordmark"
-              style={{ "--roll-dur": HERO.wordmark.dur } as React.CSSProperties}
-            >
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  aria-hidden="true"
-                  className="flex items-center justify-center"
-                  style={{ height: `${HERO.wordmark.cell}px` }}
-                >
-                  {i === 1 ? (
-                    <video
-                      src={HERO.wordmark.src}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      /* ⚠ TRANSPARENT VP9, the same path the card videos take.
-                         The source gif was 480px and 953KB on an opaque-looking
-                         black backdrop that was actually already alpha; as webm
-                         at 240px it is 46KB and the alpha survives (verified by
-                         decoding a frame to RGBA — ffprobe reports yuv420p on a
-                         transparent VP9 file and cannot be trusted here). */
-                      className="block h-full w-auto max-w-none"
-                      style={{
-                        height: `${HERO.wordmark.ghost}px`,
-                        /* ⚠ SCALED, NOT TALLER. A bigger `height` would push
-                           the ghost past its cell and into the wordmark's,
-                           where it shows through during the hold. A scale
-                           grows it about its own centre; the vertical clip
-                           still cuts it at the cell edge, so it can read
-                           larger than the bar while staying in its own cell.
-                           The nudge keeps the wordmark cells untouched. */
-                        transform: `translateY(${HERO.wordmark.ghostY ?? 0}px) scale(${HERO.wordmark.ghostScale ?? 1})`,
-                      }}
-                    />
-                  ) : (
-                    <span
-                      className="font-display whitespace-nowrap"
-                      style={{
-                        fontSize: `${HERO.wordmark.size}px`,
-                        color: HERO.wordmark.color,
-                      }}
-                    >
-                      {HERO.wordmark.text}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
         </nav>
       )}
 

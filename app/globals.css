@@ -145,50 +145,6 @@ body {
   animation: sticker-float var(--dur, 9s) ease-in-out var(--delay, 0s) infinite;
 }
 
-/* the nav wordmark roller — sections/Hero.tsx.
- *
- * The wordmark rises out of the bar as the ghost rises in behind it, then the
- * ghost rises out as the wordmark comes back. One continuous upward travel,
- * never a reverse — reversing reads as a yo-yo, not a roller.
- *
- * ⚠ THE TRACK IS THREE CELLS, NOT TWO: [wordmark, ghost, wordmark]. The loop
- * travels exactly TWO cells and lands on the third, which is identical to the
- * first — so the state at 100% is the state at 0% and the reset is invisible.
- * With two cells the reset would have to jump a full cell and you would see it
- * every pass. This is the vertical form of the marquee's own trick (duplicate
- * the set, travel one set's width), and the reason the marquee below also
- * carries its --gap term.
- *
- * ⚠ THE PERCENTAGES ARE OF THE TRACK, NOT THE WINDOW. The track is 3 cells
- * tall, so one cell is 33.3333% of it. Writing -33.3333%/-66.6667% rather than
- * a px height is what lets the bar resize with the page without re-tuning:
- * the cells are sized by the window (the nav's own height), and the travel
- * follows them for free.
- *
- * ⚠ THE HOLDS ARE IN THE KEYFRAME, NOT A SECOND ANIMATION. A delay could not
- * do this on an infinite loop, and a second animation on the same transform
- * would fight this one. The easing is per-segment, so a hold is genuinely
- * still rather than creeping.
- *
- * ⚠ THE PERCENTAGES ARE TIED TO --roll-dur AND DO NOT FLOAT. Kez asked for a
- * 4s hold on each face. Two holds plus two 0.5s moves is a 9s cycle, so a hold
- * is 4/9 = 44.4444% and a move is 0.5/9 = 5.5556%. CHANGE THE DURATION AND THE
- * HOLD CHANGES WITH IT — at 5.6s these same percentages give a 2.5s hold, not
- * 4s. To keep 4s at another duration, recompute: hold% = 4 / dur * 100.
- *
- * ease-in-out ON THE MOVE SEGMENTS ONLY, via animation-timing-function being
- * applied between keyframes: the step out and the step in each accelerate and
- * settle, which is what makes it read as a flip rather than a scroll. */
-@keyframes wordmark-roll {
-  0%,     44.4444%  { transform: translateY(0); }
-  50%,    94.4444%  { transform: translateY(-33.3333%); }
-  100%              { transform: translateY(-66.6667%); }
-}
-
-.animate-wordmark {
-  animation: wordmark-roll var(--roll-dur, 9s) cubic-bezier(0.76, 0, 0.24, 1) infinite;
-}
-
 /* ⚠ KILLS THE TRAVEL, DOES NOT HIDE THE CARDS. The marquee is decoration, so
    at this setting it simply sits still and stays readable. !important because
    the duration is set inline per row. */
@@ -197,14 +153,5 @@ body {
   .animate-sticker {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-  }
-
-  /* ⚠ NOT THE DURATION CAP. 0.01ms would snap the roller to its END state,
-     which happens to be a wordmark cell — correct by coincidence, not by
-     design, and it would silently become the ghost if a cell were ever added.
-     Parked explicitly at cell one instead. */
-  .animate-wordmark {
-    animation: none !important;
-    transform: translateY(0) !important;
   }
 }
