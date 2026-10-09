@@ -47,8 +47,14 @@ export default function HoverGhost({
        wordmark (the taller ghost is allowed to overflow it), so swapping
        them cannot resize the nav or shift the word by a pixel. */
     <div
-      className="group absolute inline-grid -translate-x-1/2 -translate-y-1/2 place-items-center"
-      style={{ left: `${x}%`, top: `${y}%` }}
+      className="group grid place-items-center"
+      /* ⚠ POSITIONED BY THE PARENT NOW, NOT BY left/top HERE. This carried
+         `absolute inline-grid` with a left/top in the style prop, and
+         `inline-grid` won the cascade — computed position was `static`, so
+         left, top and the centring translate were ALL ignored and the
+         wordmark simply sat in flow against the hamburger. The nav places it
+         now and this is only the swap. */
+      style={{ position: "absolute", left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
       onMouseEnter={(e) => {
         const v = e.currentTarget.querySelector("video");
         if (v) void v.play().catch(() => {});

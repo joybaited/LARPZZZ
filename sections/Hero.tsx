@@ -47,18 +47,14 @@ export const HERO = {
     parallax: { yaw: 9.7, pitch: 5, damp: 0.39 },
   },
   els: [
-    { name: "box 1", kind: "box", text: "Button", x: 94.1, y: 50, w: 9.7, h: 74, size: 18.3, radius: 235.3, weight: 600, fill: "#EAC2FF", color: "#3D065F", in: "nav" },
     /* ⚠ THE WORDMARK IS NOT IN `els` ANY MORE — it is the roller below, and
        it is rendered by Hero itself rather than by <PriceEl>. Putting a
        three-cell animated track behind one `kind: "text"` would mean teaching
        PriceEl about it, and PriceEl is a SHARED FILE that Pricing also uses.
        Its placement lives in `wordmark` on HERO instead. */
     { name: "text 2", kind: "text", text: "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.", x: 82, y: 50, w: 30, h: 0, size: 24, weight: 400, align: "center", color: "#3D065F" },
-    { name: "box 3", kind: "box", text: "Button", x: 89.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
-    { name: "box 4", kind: "box", text: "Button", x: 74.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
-    { name: "text 3", kind: "text", text: "Text", x: 78.8, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
-    { name: "text 4", kind: "text", text: "Text", x: 85.2, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
-    { name: "text 5", kind: "text", text: "Text", x: 72.4, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
+    { name: "box 3", kind: "box", text: "Login", x: 89.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
+    { name: "box 4", kind: "box", text: "Buy", x: 74.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
   ] as El[],
 
   /* ⚠ THE HAMBURGER REPLACED THREE `kind: "line"` ELEMENTS. They were
@@ -74,7 +70,26 @@ export const HERO = {
   menu: {
     x: 4.6,
     y: 50,
-    items: ["Text", "Text", "Text"],
+    items: ["Features", "Pricing", "Buy", "Reviews"],
+  },
+
+  /* ⚠ THE NAV LINKS ARE A FLEX ROW, NOT FOUR ABSOLUTE SLOTS. They were
+     three `kind: "text"` elements hand-placed at x 72.4 / 78.8 / 85.2 with a
+     button at 94.1 — which cannot take a fourth label, and cannot guarantee
+     anything at all about overlap: a percentage x places a word's CENTRE and
+     knows nothing about how wide the word is, so "Features" and "Reviews"
+     would collide at one width and gap at another.
+
+     A row that lays itself out is the fix. The gap and type size are fluid so
+     the group shrinks with the bar instead of running off it, and the whole
+     row is hidden below `lg` where the hamburger takes over — which is what
+     the hamburger was always for. */
+  navLinks: {
+    items: ["Features", "Pricing", "Buy", "Reviews"],
+    cta: "Login",
+    color: "#EAC2FF",
+    ctaFill: "#EAC2FF",
+    ctaColor: "#3D065F",
   },
 
   /* ⚠ THE NAV WORDMARK, AND THE GHOST THAT APPEARS ON HOVER. It was a
@@ -267,6 +282,45 @@ export default function Hero() {
               this section is a server component and the button needs state
               and handlers. The three lines it replaced needed neither, which
               is exactly why they were not a menu. */}
+          {/* ⚠ THE ROW IS PINNED TO THE BAR'S RIGHT AND SIZES ITSELF. Right
+              inset matches the wordmark's own breathing room; `flex` does the
+              spacing so no label needs a coordinate and none can overlap
+              another however long it gets.
+
+              ⚠ HIDDEN BELOW lg, WHERE THE HAMBURGER TAKES OVER. Four links
+              plus a button do not fit a 358px bar at any type size that is
+              still readable, and squeezing them is what makes a nav break.
+              That is the whole reason the burger exists. */}
+          <div className="absolute top-1/2 right-[2.5%] hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
+            {HERO.navLinks.items.map((label) => (
+              <a
+                key={label}
+                href="#"
+                className="whitespace-nowrap no-underline opacity-90 transition-opacity duration-200 hover:opacity-100"
+                style={{
+                  color: HERO.navLinks.color,
+                  fontSize: "clamp(14px, 0.6rem + 0.5vw, 20px)",
+                }}
+              >
+                {label}
+              </a>
+            ))}
+            <a
+              href="#"
+              /* the CTA. `leading-none` plus symmetric padding is what keeps
+                 the pill's height tied to its own type rather than to the
+                 line box, so it cannot grow taller than the bar. */
+              className="whitespace-nowrap rounded-full px-[clamp(16px,0.7rem+1vw,30px)] py-[clamp(8px,0.3rem+0.5vw,13px)] leading-none font-semibold no-underline transition-opacity duration-200 hover:opacity-90"
+              style={{
+                background: HERO.navLinks.ctaFill,
+                color: HERO.navLinks.ctaColor,
+                fontSize: "clamp(14px, 0.6rem + 0.5vw, 19px)",
+              }}
+            >
+              {HERO.navLinks.cta}
+            </a>
+          </div>
+
           <NavMenu
             x={HERO.menu.x}
             y={HERO.menu.y}
