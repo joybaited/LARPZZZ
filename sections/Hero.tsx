@@ -80,7 +80,7 @@ export const HERO = {
       name: "balloons",
       src: "/images/sticker-balloons.webp",
       alt: "",
-      x: 32.5,
+      x: 35.5,
       y: 88.5,
       w: 13.5,
       rise: 16,
