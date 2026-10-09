@@ -46,7 +46,11 @@ export const HERO = {
   },
   els: [
     { name: "box 1", kind: "box", text: "Button", x: 94.1, y: 50, w: 9.7, h: 74, size: 18.3, radius: 235.3, weight: 600, fill: "#EAC2FF", color: "#3D065F", in: "nav" },
-    { name: "text 1", kind: "text", text: "LARPZ WALLET", x: 50.9, y: 50, size: 28.7, weight: 400, align: "center", font: "display", color: "#EAC2FF", in: "nav" },
+    /* ⚠ THE WORDMARK IS NOT IN `els` ANY MORE — it is the roller below, and
+       it is rendered by Hero itself rather than by <PriceEl>. Putting a
+       three-cell animated track behind one `kind: "text"` would mean teaching
+       PriceEl about it, and PriceEl is a SHARED FILE that Pricing also uses.
+       Its placement lives in `wordmark` on HERO instead. */
     { name: "text 2", kind: "text", text: "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.", x: 82, y: 50, w: 30, h: 0, size: 24, weight: 400, align: "center", color: "#3D065F" },
     { name: "box 3", kind: "box", text: "Button", x: 89.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
     { name: "box 4", kind: "box", text: "Button", x: 74.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
@@ -57,6 +61,27 @@ export const HERO = {
     { name: "line 2", kind: "line", x: 3.4, y: 50, w: 2.9, size: 2, fill: "#EAC2FF", in: "nav" },
     { name: "line 3", kind: "line", x: 3.4, y: 66.6, w: 2.7, size: 2, fill: "#EAC2FF", in: "nav" },
   ] as El[],
+
+  /* ⚠ THE NAV WORDMARK ROLLER. The wordmark rises out of the bar as the
+     Phantom ghost rises in, then the ghost rises out as the wordmark returns
+     — one continuous upward travel, looping forever.
+
+     x/y are percentages OF THE NAV, like an `in: "nav"` element, and it is
+     centred on that point. `cell` is the height of one face in px: the track
+     is three of them and the clip shows exactly one, so this is also the
+     height of the window the faces move through. `dur` is the whole cycle,
+     including both holds. The motion is one keyframe in globals.css. */
+  wordmark: {
+    text: "LARPZ WALLET",
+    src: "/video/phantom.webm",
+    x: 50.9,
+    y: 50,
+    size: 28.7,
+    cell: 44,
+    ghost: 44,
+    dur: "9s",
+    color: "#EAC2FF",
+  },
 
   /* ⚠ FLOATING STICKERS. x/y are PERCENTAGES OF THE SECTION, like els — a
      placement tuned at one window size has to hold at every other, which is
@@ -217,6 +242,79 @@ export default function Hero() {
           }}
         >
           {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
+
+          {/* ⚠ THE ROLLER. Three cells — wordmark, ghost, wordmark — and the
+              track travels exactly two of them, landing on a cell identical
+              to the first. That is what makes the loop seamless: the state at
+              100% IS the state at 0%, so there is no reset to see. Two cells
+              would have to jump a full cell to restart and it would show
+              every pass.
+
+              ⚠ THE CLIP IS ONE CELL TALL AND overflow-hidden. The faces are
+              not hidden by opacity — they are physically outside the window.
+              An opacity cross-fade would show both at once through each
+              other, which is the thing that reads as cheap here.
+
+              ⚠ THE HEIGHTS ARE EXPLICIT AND IDENTICAL, in px from `cell`. If
+              a cell could size itself to its own content the three would
+              differ — a line of Megion and a square video are not the same
+              height — and the 33.3333% travel would land mid-cell. Equal
+              cells are what the percentages depend on.
+
+              aria-label carries the wordmark so the nav still announces one
+              name; the cells are aria-hidden so it is not read three times. */}
+          <div
+            aria-label={HERO.wordmark.text}
+            role="img"
+            className="absolute -translate-x-1/2 -translate-y-1/2 overflow-hidden"
+            style={{
+              left: `${HERO.wordmark.x}%`,
+              top: `${HERO.wordmark.y}%`,
+              height: `${HERO.wordmark.cell}px`,
+            }}
+          >
+            <div
+              className="animate-wordmark"
+              style={{ "--roll-dur": HERO.wordmark.dur } as React.CSSProperties}
+            >
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  aria-hidden="true"
+                  className="flex items-center justify-center"
+                  style={{ height: `${HERO.wordmark.cell}px` }}
+                >
+                  {i === 1 ? (
+                    <video
+                      src={HERO.wordmark.src}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      /* ⚠ TRANSPARENT VP9, the same path the card videos take.
+                         The source gif was 480px and 953KB on an opaque-looking
+                         black backdrop that was actually already alpha; as webm
+                         at 240px it is 46KB and the alpha survives (verified by
+                         decoding a frame to RGBA — ffprobe reports yuv420p on a
+                         transparent VP9 file and cannot be trusted here). */
+                      className="block h-full w-auto max-w-none"
+                      style={{ height: `${HERO.wordmark.ghost}px` }}
+                    />
+                  ) : (
+                    <span
+                      className="font-display whitespace-nowrap"
+                      style={{
+                        fontSize: `${HERO.wordmark.size}px`,
+                        color: HERO.wordmark.color,
+                      }}
+                    >
+                      {HERO.wordmark.text}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </nav>
       )}
 
