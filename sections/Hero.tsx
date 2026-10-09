@@ -70,15 +70,30 @@ export const HERO = {
      centred on that point. `cell` is the height of one face in px: the track
      is three of them and the clip shows exactly one, so this is also the
      height of the window the faces move through. `dur` is the whole cycle,
-     including both holds. The motion is one keyframe in globals.css. */
+     including both holds. The motion is one keyframe in globals.css.
+
+     ⚠ `ghost` MUST NOT EXCEED `cell`, AND `ghostY` MUST KEEP IT INSIDE. This
+     was briefly 66 in a 54 cell with a -6 nudge, which put 12px of ghost
+     ABOVE its own cell — straight into the wordmark's cell, where it showed
+     through during the hold. The window clips vertically precisely so each
+     face is alone; a face taller than the window defeats that.
+
+     ⚠ SO SIZE COMES FROM `ghostScale`, NOT FROM HEIGHT. It scales the video
+     about its centre, and because the clip is vertical-only the extra width
+     spills sideways harmlessly while the height is still cut at the cell
+     edge. That is how it reads bigger than the bar without ever appearing in
+     a neighbouring cell. `ghostY` nudges within the cell; keep
+     `ghost/2 * ghostScale + |ghostY|` under `cell/2`. */
   wordmark: {
     text: "LARPZ WALLET",
     src: "/video/phantom.webm",
     x: 50.9,
     y: 50,
     size: 28.7,
-    cell: 44,
-    ghost: 44,
+    cell: 54,
+    ghost: 54,
+    ghostY: 0,
+    ghostScale: 1,
     dur: "9s",
     color: "#EAC2FF",
   },
@@ -250,10 +265,12 @@ export default function Hero() {
               would have to jump a full cell to restart and it would show
               every pass.
 
-              ⚠ THE CLIP IS ONE CELL TALL AND overflow-hidden. The faces are
-              not hidden by opacity — they are physically outside the window.
-              An opacity cross-fade would show both at once through each
-              other, which is the thing that reads as cheap here.
+              ⚠ THE CLIP IS ONE CELL TALL AND CLIPS VERTICALLY ONLY. The faces
+              are not hidden by opacity — they are physically outside the
+              window. An opacity cross-fade would show both at once through
+              each other, which is the thing that reads as cheap here. The
+              horizontal axis stays visible so the ghost's alpha is not cut
+              into a rectangle; see the wrapper below.
 
               ⚠ THE HEIGHTS ARE EXPLICIT AND IDENTICAL, in px from `cell`. If
               a cell could size itself to its own content the three would
@@ -266,11 +283,24 @@ export default function Hero() {
           <div
             aria-label={HERO.wordmark.text}
             role="img"
-            className="absolute -translate-x-1/2 -translate-y-1/2 overflow-hidden"
+            /* ⚠ CLIPPED ON ONE AXIS ONLY. `overflow-hidden` clips BOTH, and
+               the vertical clip is the only one the roll needs — the
+               horizontal one was cutting the ghost's alpha into a hard
+               rectangle, which reads as a box around it even though nothing
+               paints a background here.
+
+               `overflow-y: clip` + `overflow-x: visible` is the pair that
+               does this. It has to be `clip`, not `hidden`: `hidden` on one
+               axis forces the other to `auto` per the CSS overflow spec, so
+               the combination silently becomes a scroll container and clips
+               anyway. `clip` carries no such rule. */
+            className="absolute -translate-x-1/2 -translate-y-1/2"
             style={{
               left: `${HERO.wordmark.x}%`,
               top: `${HERO.wordmark.y}%`,
               height: `${HERO.wordmark.cell}px`,
+              overflowY: "clip",
+              overflowX: "visible",
             }}
           >
             <div
@@ -298,7 +328,17 @@ export default function Hero() {
                          decoding a frame to RGBA — ffprobe reports yuv420p on a
                          transparent VP9 file and cannot be trusted here). */
                       className="block h-full w-auto max-w-none"
-                      style={{ height: `${HERO.wordmark.ghost}px` }}
+                      style={{
+                        height: `${HERO.wordmark.ghost}px`,
+                        /* ⚠ SCALED, NOT TALLER. A bigger `height` would push
+                           the ghost past its cell and into the wordmark's,
+                           where it shows through during the hold. A scale
+                           grows it about its own centre; the vertical clip
+                           still cuts it at the cell edge, so it can read
+                           larger than the bar while staying in its own cell.
+                           The nudge keeps the wordmark cells untouched. */
+                        transform: `translateY(${HERO.wordmark.ghostY ?? 0}px) scale(${HERO.wordmark.ghostScale ?? 1})`,
+                      }}
                     />
                   ) : (
                     <span
