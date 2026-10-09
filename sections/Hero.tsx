@@ -47,7 +47,7 @@ export const HERO = {
   els: [
     { name: "box 1", kind: "box", text: "Button", x: 94.1, y: 50, w: 9.7, h: 74, size: 18.3, radius: 235.3, weight: 600, fill: "#EAC2FF", color: "#3D065F", in: "nav" },
     { name: "text 1", kind: "text", text: "LARPZ WALLET", x: 50.9, y: 50, size: 28.7, weight: 400, align: "center", font: "display", color: "#EAC2FF", in: "nav" },
-    { name: "text 2", kind: "text", text: "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.", x: 82, y: 50, w: 30, h: 0, size: 22, weight: 400, align: "center", color: "#3D065F" },
+    { name: "text 2", kind: "text", text: "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.", x: 82, y: 50, w: 30, h: 0, size: 24, weight: 400, align: "center", color: "#3D065F" },
     { name: "box 3", kind: "box", text: "Button", x: 89.5, y: 64, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
     { name: "box 4", kind: "box", text: "Button", x: 74.5, y: 64, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
     { name: "text 3", kind: "text", text: "Text", x: 78.8, y: 50, size: 20, weight: 400, align: "center", color: "#EAC2FF", in: "nav" },
