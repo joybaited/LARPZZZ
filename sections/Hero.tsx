@@ -72,6 +72,12 @@ export const HERO = {
      delay set the period and stagger it so two stickers never move in
      lockstep. The motion itself is one keyframe in globals.css.
 
+     ⚠ `rotate` IS THE RESTING ANGLE AND IT LIVES ON THE WRAPPER, not the
+     image. The float keyframe writes `rotate()` on the image every frame, so
+     a static angle set there is overwritten immediately — it has to sit on
+     the element the animation does not touch. `tilt` is the float's own
+     rocking about whatever angle this sets.
+
      ⚠ z IS ABOUT THE CANVAS. Scene.tsx's wrapper is z-10, so z-20 puts a
      sticker IN FRONT of the phone and z-0 behind it. The balloons sit in
      front at the phone's foot, as in Kez's reference. */
@@ -86,6 +92,7 @@ export const HERO = {
       rise: 16,
       drift: 9,
       tilt: "2.2deg",
+      rotate: "-7deg",
       dur: "11s",
       delay: "-3s",
       z: 20,
@@ -234,8 +241,20 @@ export default function Hero() {
         <div
           key={st.name}
           aria-hidden="true"
-          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-          style={{ left: `${st.x}%`, top: `${st.y}%`, width: `${st.w}%`, zIndex: st.z }}
+          className="pointer-events-none absolute"
+          /* ⚠ ONE transform, STATED IN ORDER. The centring was
+             `-translate-x-1/2 -translate-y-1/2` as classes; adding a rotation
+             as a third class leaves the order to Tailwind's, and a rotate
+             applied before the centring swings the sticker around the
+             section's origin instead of its own middle. Written out, it
+             translates first and then rotates about its own centre. */
+          style={{
+            left: `${st.x}%`,
+            top: `${st.y}%`,
+            width: `${st.w}%`,
+            zIndex: st.z,
+            transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
+          }}
         >
           <img
             src={st.src}
