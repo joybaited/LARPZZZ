@@ -132,8 +132,15 @@ export default function NavMenu({
         style={{ background: panelFill }}
       >
         <ul className="m-0 flex list-none flex-col gap-1 p-0">
-          {items.map((label) => (
-            <li key={label}>
+          {/* ⚠ KEYED BY INDEX, NOT BY LABEL. The three placeholders are all
+              the literal string "Text", so a label key collides and React
+              warns about duplicate keys. The list is static and never
+              reordered, filtered or inserted into, which is exactly the case
+              where an index key is correct rather than a smell. Real labels
+              would not collide, but they also would not need the key to
+              change. */}
+          {items.map((label, i) => (
+            <li key={i}>
               <a
                 href="#"
                 className="block rounded-lg px-3 py-2 text-base no-underline transition-colors duration-150 hover:bg-white/10"
