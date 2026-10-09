@@ -116,11 +116,41 @@ body {
   animation: marquee 40s linear infinite;
 }
 
+/* the hero's floating stickers — sections/Hero.tsx.
+ *
+ * TWO AXES ON ONE ELEMENT, AT DIFFERENT PERIODS. A single translate reads as a
+ * lift; drifting sideways on a period that does not divide into the vertical
+ * one keeps the path from closing into an obvious loop, so it never settles
+ * into a rhythm the eye can predict. The rotation is tiny on purpose — past
+ * about 3deg it stops being a float and starts being a wobble.
+ *
+ * ⚠ TRANSFORM ONLY, NO top/left. Those are layout properties and animating
+ * them would lay the hero out again every frame, with the 3D canvas sitting
+ * right behind. A transform is composited and costs nothing.
+ *
+ * The per-sticker duration, delay and travel are set inline from the config in
+ * Hero.tsx, so one keyframe serves all of them.
+ *
+ * ⚠ REDUCED MOTION IS HANDLED BELOW, by the same cap the marquee uses — it
+ * catches every animation on the page, this one included. */
+@keyframes sticker-float {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25%  { transform: translate3d(calc(var(--drift) * 0.6), calc(var(--rise) * -0.55), 0) rotate(var(--tilt)); }
+  50%  { transform: translate3d(calc(var(--drift) * -0.3), calc(var(--rise) * -1), 0) rotate(0deg); }
+  75%  { transform: translate3d(calc(var(--drift) * -0.7), calc(var(--rise) * -0.45), 0) rotate(calc(var(--tilt) * -1)); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+
+.animate-sticker {
+  animation: sticker-float var(--dur, 9s) ease-in-out var(--delay, 0s) infinite;
+}
+
 /* ⚠ KILLS THE TRAVEL, DOES NOT HIDE THE CARDS. The marquee is decoration, so
    at this setting it simply sits still and stays readable. !important because
    the duration is set inline per row. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
+  .animate-marquee,
+  .animate-sticker {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }

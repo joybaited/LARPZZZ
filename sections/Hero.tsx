@@ -57,6 +57,40 @@ export const HERO = {
     { name: "line 2", kind: "line", x: 3.4, y: 50, w: 2.9, size: 2, fill: "#EAC2FF", in: "nav" },
     { name: "line 3", kind: "line", x: 3.4, y: 66.6, w: 2.7, size: 2, fill: "#EAC2FF", in: "nav" },
   ] as El[],
+
+  /* ⚠ FLOATING STICKERS. x/y are PERCENTAGES OF THE SECTION, like els — a
+     placement tuned at one window size has to hold at every other, which is
+     the rule the tuners exist to keep.
+
+     x/y place the sticker's CENTRE, so a size change grows it about its own
+     middle rather than shifting it down and right.
+
+     w is a percentage of the section's WIDTH, so the sticker scales with the
+     page instead of staying a fixed pixel lump on a small screen.
+
+     rise/drift are the float's travel in px and tilt its rotation; dur and
+     delay set the period and stagger it so two stickers never move in
+     lockstep. The motion itself is one keyframe in globals.css.
+
+     ⚠ z IS ABOUT THE CANVAS. Scene.tsx's wrapper is z-10, so z-20 puts a
+     sticker IN FRONT of the phone and z-0 behind it. The balloons sit in
+     front at the phone's foot, as in Kez's reference. */
+  stickers: [
+    {
+      name: "balloons",
+      src: "/images/sticker-balloons.webp",
+      alt: "",
+      x: 32.5,
+      y: 88.5,
+      w: 13.5,
+      rise: 16,
+      drift: 9,
+      tilt: "2.2deg",
+      dur: "11s",
+      delay: "-3s",
+      z: 20,
+    },
+  ],
 };
 
 /* ⚠ A PAIR IS A `clamp()`, NOT A LERP BETWEEN THE ENDS — and css already
@@ -179,6 +213,45 @@ export default function Hero() {
 
       {/* stage-level elements. the nav's own are rendered inside it above. */}
       {HERO.els.map((el, i) => (el.in === "nav" ? null : <PriceEl key={i} el={el} />))}
+
+      {/* ⚠ THE STICKERS FLOAT, AND IT IS CSS, NOT GSAP. GSAP is on this page
+          and section two uses it, but this is a constant-speed loop that reads
+          nothing and has no controls — the same reasoning the testimonial
+          marquee is written down with. A CSS animation runs on the compositor
+          with no mount, no teardown and no ScrollTrigger refresh, so it cannot
+          fall out of step with the 3D canvas sitting right behind it.
+
+          ⚠ THE WRAPPER IS POSITIONED, THE IMAGE IS ANIMATED. Two elements, so
+          the float's transform cannot clobber the centring one — putting both
+          on one element means the keyframe's `translate3d(0,0,0)` at 0% wipes
+          the `-50%, -50%` and the sticker jumps to its own corner on the first
+          frame. This is the same split the FAQ pills use for the shove and the
+          expand.
+
+          `pointer-events-none` so a sticker over the phone never eats a drag,
+          and `aria-hidden` because they are decoration. */}
+      {HERO.stickers?.map((st) => (
+        <div
+          key={st.name}
+          aria-hidden="true"
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
+          style={{ left: `${st.x}%`, top: `${st.y}%`, width: `${st.w}%`, zIndex: st.z }}
+        >
+          <img
+            src={st.src}
+            alt={st.alt}
+            decoding="async"
+            className="animate-sticker block h-auto w-full max-w-none select-none"
+            style={{
+              "--rise": `${st.rise}px`,
+              "--drift": `${st.drift}px`,
+              "--tilt": st.tilt,
+              "--dur": st.dur,
+              "--delay": st.delay,
+            } as React.CSSProperties}
+          />
+        </div>
+      ))}
     </Section>
   );
 }
