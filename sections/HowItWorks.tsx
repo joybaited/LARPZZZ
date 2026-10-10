@@ -104,7 +104,13 @@ export default function HowItWorks() {
                   bottom so neither collapses on a phone or runs away on a
                   display. leading-[1.05] is their 24/24 with room for
                   descenders, which a flat 1 clips on a 'g'. */}
-              <h3 className="text-[clamp(16px,1.667vw,32px)] leading-[1.05] font-normal text-balance">
+              {/* ⚠ MEGION IS ONE WEIGHT (BOLD) AND DISPLAY-ONLY, so there is
+                  no font-weight to set — `font-display` is already the bold
+                  cut, and asking for a lighter one makes the browser
+                  synthesise it. The `font-normal` that was here came off with
+                  the face. `uppercase` is how every other section sets it:
+                  Faq's heading, Testimonials' names, the hero's. */}
+              <h3 className="font-display text-[clamp(16px,1.667vw,32px)] leading-[1.05] uppercase text-balance">
                 {c.text}
               </h3>
             </li>
