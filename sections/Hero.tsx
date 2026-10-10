@@ -89,6 +89,31 @@ export const HERO = {
     overlay: true,
   },
 
+  /* ⚠ THE FLAT PHONE THAT REPLACED THE 3D ONE.
+
+     x/y are percentages of the SECTION and place the image's CENTRE; `w` is
+     a percentage of the section's width. Same units as `stickers`, so the
+     two can be reasoned about together.
+
+     ⚠ SEEDED FROM THE MODEL'S MEASURED BOX, THEN ENLARGED. The glb rendered
+     at 26.09% wide, centred 52.17% / 58.53% — measured off a real render's
+     alpha channel in session 10, not derived from the pose. This sits in the
+     same place and is bigger, which is what was asked for. Those numbers are
+     the baseline to come back to if it ever needs to match the model again.
+
+     ⚠ `w` IS THE WIDTH OF THE PHONE ITSELF because the asset is cropped to
+     it. The source png was a 1080x2160 canvas holding a 999x1251 phone; a
+     re-export from an uncropped source would silently change what this
+     number means. */
+  art: {
+    src: "/images/hero-phone.webp",
+    x: 52.2,
+    y: 58.5,
+    w: 33,
+    rotate: 0,
+    show: true,
+  },
+
   /* ⚠ THE NAV LINKS ARE A FLEX ROW, NOT FOUR ABSOLUTE SLOTS. They were
      three `kind: "text"` elements hand-placed at x 72.4 / 78.8 / 85.2 with a
      button at 94.1 — which cannot take a fourth label, and cannot guarantee
@@ -154,10 +179,15 @@ export const HERO = {
      the element the animation does not touch. `tilt` is the float's own
      rocking about whatever angle this sets.
 
-     ⚠ z IS ABOUT THE CANVAS. Scene.tsx's wrapper is z-10, so anything above
-     that paints IN FRONT of the phone and anything below it BEHIND. The
-     balloons are 20 and sit in front at the phone's foot; the padlock is 5
-     and tucks behind the model at its top right.
+     ⚠ z IS ABOUT THE PHONE ART. `HERO.art` renders at z-10 — the same layer
+     the 3D canvas used, so this scale did not change when the model came
+     out — and anything above that paints IN FRONT of the phone, anything
+     below it BEHIND. Both stickers are 20 and sit in front: the balloons at
+     its foot, the padlock at its top right.
+
+     The padlock was 5 when the phone was a 3D model: tucking it behind read
+     as depth against something that had any. Against a flat render it just
+     looked clipped.
 
      ⚠ KEEP EVERY STICKER BELOW 30. The nav is z-30 so that the open dropdown
      covers the hero — a sticker at 30 or above would punch through the panel
@@ -198,12 +228,15 @@ export const HERO = {
       dur: "8.5s",
       delay: "-5s",
       rotate: "9deg",
-      /* ⚠ BEHIND THE PHONE — Kez's. Scene.tsx's canvas wrapper is z-10, so
-         anything under that paints behind the model and anything over it in
-         front. 5, not 0: the ground is -z-20 and a 0 would still clear it,
-         but leaving a gap above the ground means a sticker can later be
-         slipped between the two without renumbering this one. */
-      z: 5,
+      /* ⚠ IN FRONT OF THE PHONE NOW. It was 5 — behind the 3D model, which
+         sat on a canvas at z-10 — and tucking it behind read well against a
+         model with real depth. The flat render is at the same z-10 and has
+         none, so a sticker half-hidden behind it looked clipped rather than
+         layered. 20 puts it in front, matching the balloons.
+
+         The z scale is unchanged: the art is z-10, so below that is behind
+         it and above is in front. */
+      z: 20,
     },
   ],
 };
@@ -289,6 +322,43 @@ export default function Hero() {
           ⚠ /hero-tuner IS UNAFFECTED — it dropped the canvas already and
           tunes the flat layout. The glb still loads there only if something
           asks for it, which nothing now does. */}
+
+      {/* ⚠ THE FLAT PHONE, STANDING IN FOR THE MODEL. A render at the same
+          pose, so the hero keeps its subject at a fraction of the cost: 79KB
+          of webp against 3.3MB of glb plus 2.3MB of textures decoded on the
+          main thread.
+
+          ⚠ THE SOURCE WAS CROPPED BEFORE IT GOT HERE. The png was a
+          1080x2160 canvas with the phone sitting in the middle 999x1251 —
+          477px of empty space above it and 432px below. Placed uncropped it
+          would read as badly off-centre and far too small, and no amount of
+          tuning x/y/w here would fix that, because the padding scales with
+          the image. The committed webp is cropped to the phone itself, so
+          `w` means the width of the PHONE.
+
+          ⚠ z-10 PUTS IT WHERE THE CANVAS WAS, so the stickers' own z values
+          still read correctly against it: the balloons at 20 are in front,
+          the padlock at 5 is behind. That is the relationship the sticker
+          config documents, and it survives the swap. */}
+      {HERO.art?.show && (
+        <img
+          src={HERO.art.src}
+          alt=""
+          aria-hidden="true"
+          /* eager + high priority: it is the hero's subject and above the
+             fold, so lazy-loading it would just delay the LCP. */
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="pointer-events-none absolute z-10 h-auto max-w-none select-none"
+          style={{
+            left: `${HERO.art.x}%`,
+            top: `${HERO.art.y}%`,
+            width: `${HERO.art.w}%`,
+            transform: `translate(-50%, -50%) rotate(${HERO.art.rotate ?? 0}deg)`,
+          }}
+        />
+      )}
 
       {/*
         nav. ⚠ ABSOLUTE, NOT IN FLOW. It was `pt-(--space-m)` with the bar in
