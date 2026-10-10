@@ -210,13 +210,12 @@ export const HERO = {
       name: "lock",
       src: "/images/sticker-lock.webp",
       alt: "",
-      x: 66,
-      /* ⚠ RAISED WITH THE SIZE, NOT JUST ENLARGED. It sits BEHIND the phone
-         now, so growing it in place would have pushed more of it under the
-         render rather than showing more of it. Up from y 22 so the extra
-         size appears above the phone's top edge, which is the part that
-         reads. */
-      y: 19.5,
+      x: 68.5,
+      /* ⚠ IT SITS BEHIND THE PHONE, so only what clears the top bezel reads.
+         Lowering it hides more of it — that is the intent here, a deeper
+         tuck, but it is also why y and w have to be judged together rather
+         than one at a time. */
+      y: 21.5,
       w: 14,
       rise: 13,
       drift: 7,
