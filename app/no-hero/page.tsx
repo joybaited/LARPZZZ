@@ -3,6 +3,7 @@ import HowItWorks from "@/sections/HowItWorks";
 import Testimonials from "@/sections/Testimonials";
 import Faq from "@/sections/Faq";
 import Pricing from "@/sections/Pricing";
+import Footer from "@/sections/Footer";
 
 /**
  * every section in order, minus the hero. a workbench for looking at how the
@@ -23,6 +24,7 @@ export default function NoHero() {
       <Testimonials />
       <Faq />
       <Pricing />
+      <Footer />
     </main>
   );
 }

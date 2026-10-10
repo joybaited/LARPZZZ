@@ -230,3 +230,40 @@ body {
     transform: none !important;
   }
 }
+
+/* Footer cloud subtle breathing micro-animation — sections/Footer.tsx */
+@keyframes cloud-breathe {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6px, 0, 0) scale(1.009, 1.007);
+  }
+}
+
+.animate-cloud-breathe {
+  animation: cloud-breathe 7s ease-in-out infinite;
+  transform-origin: 0% 100%;
+}
+
+/* Mobile vertical breathing: anchored to top (50% 0%), breathing subtly downwards */
+@keyframes cloud-breathe-mob {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, 4px, 0) scale(1.007, 1.006);
+  }
+}
+
+.animate-cloud-breathe-mob {
+  animation: cloud-breathe-mob 7s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cloud-breathe,
+  .animate-cloud-breathe-mob {
+    animation: none !important;
+  }
+}
