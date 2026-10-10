@@ -1,4 +1,5 @@
 import Section from "@/components/Section";
+import StepsSceneMount from "@/components/StepsSceneMount";
 
 /* How it works. Four cards in two flanking columns with an empty middle.
  *
@@ -110,6 +111,19 @@ export default function HowItWorks() {
              to a natural 2-up, or four 45svh cards stacked is four screens. */
           className="m-0 grid w-full list-none grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-[90svh] lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
         >
+          {/* ⚠ THE MODEL GOES IN THE CENTRE TRACK, WHICH USED TO BE EMPTY.
+              It is a real grid item now (`col-start-2`, spanning both rows)
+              rather than an absolute box over the section, so it is the
+              column — it moves and resizes with the grid instead of being
+              positioned against it at every width. `relative` is what the
+              mount's `inset-0` resolves against.
+              Hidden below lg: the stacked 2-up has no centre column to sit
+              in, and a 3.3MB model is not what a phone should be downloading
+              to show behind nothing. */}
+          <li role="presentation" className="relative hidden lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block">
+            <StepsSceneMount />
+          </li>
+
           {CARDS.map((c, i) => (
             <li
               key={c.id}
