@@ -2,48 +2,74 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/* The nav's hamburger button and the panel it opens.
+/* The nav's hamburger, the surface behind the bar, and the panel it opens.
  *
- * It replaces three decorative `kind: "line"` elements that sat in HERO.els —
- * those were aria-hidden divs with no button, no state and no keyboard path,
- * so they looked like a menu and did nothing.
+ * ── THIS IS osmo.supply's MECHANISM, PORTED ──────────────────────────────
  *
- * ── WHY IT IS BUILT THIS WAY ─────────────────────────────────────────────
+ * Read from their live CSS (slater.app/16596/45446.css) and JS
+ * (slater.app/16596/55554.js), not from a recreation. Worth knowing before
+ * changing any number here:
  *
- * ⚠ `aria-expanded` IS THE STATE, AND THE CSS READS IT. The bars animate from
- * the attribute, not from a second `.is-open` class — one source of truth, so
- * what a screen reader announces and what the icon shows cannot drift apart.
- * That is the standard pattern and it is also less code than keeping a class
- * in sync.
+ * ⚠ THEIR JAVASCRIPT ANIMATES NOTHING. The whole script flips one attribute,
+ * `data-nav-status`, between "active" and "not-active". Every pixel of the
+ * motion is a CSS transition keyed off that attribute. GSAP is on their page
+ * for other work and the nav never touches it. So this needs no animation
+ * library either — adding one would be strictly more code for less.
  *
- * ⚠ THE LABEL DOES NOT CHANGE TO "CLOSE". The accessible name stays "Menu"
- * and `aria-expanded` carries the open/closed state. Swapping the name is the
- * common mistake: it makes the button read as a different control depending
- * on when you meet it.
+ * ⚠ ONE EASING FOR EVERYTHING: cubic-bezier(0.625, 0.05, 0, 1). Their
+ * `--cubic-default`. The smoothness is NOT from per-element easings; it is
+ * from one shared curve plus staggered delays. Do not give these elements
+ * separate easings — that is what makes a menu feel assembled from parts.
  *
- * ⚠ THE BARS TRANSLATE TO CENTRE, THEN ROTATE. Both on one transform, so they
- * are one composited change rather than two. Rotating without first collapsing
- * the gap gives an X with a visible offset where the arms cross.
+ * ⚠ THE TWO-STEP FEEL IS DELAYS, NOT SEQUENCED CALLBACKS. Opening, the
+ * surface moves first and the panel follows 300ms later. Closing, the panel
+ * goes immediately and the surface settles after. The asymmetry is the entire
+ * effect and it lives only in the base vs. active transition-delay.
  *
- * ⚠ THE MIDDLE BAR FADES ON A SHORTER DURATION than the outer two move. It is
- * gone before the arms reach the middle, so nothing passes through it.
+ * ⚠ `rotate(0.001deg)` ON EVERY TRANSFORM IS THEIRS AND IS DELIBERATE. It
+ * forces the element onto its own composited layer so text does not shimmer
+ * while the row interpolates. A no-op rotation buys that without
+ * `will-change` permanently pinning a layer for an element that is static
+ * almost all the time.
  */
-export default function NavMenu({
+
+/* Their durations, in ms. `--duration-default` and its multiples. */
+const D = { quarter: 150, half: 300, base: 600, onehalf: 900 };
+const EASE = "cubic-bezier(0.625, 0.05, 0, 1)";
+
+/* ── THE WHOLE MENU ───────────────────────────────────────────────────────
+ *
+ * ⚠ IT IS ONE COMPONENT BECAUSE <Hero> IS A SERVER COMPONENT. The button, the
+ * surface and the panel all read the same `open`, and a server component can
+ * hold no state — so one client component owns it and renders all three.
+ *
+ * ⚠ THE SURFACE IS A SEPARATE LAYER FROM THE <nav> BOX, AND THAT IS LOAD-
+ * BEARING. The `in: "nav"` elements are absolute with percentage x/y and
+ * resolve against the <nav>, which has a tuned fixed height. So the <nav>
+ * must never change size. Osmo has the same split — their `.nav-bar__back`
+ * is a backdrop that insets independently of the bar's content box — and it
+ * is what lets the surface swell to meet the panel while the wordmark and
+ * hamburger hold their positions exactly.
+ */
+export function NavMenuWithPanel({
   x,
   y,
   color,
-  items,
-  panelFill,
+  fill,
+  radius,
+  panelHeight,
+  overlay,
 }: {
   x: number;
   y: number;
   color: string;
-  items: string[];
-  panelFill: string;
+  fill: string;
+  radius: number;
+  panelHeight: number;
+  overlay: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
 
   /* ⚠ ESCAPE CLOSES AND FOCUS GOES BACK TO THE BUTTON. Without the second
      half, closing with the keyboard drops focus onto <body> and the next Tab
@@ -59,12 +85,16 @@ export default function NavMenu({
         btn.current?.focus();
       }
     };
-    /* a click anywhere outside closes it too. `pointerdown` rather than
+    /* a click anywhere outside the nav closes it. `pointerdown` rather than
        `click` so it fires before focus moves, and capture so a handler inside
-       the panel cannot stop it reaching here. */
+       cannot stop it reaching here.
+
+       ⚠ THE TEST IS THE WHOLE <nav>, not a panel ref: the panel and the bar
+       are siblings now, so a panel-only test would close the menu when the
+       bar's own links were clicked. */
     const onDown = (e: PointerEvent) => {
-      const t = e.target as Node;
-      if (!panel.current?.contains(t) && !btn.current?.contains(t)) setOpen(false);
+      const t = e.target as Element | null;
+      if (!t?.closest("nav")) setOpen(false);
     };
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onDown, true);
@@ -75,83 +105,164 @@ export default function NavMenu({
   }, [open]);
 
   return (
-    <div className="absolute" style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}>
-      <button
-        ref={btn}
-        type="button"
-        aria-label="Menu"
-        aria-expanded={open}
-        aria-controls="nav-menu-panel"
-        onClick={() => setOpen((o) => !o)}
-        /* ⚠ A 44px TARGET AROUND A 22px ICON. The bars are small; the button
-           is not. 44 is the usual minimum for a touch target, and the padding
-           is what provides it without drawing anything. */
-        className="group grid h-11 w-11 cursor-pointer place-items-center border-0 bg-transparent p-0"
-      >
-        {/* the three bars, stacked in one grid cell so they share a centre
-            and the rotation has a common origin. */}
-        <span className="relative block h-[14px] w-[22px]">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className="absolute left-0 block h-[2px] w-full rounded-full transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
-              style={{
-                background: color,
-                top: "50%",
-                /* resting: top bar up, middle centred, bottom bar down.
-                   open: outer two collapse to the centre and cross; the
-                   middle fades. The -50% keeps each bar centred on `top` so
-                   the translate is measured from the middle, not the edge. */
-                transform: open
-                  ? i === 1
-                    ? "translateY(-50%)"
-                    : `translateY(-50%) rotate(${i === 0 ? 45 : -45}deg)`
-                  : `translateY(calc(-50% + ${(i - 1) * 7}px))`,
-                opacity: open && i === 1 ? 0 : 1,
-                /* the middle bar's fade is quicker than the arms' travel, so
-                   it is gone before they arrive. */
-                transitionDuration: i === 1 ? "160ms" : "300ms",
-              }}
-            />
-          ))}
-        </span>
-      </button>
+    <>
+      {/* ── THE DIMMED PAGE BEHIND ──────────────────────────────────────
+          Osmo's `.nav__bg`: rgba(0,0,0,0.3), fading on the base duration,
+          with `visibility` transitioned alongside `opacity` so it is not
+          clickable while invisible. Transitioning visibility rather than
+          toggling it is what lets the fade OUT play — a straight
+          `visibility: hidden` would cut it off at frame one.
 
-      {/* ⚠ THE PANEL IS NOT UNMOUNTED, IT IS HIDDEN. `hidden` until open keeps
-          it out of the accessibility tree and off the tab order entirely —
-          cheaper and more correct than rendering a visually-hidden element
-          that a screen reader can still reach.
+          ⚠ IT IS `fixed`, SO IT COVERS THE PAGE AND NOT JUST THE HERO. The
+          nav lives inside the hero section, but a dim that stopped at the
+          section's bottom edge would read as a bug. */}
+      {overlay && (
+        <div
+          aria-hidden="true"
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-0 motion-reduce:transition-none"
+          style={{
+            background: "rgba(0, 0, 0, 0.3)",
+            opacity: open ? 1 : 0,
+            visibility: open ? "visible" : "hidden",
+            pointerEvents: open ? "auto" : "none",
+            transition: `opacity ${D.base}ms ${EASE}, visibility ${D.base}ms ${EASE}`,
+          }}
+        />
+      )}
 
-          It is absolute so opening it cannot resize the nav bar. */}
+      {/* ── THE SURFACE ─────────────────────────────────────────────────
+          Osmo's `.nav-bar__back`. Closed it is inset from the <nav> box;
+          open it grows outward and upward to meet the panel, so the bar and
+          the panel read as ONE continuous surface instead of two stacked
+          boxes. This is the single biggest contributor to the effect and it
+          is the piece most easily left out.
+
+          ⚠ `bottom` IS WHAT REACHES DOWN TO THE PANEL. The panel is
+          `top: 100%` of the <nav>, so a negative bottom here spans the gap
+          and the two surfaces fuse. Its own rounding goes flat at the join
+          for the same reason.
+
+          ⚠ `-z-10` KEEPS IT BEHIND THE BAR'S CONTENT. It is painted after
+          the wordmark in source order, so without this it would cover it. */}
       <div
-        ref={panel}
-        id="nav-menu-panel"
-        hidden={!open}
-        className="absolute top-full left-0 mt-3 min-w-44 rounded-xl p-2 shadow-lg"
-        style={{ background: panelFill }}
+        aria-hidden="true"
+        className="absolute -z-10 motion-reduce:transition-none"
+        style={{
+          background: fill,
+          inset: open ? "-4px 0px" : "0px",
+          bottom: open ? `-${panelHeight + 6}px` : "0px",
+          borderRadius: `${radius}px`,
+          /* ⚠ THE SURFACE LEADS, THE PANEL FOLLOWS — AND THAT GAP IS THE
+             WHOLE TWO-STEP. `inset` fires at 0ms so the bar visibly swells
+             before anything drops; `bottom` carries the same 300ms delay as
+             the panel so the two reach full extension together. Give these
+             the same delay and the effect collapses into one move after a
+             dead pause, which is what it looked like before. */
+          transition: open
+            ? `inset ${D.base}ms ${EASE} 0ms, bottom ${D.onehalf}ms ${EASE} ${D.half}ms`
+            : `inset ${D.base}ms ${EASE} ${D.quarter}ms, bottom ${D.base}ms ${EASE} 0ms`,
+        }}
+      />
+
+      {/* ── THE HAMBURGER ───────────────────────────────────────────────
+          ⚠ TWO BARS, NOT THREE. Osmo's is two, and that is why their X is
+          clean: with three, the middle one has to fade and you are timing a
+          disappearance against two rotations. Two bars simply cross.
+
+          ⚠ THEY ALSO `scaleX(0.75)` AS THEY ROTATE. A rotated bar spans
+          further corner-to-corner than a flat one, so without the shrink the
+          X reads visibly larger than the closed burger. Theirs is exactly
+          0.75. */}
+      <div
+        className="absolute"
+        style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
       >
-        <ul className="m-0 flex list-none flex-col gap-1 p-0">
-          {/* ⚠ KEYED BY INDEX, NOT BY LABEL. The three placeholders are all
-              the literal string "Text", so a label key collides and React
-              warns about duplicate keys. The list is static and never
-              reordered, filtered or inserted into, which is exactly the case
-              where an index key is correct rather than a smell. Real labels
-              would not collide, but they also would not need the key to
-              change. */}
-          {items.map((label, i) => (
-            <li key={i}>
-              <a
-                href="#"
-                className="block rounded-lg px-3 py-2 text-base no-underline transition-colors duration-150 hover:bg-white/10"
-                style={{ color }}
-              >
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <button
+          ref={btn}
+          type="button"
+          aria-label="Menu"
+          aria-expanded={open}
+          aria-controls="nav-menu-panel"
+          onClick={() => setOpen((o) => !o)}
+          /* ⚠ A 44px TARGET AROUND A SMALL ICON. 44 is the usual minimum for
+             a touch target; the padding provides it without drawing
+             anything. The hover tint is Osmo's `.nav-menu:hover`. */
+          className="grid h-11 w-11 cursor-pointer place-items-center rounded-lg border-0 bg-transparent p-0 transition-colors motion-reduce:transition-none"
+          style={{
+            transitionDuration: `${D.half}ms`,
+            transitionTimingFunction: EASE,
+            backgroundColor: open ? "rgba(255,255,255,0.06)" : "transparent",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = open ? "rgba(255,255,255,0.06)" : "transparent")
+          }
+        >
+          <span className="relative block h-[14px] w-[22px]">
+            {[0, 1].map((i) => (
+              <span
+                key={i}
+                aria-hidden="true"
+                className="absolute left-0 block h-[2px] w-full rounded-full motion-reduce:transition-none"
+                style={{
+                  background: color,
+                  top: "50%",
+                  /* closed: one bar 3px above centre, one 3px below.
+                     open: both to centre, crossing at ±45deg, shrunk to
+                     0.75 so the X matches the burger's visual width. */
+                  transform: open
+                    ? `translateY(-50%) rotate(${i === 0 ? -45 : 45}deg) scaleX(0.75)`
+                    : `translateY(calc(-50% + ${i === 0 ? -3 : 3}px)) rotate(0.001deg) scaleX(1)`,
+                  transition: `transform ${D.base}ms ${EASE}`,
+                }}
+              />
+            ))}
+          </span>
+        </button>
       </div>
-    </div>
+
+      {/* ── THE PANEL ───────────────────────────────────────────────────
+          ⚠ THE HEIGHT ANIMATES WITH `grid-template-rows: 0fr -> 1fr`, not a
+          measured pixel height. That is the core trick and it is pure CSS: a
+          grid row interpolates between fractions, so `auto` height becomes
+          animatable without reading content height in JS and without a
+          max-height guess that is either too small to fit or too large to
+          time correctly. `overflow: hidden` on the track does the reveal.
+
+          ⚠ THE INNER WRAPPER NEEDS `min-h-0` AND `overflow-hidden` TOO.
+          Without it the grid item refuses to shrink below its content's
+          min-content height, so the row collapses to that instead of to
+          zero and the panel never fully closes.
+
+          ⚠ IT ALSO SLIDES: translateY(-0.625em) -> 0. The panel emerges from
+          behind the bar rather than simply unrolling, which is what stops the
+          reveal looking like a window blind. */}
+      <div
+        className="absolute top-full right-0 left-0 pt-[6px]"
+        style={{ pointerEvents: open ? "auto" : "none" }}
+      >
+        <div
+          id="nav-menu-panel"
+          aria-hidden={!open}
+          className="grid overflow-hidden motion-reduce:transition-none"
+          style={{
+            gridTemplateRows: open ? "1fr" : "0fr",
+            transform: open
+              ? "translateY(0em) rotate(0.001deg)"
+              : "translateY(-0.625em) rotate(0.001deg)",
+            transition: open
+              ? `grid-template-rows ${D.onehalf}ms ${EASE} ${D.half}ms, transform ${D.base}ms ${EASE} ${D.half}ms`
+              : `grid-template-rows ${D.base}ms ${EASE} 0ms, transform ${D.base}ms ${EASE} 0ms`,
+          }}
+        >
+          <div className="min-h-0 overflow-hidden">
+            {/* empty on purpose — `panelHeight` is the stand-in that gives
+                the row something to resolve to. See HERO.menu. */}
+            <div style={{ minHeight: `${panelHeight}px` }} />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

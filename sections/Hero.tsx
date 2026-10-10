@@ -2,7 +2,7 @@ import Section from "@/components/Section";
 import SceneMount from "@/components/SceneMount";
 import PriceEl from "@/components/PriceEl";
 import HoverGhost from "@/components/HoverGhost";
-import NavMenu from "@/components/NavMenu";
+import { NavMenuWithPanel } from "@/components/NavMenu";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -64,13 +64,16 @@ export const HERO = {
 
      x/y are percentages OF THE NAV, like an `in: "nav"` element.
 
-     ⚠ THE ITEMS ARE STILL PLACEHOLDERS. The nav's three "Text" labels have
-     been unwritten for several sessions; these are the same placeholders in
-     a different shape, not new content. */
+     ⚠ THE PANEL IS EMPTY ON PURPOSE AND `panelHeight` IS WHAT GIVES IT A
+     SHAPE. The mechanism animates `grid-template-rows: 0fr -> 1fr`, which
+     resolves to the content's own height — with no content that is zero and
+     nothing appears to happen. This is a stand-in so the motion can be judged
+     first; when real content lands, drop it and the panel sizes itself. */
   menu: {
     x: 4.6,
     y: 50,
-    items: ["Features", "Pricing", "Buy", "Reviews"],
+    panelHeight: 320,
+    overlay: true,
   },
 
   /* ⚠ THE NAV LINKS ARE A FLEX ROW, NOT FOUR ABSOLUTE SLOTS. They were
@@ -266,14 +269,21 @@ export default function Hero() {
       {nav.show && (
         <nav
           aria-label="Main"
-          className="absolute z-20"
+          /* ⚠ z-30, NOT z-20 — IT HAS TO BEAT THE HEADLINE. The headline is
+             also z-20 and comes later in source, so at equal z it painted
+             over the open panel and the hero's type showed through it. The
+             nav overlays the page when open, so it outranks the content. */
+          className="absolute z-30"
+          /* ⚠ NO BACKGROUND AND NO RADIUS HERE ANY MORE — <NavMenuWithPanel>
+             paints the surface on its own layer so it can grow to meet the
+             panel while this box stays exactly the size the `in: "nav"`
+             elements resolve their percentages against. Putting a fill back
+             here would draw a second, non-growing bar on top of it. */
           style={{
             left: fluid(nav.inset),
             right: fluid(nav.inset),
             top: fluid(nav.y),
             height: fluid(nav.h),
-            borderRadius: `${nav.radius}px`,
-            background: nav.fill,
           }}
         >
           {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
@@ -321,12 +331,14 @@ export default function Hero() {
             </a>
           </div>
 
-          <NavMenu
+          <NavMenuWithPanel
             x={HERO.menu.x}
             y={HERO.menu.y}
             color={HERO.wordmark.color}
-            items={HERO.menu.items}
-            panelFill={HERO.nav.fill}
+            fill={HERO.nav.fill}
+            radius={HERO.nav.radius}
+            panelHeight={HERO.menu.panelHeight}
+            overlay={HERO.menu.overlay}
           />
 
           {/* ⚠ A CLIENT COMPONENT, AND ONLY BECAUSE OF TWO HANDLERS. This
