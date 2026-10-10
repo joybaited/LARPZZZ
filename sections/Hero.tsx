@@ -1,4 +1,7 @@
 import Section from "@/components/Section";
+/* ⚠ KEPT THOUGH THE MOUNT IS COMMENTED OUT — see the note at the mount
+   site. Re-adding the phone should be one line, not an import hunt. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SceneMount from "@/components/SceneMount";
 import PriceEl from "@/components/PriceEl";
 import HoverGhost from "@/components/HoverGhost";
@@ -82,7 +85,7 @@ export const HERO = {
   menu: {
     x: 4.6,
     y: 50,
-    panelHeight: 800,
+    panelHeight: 380,
     overlay: true,
   },
 
@@ -236,7 +239,13 @@ const headSize = (min: number, max: number) =>
    floatHz 0.4 — and this config is the re-tune: [-6.3, 156.9, 5.7], fit 0.71,
    floatHz 0.2, plus a position offset it has no default for. Mounting
    <SceneMount /> bare renders the OLD angles, silently and without an error,
-   which is the whole reason this prop exists. */
+   which is the whole reason this prop exists.
+
+   ⚠ UNUSED WHILE THE PHONE IS OUT OF THE HERO, AND KEPT DELIBERATELY. It
+   is the re-tuned pose; deleting it would mean re-deriving those numbers from
+   /hero-tuner to put the phone back. The lint disable is the cost of keeping
+   it, and it is cheaper than losing the tune. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PHONE: PhoneTune = {
   rotX: HERO.phone.rotation[0],
   rotY: HERO.phone.rotation[1],
@@ -261,20 +270,25 @@ export default function Hero() {
           It rides on an absolute div rather than a `style` prop on <Section>,
           which has none and already uses style for its own minBlockSize. */}
       <div className="absolute inset-0 -z-20" style={{ background: HERO.bg }} />
-      {/*
-        the 3D phone. The canvas is absolute and belongs to THIS section — it
-        is not mounted in page.tsx, so it cannot ride down the page over
-        section two's cards (see docs/HERO.md).
+      {/* ⚠ THE 3D PHONE IS OUT OF THE HERO. NOTHING IS DELETED — the glb, the
+          canvas, <Scene>, <Phone>, <SceneMount> and the whole `HERO.phone`
+          block are all still here and still wired. Only the mount is gone, so
+          putting it back is this one line:
 
-        Its wrapper in Scene.tsx is z-10, so the nav, headline and elements
-        are z-20 to paint above it, and the ground is -z-20 to stay behind.
+            <SceneMount tune={PHONE} camZ={HERO.phone.camera.z} fov={HERO.phone.camera.fov} />
 
-        ⚠ <PhoneBox>, the grey stand-in, is still in the repo and is what
-        /hero-tuner shows by default — WebGL every frame makes the stage heavy
-        to lay out against. Swap it back in here the same way if that is
-        wanted while designing.
-      */}
-      <SceneMount tune={PHONE} camZ={HERO.phone.camera.z} fov={HERO.phone.camera.fov} />
+          ⚠ WHY IT CAME OUT: measured, the canvas is essentially all of the
+          page's jank. Main-thread blocking over 15s on the same page —
+          138ms without the canvas, 14,253ms with it, worst single stall
+          7,734ms. The cause is the glb's 8 webp textures (2.3MB) decoding
+          and uploading to the GPU on the main thread; Draco already runs in
+          a worker, texture upload cannot. Fixing it properly means KTX2
+          inside the glb, and that binary is @snvzyn's (CLAUDE.md) so it
+          needs their sign-off.
+
+          ⚠ /hero-tuner IS UNAFFECTED — it dropped the canvas already and
+          tunes the flat layout. The glb still loads there only if something
+          asks for it, which nothing now does. */}
 
       {/*
         nav. ⚠ ABSOLUTE, NOT IN FLOW. It was `pt-(--space-m)` with the bar in
