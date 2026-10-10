@@ -82,7 +82,7 @@ export const HERO = {
   menu: {
     x: 4.6,
     y: 50,
-    panelHeight: 320,
+    panelHeight: 800,
     overlay: true,
   },
 
@@ -154,7 +154,13 @@ export const HERO = {
      ⚠ z IS ABOUT THE CANVAS. Scene.tsx's wrapper is z-10, so anything above
      that paints IN FRONT of the phone and anything below it BEHIND. The
      balloons are 20 and sit in front at the phone's foot; the padlock is 5
-     and tucks behind the model at its top right. */
+     and tucks behind the model at its top right.
+
+     ⚠ KEEP EVERY STICKER BELOW 30. The nav is z-30 so that the open dropdown
+     covers the hero — a sticker at 30 or above would punch through the panel
+     and float over it, which is the same bug the headline had at z-20 before
+     the nav was raised. Nothing enforces this, so it is a rule, not a
+     guarantee: 20 is the intended ceiling for "in front of the phone". */
   stickers: [
     {
       name: "balloons",

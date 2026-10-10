@@ -75,6 +75,27 @@ export function NavMenuWithPanel({
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
 
+  /* ⚠ THE SURFACE MEASURES THE PANEL RATHER THAN TRUSTING `panelHeight`.
+     The surface has to reach exactly as far down as the panel does, and
+     `panelHeight` is only the EMPTY panel's stand-in height — the moment the
+     panel holds real content, or `panelHeight` is retuned, a hardcoded reach
+     leaves the panel hanging off the bottom of its own background. Measuring
+     keeps the two fused whatever decides the height.
+
+     `useLayoutEffect` would be the usual choice, but it warns during SSR and
+     the value is only needed once the panel has laid out; the surface's own
+     300ms delay means an effect lands long before it starts moving. */
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [reach, setReach] = useState(panelHeight);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setReach(el.scrollHeight));
+    ro.observe(el);
+    setReach(el.scrollHeight);
+    return () => ro.disconnect();
+  }, [panelHeight]);
+
   /* ⚠ ESCAPE CLOSES AND FOCUS GOES BACK TO THE BUTTON. Without the second
      half, closing with the keyboard drops focus onto <body> and the next Tab
      restarts from the top of the document — the menu becomes a trap that is
@@ -155,7 +176,7 @@ export function NavMenuWithPanel({
         style={{
           background: fill,
           inset: open ? "-4px 0px" : "0px",
-          bottom: open ? `-${panelHeight + 6}px` : "0px",
+          bottom: open ? `-${reach + 6}px` : "0px",
           borderRadius: `${radius}px`,
           /* ⚠ THE SURFACE LEADS, THE PANEL FOLLOWS — AND THAT GAP IS THE
              WHOLE TWO-STEP. `inset` fires at 0ms so the bar visibly swells
@@ -269,7 +290,7 @@ export function NavMenuWithPanel({
 
                 `panelHeight` is what gives the row a height to animate to;
                 with real children it can go once they fill it. */}
-            <div className="relative" style={{ minHeight: `${panelHeight}px` }}>
+            <div ref={panelRef} className="relative" style={{ minHeight: `${panelHeight}px` }}>
               {children}
             </div>
           </div>

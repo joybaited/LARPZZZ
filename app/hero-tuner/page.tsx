@@ -284,6 +284,7 @@ export default function HeroTuner() {
   /* true while a moving element is over the bar, so the bar can show it is a
      drop target rather than leaving you to guess. */
   const [navHot, setNavHot] = useState(false);
+  const [menuHot, setMenuHot] = useState(false);
   /* ⚠ THE DROPDOWN IS A STAGE STATE, NOT AN ANIMATION TO WATCH. Held open so
      elements can be arranged INSIDE the open panel; the real transition is on
      /hero. Without this the panel's area cannot be laid out against at all. */
@@ -470,10 +471,15 @@ export default function HeroTuner() {
     const g: Guide[] = [];
 
     if (d.mode === "move") {
+      /* the live drop-target highlight. Same precedence as the drop itself:
+         the panel wins over the bar, or dropping into an open panel would
+         light up the bar instead. */
+      const hit = (r: DOMRect | undefined) =>
+        !!r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      const pb = stage.current?.querySelector("[data-menu-panel]")?.getBoundingClientRect();
       const nb = stage.current?.querySelector("nav")?.getBoundingClientRect();
-      setNavHot(
-        !!nb && e.clientX >= nb.left && e.clientX <= nb.right && e.clientY >= nb.top && e.clientY <= nb.bottom,
-      );
+      setMenuHot(hit(pb));
+      setNavHot(!hit(pb) && hit(nb));
       const hw = (d.el.w ?? 0) / 2, hh = (d.el.h ?? 0) / 2;
       const sx = applySnap(d.el.x + dxPct, hw, L.xs, pxX);
       const sy = applySnap(d.el.y + dyPct, hh, L.ys, pxY);
@@ -536,6 +542,7 @@ export default function HeroTuner() {
     drag.current = null;
     setGuides([]);
     setNavHot(false);
+    setMenuHot(false);
 
     /* ⚠ DROPPED ON THE NAV? THEN IT LIVES IN THE NAV.
        Drag a button over the bar and let go and it becomes a child of it —
@@ -554,13 +561,26 @@ export default function HeroTuner() {
     const navEl = stageEl?.querySelector<HTMLElement>("nav");
     if (!stageEl || !navEl) return;
 
-    const nb = navEl.getBoundingClientRect();
-    const overNav =
-      e.clientX >= nb.left && e.clientX <= nb.right && e.clientY >= nb.top && e.clientY <= nb.bottom;
-    const wasInNav = inNav.includes(d.el.name);
-    if (overNav === wasInNav) return;
+    /* ⚠ THE PANEL IS TESTED BEFORE THE BAR. When the dropdown is open the
+       panel hangs directly off the bar's bottom edge, and the surface behind
+       them is one box — so a point in the panel is NOT inside the <nav>'s own
+       rect, but the two are adjacent and easy to confuse. Checking the panel
+       first means a drop into the panel can never be read as a drop onto the
+       bar. */
+    const panelEl = stageEl.querySelector<HTMLElement>("[data-menu-panel]");
+    const inside = (r: DOMRect | undefined) =>
+      !!r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
 
-    const host = overNav ? nb : stageEl.getBoundingClientRect();
+    const pb = panelEl?.getBoundingClientRect();
+    const nb = navEl.getBoundingClientRect();
+    const overMenu = inside(pb);
+    const overNav = !overMenu && inside(nb);
+
+    const was = inMenu.includes(d.el.name) ? "menu" : inNav.includes(d.el.name) ? "nav" : "section";
+    const now = overMenu ? "menu" : overNav ? "nav" : "section";
+    if (now === was) return;
+
+    const host = now === "menu" ? pb! : now === "nav" ? nb : stageEl.getBoundingClientRect();
     const node = stageEl.querySelector<HTMLElement>(`[data-el="${d.i}"] > div > div`);
     const r = node?.getBoundingClientRect();
     if (r) {
@@ -573,7 +593,8 @@ export default function HeroTuner() {
       if (els[d.i]?.h !== undefined) patch.h = +((r.height / host.height) * 100).toFixed(1);
       set(d.i, patch);
     }
-    setInNav((v) => (overNav ? [...v, d.el.name] : v.filter((n) => n !== d.el.name)));
+    setInNav((v) => (now === "nav" ? [...new Set([...v, d.el.name])] : v.filter((n) => n !== d.el.name)));
+    setInMenu((v) => (now === "menu" ? [...new Set([...v, d.el.name])] : v.filter((n) => n !== d.el.name)));
   };
 
   /* ⚠ DECLARED ABOVE ITS FIRST USE. `const` is in the temporal dead zone
@@ -960,7 +981,11 @@ ${els.map((e) => {
               borderRadius: `${ground.navRadius}px`,
               background: ground.navFill,
             }}
-            className={`z-20 cursor-grab transition-shadow active:cursor-grabbing ${
+            /* ⚠ z-30, MATCHING THE PAGE. The headline is z-20 and comes later
+               in source, so at an equal z it paints over the open dropdown
+               and the hero's type shows through the panel. Same fix, same
+               reason, as sections/Hero.tsx. */
+            className={`z-30 cursor-grab transition-shadow active:cursor-grabbing ${
               navHot
                 ? "shadow-[0_0_0_3px_rgb(56_189_248)]"
                 : gsel === "nav"
@@ -975,6 +1000,47 @@ ${els.map((e) => {
                 when the bar moves, which is the whole point of "inside". */}
             {els.map((el, i) => (navOf(el) ? elView(el, i) : null))}
 
+            {/* ⚠ THE REAL HAMBURGER, AND IT TOGGLES THE PANEL. The stage
+                carries the page's own furniture, so the way you open the
+                dropdown here is the way you open it there — click it. The
+                checkbox in the side panel does the same thing and is kept
+                because it can hold the panel open while you work.
+
+                ⚠ `stopPropagation` ON pointerdown, OR THE NAV DRAG EATS THE
+                CLICK. The <nav> starts a y-drag on pointerdown, which captures
+                the pointer, so without this the button never sees a click at
+                all and the panel cannot be opened from the stage.
+
+                Not part of `els` — like the nav and the headline it is the
+                section's furniture, and <NavMenuWithPanel> on the page owns
+                the real one. This is the handle, not a copy of the animation. */}
+            <button
+              type="button"
+              aria-label="Menu"
+              aria-expanded={navOpen}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); setNavOpen((v) => !v); }}
+              className="absolute z-10 grid h-11 w-11 cursor-pointer place-items-center rounded-lg border-0 bg-transparent p-0"
+              style={{ left: `${HERO.menu.x}%`, top: `${HERO.menu.y}%`, transform: "translate(-50%, -50%)" }}
+            >
+              <span className="relative block h-[14px] w-[22px]">
+                {[0, 1].map((i) => (
+                  <span
+                    key={i}
+                    aria-hidden="true"
+                    className="absolute left-0 block h-[2px] w-full rounded-full transition-transform duration-300"
+                    style={{
+                      background: HERO.wordmark.color,
+                      top: "50%",
+                      transform: navOpen
+                        ? `translateY(-50%) rotate(${i === 0 ? -45 : 45}deg) scaleX(0.75)`
+                        : `translateY(calc(-50% + ${i === 0 ? -3 : 3}px))`,
+                    }}
+                  />
+                ))}
+              </span>
+            </button>
+
             {/* ⚠ THE DROPDOWN, HELD OPEN SO IT CAN BE LAID OUT AGAINST. On
                 /hero this expands with grid-template-rows 0fr -> 1fr; here it
                 is simply present or not, because a panel mid-transition is
@@ -986,7 +1052,9 @@ ${els.map((e) => {
                 converts — see `menuH` there. */}
             {navOpen && (
               <div
-                className="absolute right-0 left-0 top-full mt-[6px]"
+                data-menu-panel=""
+                onPointerDown={(e) => e.stopPropagation()}
+                className={`absolute right-0 left-0 top-full mt-[6px] ${menuHot ? "shadow-[0_0_0_3px_rgb(217_70_239)]" : ""}`}
                 style={{
                   height: `${(ground.menuH / 100) * vh}px`,
                   background: ground.navFill,
