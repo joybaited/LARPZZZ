@@ -154,7 +154,7 @@ export const HERO = {
     x: 50.9,
     y: 50,
     size: 28.7,
-    ghost: 54,
+    ghost: 46,
     ghostY: -5,
     color: "#EAC2FF",
   },
@@ -401,7 +401,17 @@ export default function Hero() {
               plus a button do not fit a 358px bar at any type size that is
               still readable, and squeezing them is what makes a nav break.
               That is the whole reason the burger exists. */}
-          <div className="absolute top-1/2 right-[2.5%] hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
+          {/* ⚠ z-20 SO THE DIM OVERLAY DOES NOT PAINT OVER THE CTA. The
+              overlay is `fixed inset-0 z-0` INSIDE this nav; this row had
+              `z-index: auto`, so source order put the overlay on top and the
+              Login button visibly darkened as the panel opened. Measured: the
+              button's own opacity stayed 1 the whole time and
+              elementFromPoint at its centre returned the overlay — it was
+              never dimmed, it was covered.
+
+              The row has to beat the overlay's 0 but stay under the panel,
+              which is why this is 20 and not something larger. */}
+          <div className="absolute top-1/2 right-[2.5%] z-20 hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
             {/* ⚠ THE LINKS LEAVE THE BAR WHEN THE PANEL OPENS, THE CTA DOES
                 NOT. They are the same four labels the panel lists, so with
                 the panel open the bar would show them twice — and the panel
