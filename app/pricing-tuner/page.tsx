@@ -35,14 +35,30 @@ type Guide = { x?: number; y?: number };
 const SNAP = 6; /* px — the threshold real tools use (6-10) */
 
 const clone = (c: Card[]): Card[] => c.map((x) => ({ ...x, els: x.els.map((e) => ({ ...e })) }));
+
+/* a hex for `<input type="color">`, which refuses anything else and silently
+   shows black. The config holds design tokens, so they are resolved off the
+   live computed styles rather than hardcoded here — a re-pick in globals.css
+   then moves the tuner's swatches with it.
+   ⚠ `"use client"` DOES NOT MEAN "BROWSER ONLY". A client component still
+   prerenders on the server, where there is no `getComputedStyle` — without
+   this guard the whole route 500s on `getComputedStyle is not defined`. */
+const swatch = (v: string | undefined) => {
+  if (!v) return "#ffffff";
+  const t = v.match(/^var\((--[\w-]+)\)$/);
+  if (!t) return v;
+  if (typeof window === "undefined") return "#ffffff";
+  const live = getComputedStyle(document.documentElement).getPropertyValue(t[1]).trim();
+  return /^#[0-9a-f]{6}$/i.test(live) ? live : "#ffffff";
+};
 const START: Card[] = clone(CARDS as Card[]);
 
 /* defaults per kind. w/h are % of the card, size/radius are px. */
 const NEW: Record<El["kind"], Partial<El>> = {
-  text: { text: "Text", size: 18, w: undefined, color: "#ffffff", weight: 400, align: "center" },
-  box: { text: "", w: 60, h: 12, radius: 8, fill: "#ffffff", color: "#000000", size: 15, weight: 600 },
-  ellipse: { text: "", w: 20, h: 12, fill: "#ffffff", color: "#000000", size: 15, weight: 600 },
-  line: { text: "", w: 60, size: 1, fill: "#ffffff" },
+  text: { text: "Text", size: 18, w: undefined, color: "var(--color-violet)", weight: 400, align: "center" },
+  box: { text: "", w: 60, h: 12, radius: 8, fill: "var(--color-violet)", color: "var(--color-grape)", size: 15, weight: 600 },
+  ellipse: { text: "", w: 20, h: 12, fill: "var(--color-violet)", color: "var(--color-grape)", size: 15, weight: 600 },
+  line: { text: "", w: 60, size: 1, fill: "var(--color-violet)" },
 };
 
 /* ⚠ NAMES ARE "<kind> <n>", INCLUDING ON A DUPLICATE. Appending " copy"
@@ -361,7 +377,7 @@ ${c.els.map((e) => {
 ];`;
 
   return (
-    <div className="h-dvh w-full overflow-hidden bg-haze">
+    <div className="h-dvh w-full overflow-hidden bg-violet">
       <div
         ref={stage}
         onPointerMove={onMove}
@@ -376,7 +392,7 @@ ${c.els.map((e) => {
               key={ci}
               data-card={ci}
               style={card.fill ? { background: card.fill } : undefined}
-              className="relative h-[640px] min-w-0 flex-1 overflow-hidden rounded-[20px] border-[3px] border-ink bg-ink"
+              className="relative h-[640px] min-w-0 flex-1 overflow-hidden rounded-[20px] border-[3px] border-grape bg-grape"
             >
               {card.els.map((el, i) => {
                 const picked = sel?.c === ci && sel.i === i;
@@ -677,7 +693,14 @@ ${c.els.map((e) => {
                   ] as [keyof El, string][]).map(([k, label]) => (
                     <label key={k} className="block">
                       <span className="text-black/50">{label}</span>
-                      <input type="color" value={(current[k] as string) ?? "#ffffff"} onFocus={push}
+                      {/* ⚠ A NATIVE COLOUR INPUT ONLY ACCEPTS A HEX LITERAL.
+                          The config holds `var(--color-violet)` now, and an
+                          input handed that shows BLACK with no error — then
+                          writes that black back the moment any dial next to
+                          it is touched. So the token is resolved to its hex
+                          for the swatch; `set` still writes whatever the user
+                          picks, which is a hex, which is correct. */}
+                      <input type="color" value={swatch(current[k] as string | undefined)} onFocus={push}
                         onChange={(e) => set(sel.c, sel.i, { [k]: e.target.value })}
                         className="mt-1 h-8 w-full rounded border border-black/15" />
                     </label>

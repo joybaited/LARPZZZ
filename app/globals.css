@@ -47,6 +47,13 @@
   --color-lilac: #9d90aa;
   --color-mist: #cbc9dd;
 
+  /* the violet pair the sections settled on. Faq and Testimonials had both
+     hardcoded; Pricing is the third to use them, which is the point at which
+     a raw hex in three files starts drifting. `violet` is the ground, `grape`
+     the ink on it — they are always used as a pair, either way round. */
+  --color-violet: #eac2ff;
+  --color-grape: #3d065f;
+
   /* layout */
   --content-max: 80rem;        /* 1280 */
   --gutter: clamp(1.25rem, 0.46rem + 2.03vw, 2.5rem);   /* 20 -> 40 */

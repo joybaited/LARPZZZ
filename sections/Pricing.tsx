@@ -29,7 +29,7 @@ import PriceEl from "@/components/PriceEl";
 
 /* the card. LZ-2: 360x640, 20px radius, 3px border, 60px gutter.
  *
- * ⚠ FILL AND BORDER ARE BOTH INK AND ARE KEPT SEPARATE ANYWAY. The 3px edge
+ * ⚠ FILL AND BORDER ARE BOTH GRAPE AND ARE KEPT SEPARATE ANYWAY. The 3px edge
  * cannot be seen against its own fill, but dropping the border would silently
  * take 3px off each side of the 360x640 (box-sizing is border-box) and throw
  * away the ability to give the fill a lighter edge later. LZ-2 held this
@@ -110,63 +110,76 @@ export type PriceEl = {
   in?: "nav" | "menu";
 };
 
-/* `fill` is the card's own background. Only the middle card sets one —
- * the reference inverts it to pull the eye to the middle tier. Omitted
- * means ink, which is the other two. */
+/* `fill` is the card's own background. NONE OF THE THREE SETS ONE NOW —
+ * Kez's call, all three cards read identically. The reference inverted the
+ * middle tier to pull the eye; that emphasis is gone deliberately, not
+ * missed. Omitted means the card's class fill, which is grape.
+ *
+ * ⚠ THE SECTION IS THE HOUSE VIOLET PAIR, NOT ITS OWN MONOCHROME. It was
+ * `bg-haze` with ink cards and white text — the only section still on black
+ * and white, which is why it read as a different site. It is now `violet`
+ * ground / `grape` cards, the same pair Faq and Testimonials use, so the
+ * three violet sections match. The CTA pill inverts within the card: violet
+ * fill, grape label.
+ *
+ * ⚠ COLOURS ARE TOKENS, NOT HEX. `var(--color-violet)` / `--color-grape`,
+ * added to globals.css this session. Faq and Testimonials still hold the raw
+ * hex and should be converted when either is next touched — until then the
+ * same two colours are written two ways in the codebase. */
 export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
   {
     name: "Card 1",
     els: [
-      { name: "text 1", kind: "text", text: "Starter", x: 50, y: 7.6, w: 86, size: 26, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 3", kind: "text", text: "7 days", x: 50, y: 23.5, w: 86, size: 16, weight: 400, align: "left", color: "#8a8a8a", show: false },
-      { name: "box 5", kind: "box", x: 50, y: 33.1, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "#ffffff", color: "#000000" },
-      { name: "text 6", kind: "text", text: "Get Started", x: 50, y: 33.1, size: 16, weight: 500, align: "center", color: "#000000" },
-      { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 10", kind: "text", text: "Community support", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 11", kind: "text", text: "Access to core AI tools", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff", show: false },
-      { name: "text 12", kind: "text", text: "Access to core AI tools", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff", show: false },
+      { name: "text 1", kind: "text", text: "Starter", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 3", kind: "text", text: "7 days", x: 50, y: 23.5, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60, show: false },
+      { name: "box 5", kind: "box", x: 50, y: 33.1, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "text 6", kind: "text", text: "Get Started", x: 50, y: 33.1, size: 16, weight: 500, align: "center", color: "var(--color-grape)" },
+      { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Community support", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 11", kind: "text", text: "Access to core AI tools", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)", show: false },
+      { name: "text 12", kind: "text", text: "Access to core AI tools", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)", show: false },
     ],
   },
   {
     name: "Card 2",
     els: [
-      { name: "text 1", kind: "text", text: "Monthly", x: 50, y: 9.0, w: 86, size: 26, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 3", kind: "text", text: "/month", x: 50, y: 23.6, w: 86, size: 16, weight: 400, align: "left", color: "#8a8a8a" },
-      { name: "box 5", kind: "box", x: 50, y: 33.5, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "#ffffff", color: "#000000" },
-      { name: "text 6", kind: "text", text: "Try It Free", x: 50, y: 33.5, size: 16, weight: 500, align: "center", color: "#000000" },
-      { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 10", kind: "text", text: "Priority email support", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 11", kind: "text", text: "Custom export presets", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 12", kind: "text", text: "Access to core AI tools", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff", show: false },
+      { name: "text 1", kind: "text", text: "Monthly", x: 50, y: 9.0, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 3", kind: "text", text: "/month", x: 50, y: 23.6, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
+      { name: "box 5", kind: "box", x: 50, y: 33.5, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "text 6", kind: "text", text: "Try It Free", x: 50, y: 33.5, size: 16, weight: 500, align: "center", color: "var(--color-grape)" },
+      { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Priority email support", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 11", kind: "text", text: "Custom export presets", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 12", kind: "text", text: "Access to core AI tools", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)", show: false },
     ],
   },
   {
     name: "Card 3",
     els: [
-      { name: "text 1", kind: "text", text: "Lifetime", x: 50, y: 7.6, w: 86, size: 26, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: 62, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 3", kind: "text", text: "once", x: 50, y: 22.2, w: 86, size: 16, weight: 400, align: "left", color: "#8a8a8a" },
-      { name: "box 5", kind: "box", x: 50, y: 33.2, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "#ffffff", color: "#000000" },
-      { name: "text 6", kind: "text", text: "Buy Lifetime", x: 50, y: 33.2, size: 16, weight: 500, align: "center", color: "#000000" },
-      { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 10", kind: "text", text: "Founder badge", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 11", kind: "text", text: "Direct line to the team", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
-      { name: "text 12", kind: "text", text: "No subscription, ever", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "#ffffff" },
+      { name: "text 1", kind: "text", text: "Lifetime", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 3", kind: "text", text: "once", x: 50, y: 22.2, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
+      { name: "box 5", kind: "box", x: 50, y: 33.2, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "text 6", kind: "text", text: "Buy Lifetime", x: 50, y: 33.2, size: 16, weight: 500, align: "center", color: "var(--color-grape)" },
+      { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Founder badge", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 11", kind: "text", text: "Direct line to the team", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 12", kind: "text", text: "No subscription, ever", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
     ],
   },
 ];
 
 export default function Pricing() {
   return (
-    <Section id="pricing" className="bg-haze">
+    <Section id="pricing" className="bg-violet text-grape">
       <div className="flex min-h-[100svh] items-center justify-center py-(--space-3xl)">
         <ul
           role="list"
@@ -179,7 +192,7 @@ export default function Pricing() {
                  of empty black, so the height is only asserted once the row
                  is a row. */
               style={card.fill ? { background: card.fill } : undefined}
-              className="min-w-0 flex-1 rounded-[20px] border-[3px] border-ink bg-ink max-sm:aspect-[360/480] sm:h-[640px]"
+              className="min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape max-sm:aspect-[360/480] sm:h-[640px]"
             >
               {/* the inner <article>. `relative` is what the elements' x/y
                   percentages resolve against, so they are card-relative and
