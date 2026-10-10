@@ -6,6 +6,22 @@ Design-led site with 3D. Two devs working on the same sections.
 
 ## Reminders for Claude — act on these unprompted
 
+**Do not take screenshots to check how something looks. The owner does the
+visual verification.** No Playwright screenshot, no cropping, no "let me see
+how that landed" after a tweak. Make the change, say what you changed, stop —
+they have the browser open. This burned a lot of time across a session of
+small design nudges, and every shot is slow here because the page is heavy.
+
+Still fine, because they are not looking at pixels:
+
+- **Measuring** — geometry, timings, overlap, `getBoundingClientRect`,
+  main-thread blocking. Numbers answer questions a look cannot.
+- **A check that something is not broken** — a route returning 500, a
+  console error, an element that did not render at all.
+- **When they ask for a screenshot.**
+
+A position, a size, a colour, a spacing, "does this look right" — theirs.
+
 **Read `HANDOVER.md` at the start of every session.** It is the running log of
 what happened previously, what is still open, and what the last session knew
 that this one does not.

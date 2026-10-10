@@ -210,12 +210,12 @@ export const HERO = {
       name: "lock",
       src: "/images/sticker-lock.webp",
       alt: "",
-      x: 68.5,
+      x: 71,
       /* ⚠ IT SITS BEHIND THE PHONE, so only what clears the top bezel reads.
          Lowering it hides more of it — that is the intent here, a deeper
          tuck, but it is also why y and w have to be judged together rather
          than one at a time. */
-      y: 21.5,
+      y: 24,
       w: 14,
       rise: 13,
       drift: 7,
