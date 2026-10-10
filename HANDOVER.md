@@ -38,6 +38,244 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-10 (session 14)
+
+The nav became an osmo.supply-style dropdown, **the 3D phone came out of the
+site**, and `/hero-tuner` lost its 3D. Everything — session 13's 14 unpushed
+commits plus this session's 11 — is **merged to `main` and pushed**, 25
+commits, fast-forward.
+
+### ⚠ START HERE
+
+1. **`main` IS AT `9146c42` AND PUSHED.** Working tree clean, on `main`.
+   `tweak/hero-kez` still exists locally and on the remote, now identical.
+   The owner said "merge this to main for now, my call, no questions" —
+   the rule in `docs/COLLABORATION.md` was waived **by them, for that
+   merge**, same as session 13. It is not a standing change.
+2. **⚠ THE 3D PHONE IS OUT OF THE LIVE SITE.** A flat webp render stands in
+   its place. **Nothing is deleted** — see below. If @snvzyn looks at the
+   deploy and cannot find their seam fix, this is why.
+3. **⚠ `app/globals.css` AND `sections/Pricing.tsx` CHANGED AND ARE NOW ON
+   `main`.** Shared files, @snvzyn still not told — eleven sessions.
+4. **A stash is parked:** `stash@{0}`, the hero entrance glide. Read the
+   section on it before deciding to drop it; two parts of it are independent
+   bug fixes.
+5. **The dev server is running** on port 3000.
+
+### Done
+
+- **The nav expands into a dropdown, osmo.supply's mechanism**, read off
+  their live CSS and JS rather than a recreation.
+- **The 3D phone removed from the hero**, replaced by a flat render.
+- **`/hero-tuner` stripped of 3D**, plus headline typography dials and a
+  dropdown-panel section.
+- **The nav's four links move into the panel** when it opens.
+- **Sticker and wordmark tuning** — padlock behind the phone, enlarged,
+  repositioned; hover ghost 54px -> 46px.
+
+### ⚠ THE JANK WAS THE CANVAS, AND THE NUMBERS ARE NOT CLOSE
+
+Main-thread blocking over the same 15s window, same page:
+
+| | stalls | total blocked | worst single |
+|---|---|---|---|
+| `/no-hero` (no canvas) | 2 | **138ms** | 82ms |
+| `/hero` (with canvas) | 10 | **14,253ms** | **7,734ms** |
+| `/hero` after removal | 4 | **287ms** | 117ms |
+
+**99% of the page's jank was WebGL.** Markup, CSS and animation together
+account for 138ms. And the stalls landed in the worst place: a **2,403ms
+freeze at 4,014ms**, exactly when an entrance animation wants to be smooth.
+
+**The cause is in the glb: 8 webp textures, 2.3MB**, which decode and upload
+to the GPU **on the main thread**. Read out of the file's own header. Draco
+decompression already runs in a worker; texture upload cannot. Researched:
+**GLTFLoader cannot be moved to a worker** — three.js issue #18765 asked for
+exactly that and was **closed as not planned**, because loaders need
+`window.Image`; the community workaround is documented to return deformed
+meshes.
+
+So the real fix is **KTX2 inside the glb** (transcoding runs in a worker,
+upload is far cheaper) — and that rewrites `public/models/iphone.glb`, which
+per CLAUDE.md is @snvzyn's and has three scripts that each overwrite the
+others. **Needs their sign-off. Do not do it unasked.**
+
+⚠ **These numbers are inflated.** Headless Chromium here has no GPU
+(SwiftShader). The 100x ratio is real; the absolute figures are not what a
+user sees. **Real-GPU hero performance is STILL unmeasured — open since
+session 10.**
+
+### ⚠ THE PHONE IS PRESERVED, NOT DELETED — HOW TO PUT IT BACK
+
+`public/models/iphone.glb` is **byte-identical** and its last commit is still
+`62d1880`, @snvzyn's seam fix. `Scene.tsx`, `Phone.tsx`, `SceneMount.tsx`,
+`PhoneTune` and the whole `HERO.phone` block are all still wired.
+
+**Only the mount is commented out.** Restoring it is one line, written out at
+the mount site in `sections/Hero.tsx`:
+
+```tsx
+<SceneMount tune={PHONE} camZ={HERO.phone.camera.z} fov={HERO.phone.camera.fov} />
+```
+
+`PHONE` and the `SceneMount` import are kept with `eslint-disable` comments
+rather than stripped — **`PHONE` is the re-tuned pose**, and deleting it
+would mean deriving those numbers from `/hero-tuner` again.
+
+### ⚠ THE FLAT RENDER: THE SOURCE HAD TO BE CROPPED
+
+`public/images/hero-phone.webp`, 79KB, from the owner's `larpblak (1).png`.
+
+**The png was a 1080x2160 canvas holding a 999x1251 phone** — 477px of empty
+space above it, 432px below. Dropped in uncropped it reads badly off-centre
+and too small, **and no x/y/w in the config can fix that, because the padding
+scales with the image.** The committed webp is cropped to the phone, so
+`HERO.art.w` means the width of the PHONE. **Re-exporting from an uncropped
+source would silently change what that number means.**
+
+Position seeded from the model's own measured box — 26.09% wide, centred
+52.17% / 58.53%, read off a real render's alpha in session 10 — then enlarged
+to 33%.
+
+### ⚠ THE DROPDOWN: osmo.supply's MECHANISM, AND WHAT IS OURS NOT THEIRS
+
+Read from `slater.app/16596/55554.js` and `45446.css`, not a tutorial.
+
+- **Their JavaScript animates NOTHING.** The whole nav script flips one
+  attribute, `data-nav-status`, between "active" and "not-active". Every
+  pixel is a CSS transition keyed off it. GSAP is on their page for other
+  work and the nav never touches it. **So this needs no animation library.**
+- **The height animates with `grid-template-rows: 0fr -> 1fr`.** Pure CSS,
+  no measured height, no max-height guess. The inner wrapper needs
+  `min-height: 0` and `overflow: hidden` or the row will not collapse to
+  zero.
+- **One easing throughout:** `cubic-bezier(0.625, 0.05, 0, 1)`, their
+  `--cubic-default`. The smoothness is not per-element easings — it is one
+  curve plus staggered delays.
+- **The two-step feel is DELAYS, not sequenced callbacks.** Opening, the
+  surface moves first and the panel follows 300ms later; closing runs in
+  reverse. Measured ours: surface 110-450ms then panel 440-1300ms opening;
+  panel 0-590ms then surface 290-800ms closing.
+- **`rotate(0.001deg)` on every transform is theirs and deliberate** — forces
+  a composited layer so text does not shimmer as the row interpolates.
+
+**⚠ THE SURFACE IS A SEPARATE LAYER FROM THE `<nav>` BOX, AND THAT IS LOAD-
+BEARING.** The `in: "nav"` elements resolve percentages against the `<nav>`,
+which has a tuned fixed height, so it must never resize. Osmo has the same
+split (`.nav-bar__back`). It is what lets the bar swell to meet the panel
+while the wordmark and hamburger hold still — **verified at 172 sampled
+frames, `nav` stayed `10.8 / 57.0` throughout.**
+
+**The surface MEASURES the panel rather than trusting `panelHeight`.** That
+prop is only the empty panel's stand-in height; with real content a hardcoded
+reach leaves the panel hanging off its own background.
+
+**⚠ OSMO'S TOP BAR HAS NO LINKS AT ALL.** Checked their markup — hamburger,
+logo and buttons only, all eight links inside the panel. So **the fade-out
+is ours, not a copy of theirs**: we show four in the bar, so the bar's copy
+must leave when the panel's arrives or the same labels read twice. Both
+copies come from `HERO.navLinks.items`, so they cannot drift.
+
+### ⚠ THE ENTRANCE GLIDE IS IN `stash@{0}` — READ BEFORE DROPPING IT
+
+The owner asked for the text to sit centred and glide to its tuned positions
+when the model loads. **It was built, it worked, and it was reverted** when
+the jank turned out to be the canvas. Three things in it are worth keeping:
+
+1. **⚠ A REPLAY LATCH FOR THE PHONE'S ENTRANCE — AN INDEPENDENT BUG FIX, AND
+   THE BUG IS LIVE AGAIN NOW.** The entrance **replays every time the hero
+   scrolls back into view.** Reproduced: scroll to 4000px, scroll back, the
+   first frame is a 128KB silhouette against ~285KB settled — 88x the idle
+   spread. **Cause:** `frameloop: "never"` in `PauseOffscreen` **stops the
+   clock advancing**, so on return `elapsedTime` resumes near where it paused
+   while `t0` refers to the pre-pause timeline; `t` lurches and the spring
+   re-runs. Fix is ~8 lines, independent of everything else.
+2. **A Suspense-based ready signal replacing `useProgress`.**
+   **⚠ `useProgress` REPORTS 100 BEFORE LOADING HAS BEGUN** — it is
+   loaded/total against three's global manager and there is nothing to divide
+   yet. Measured: a useProgress gate passed at 1117ms with **no glb in the
+   resource timeline at all.** Gate on Suspense (a child of the boundary
+   cannot mount until the model resolves), or on `total > 0 && loaded ===
+   total && !active`.
+3. **⚠ A SERVER COMPONENT CANNOT DRIVE AN INLINE-STYLE TRANSITION ON ITS OWN
+   CHILDREN.** This cost most of the session. `<Hero>` is a server component,
+   so elements it passes into a client component **arrive as finished output
+   — a client re-render cannot change their inline styles.** React logged
+   `ready=true` at 1.8s while the DOM sat at the start transform **forever**.
+   Ruled out first: stale build, fragment wrapper, callback identity, wrong
+   element, duplicate mounts. **The fix is a class or `data-` attribute on a
+   client-owned wrapper with the transition in CSS** — a selector does not
+   care which component rendered the node. That is also why the dropdown and
+   the nav-link swap are both written that way.
+
+### Gotchas
+
+- **⚠ A SCREENSHOT DID NOT PROVE THE ANIMATION RAN.** Playwright's capture
+  let transitions settle, so a mid-flight frame looked finished. **Read
+  computed values in a rAF loop inside the page instead.**
+- **⚠ THE SWIFTSHADER CANVAS STARVES rAF.** A sampling loop got 2 frames in
+  1.9s and reported "nothing animated". **Remove the canvas
+  (`document.querySelectorAll("canvas").forEach(c => c.remove())`) before
+  measuring anything else on the page.** It also made a plain
+  `page.click()` time out at 30s.
+- **⚠ THE LOGIN BUTTON WAS NOT DIMMING, IT WAS COVERED.** Its own opacity
+  stayed 1; `elementFromPoint` at its centre returned the dim overlay. The
+  overlay is `fixed inset-0 z-0` inside the nav and the link row had
+  `z-index: auto`, so source order won. **An apparent opacity change is worth
+  one elementFromPoint before it is treated as one.**
+- **⚠ A `display: contents` BOX CANNOT BE TRANSFORMED OR FADED** — it has no
+  box. Tried for both the glide wrapper and the nav-link group; silently does
+  nothing.
+- **⚠ THE HEADLINE BLED THROUGH THE OPEN PANEL** — nav and `<h1>` were both
+  `z-20` and the h1 came later in source. Nav is `z-30` now. **Keep every
+  sticker below 30** or it will punch through the panel.
+- **A heredoc mangled `\n` inside a python string** writing a patch script —
+  the escape resolved in the heredoc so the match target never matched.
+  Sessions 10 and 11 recorded this; it is still true. **Use the Write/Edit
+  tools.**
+- **Python printing `⚠` to this console throws `UnicodeEncodeError`** even
+  when the file is fine. Use Grep/Read rather than printing file contents.
+- **`next lint --file` is not a valid option** in this version; `npx eslint
+  <path>` works.
+
+### Open
+
+1. **⚠ KTX2 / THE TEXTURE UPLOAD.** The only real fix for the hero's jank,
+   and it needs @snvzyn because it rewrites their glb. ⚠ Per-texture call:
+   `ETC1S` for colour, **`UASTC` for the six normal maps and the specular
+   map** — basis's colour-tuned compression wrecks independent channels.
+2. **⚠ THE DRACO DECODER IS STILL THIRD-PARTY AND SERIAL.** `Scene.tsx:11`
+   points at `gstatic.com` and it is only fetched **after** the glb parses —
+   session 11 measured ~1.9s of dead time. 98KB. Self-hosting is the cheapest
+   win on the list and has been open for three sessions. **Moot while the
+   phone is out, live again the moment it goes back.**
+3. **⚠ THE ENTRANCE REPLAYS ON SCROLL** — see the stash section. Live bug.
+4. **⚠ `app/globals.css` AND `Pricing.tsx` ON `main`, @snvzyn NOT TOLD.**
+   globals.css gained ~130 lines (dropdown + nav-link swap); Pricing's shared
+   `PriceEl` type gained `in: "menu"`, `glide?` and `pop?`. **Eleven
+   sessions.**
+5. **The stickers were tuned against the 3D model.** They still read at 1440,
+   but **only 1440 was checked** — 390/768/1024 were not.
+6. **The panel's link list is a guess at the design.** Large uppercase
+   display face, stacked top-left. Never reviewed.
+7. **`HERO.menu.panelHeight` (380) is a stand-in.** `0fr -> 1fr` resolves to
+   content height; drop it once the panel holds real content.
+8. **The hero entrance glide itself** — the pre-state positions were never
+   settled. The owner was going to tweak them.
+9. Everything from sessions 4-13 stands: the FAQ pills clipping at every
+   width, the FAQ answers still "New answer.", the Features copy still lorem,
+   `/pricing-tuner`'s 0-height wrapper bug, section 3 empty, PRs #2/#4/#5,
+   the `page.tsx` disagreement between CLAUDE.md and COLLABORATION.md.
+
+### Branch
+
+**On `main`, at `9146c42`, pushed and in sync with `origin/main`.** Working
+tree clean. `tweak/hero-kez` is identical and still exists both places.
+Tag `hero-osmo-nav` -> `e3d7f63` (the nav dropdown, before the tuner rework).
+`stash@{0}` holds the entrance glide. Dev server running on port 3000.
+
+---
+
 ## Session — 2026-10-09 (session 13)
 
 Everything from sessions 1-12 **pushed to `main`** at the owner's instruction,
