@@ -182,12 +182,8 @@ export const HERO = {
      ⚠ z IS ABOUT THE PHONE ART. `HERO.art` renders at z-10 — the same layer
      the 3D canvas used, so this scale did not change when the model came
      out — and anything above that paints IN FRONT of the phone, anything
-     below it BEHIND. Both stickers are 20 and sit in front: the balloons at
-     its foot, the padlock at its top right.
-
-     The padlock was 5 when the phone was a 3D model: tucking it behind read
-     as depth against something that had any. Against a flat render it just
-     looked clipped.
+     below it BEHIND. The balloons are 20 and sit in front at its foot; the
+     padlock is 5 and tucks behind at its top right.
 
      ⚠ KEEP EVERY STICKER BELOW 30. The nav is z-30 so that the open dropdown
      covers the hero — a sticker at 30 or above would punch through the panel
@@ -215,8 +211,13 @@ export const HERO = {
       src: "/images/sticker-lock.webp",
       alt: "",
       x: 66,
-      y: 22,
-      w: 11.5,
+      /* ⚠ RAISED WITH THE SIZE, NOT JUST ENLARGED. It sits BEHIND the phone
+         now, so growing it in place would have pushed more of it under the
+         render rather than showing more of it. Up from y 22 so the extra
+         size appears above the phone's top edge, which is the part that
+         reads. */
+      y: 19.5,
+      w: 14,
       rise: 13,
       drift: 7,
       tilt: "1.8deg",
@@ -228,15 +229,15 @@ export const HERO = {
       dur: "8.5s",
       delay: "-5s",
       rotate: "9deg",
-      /* ⚠ IN FRONT OF THE PHONE NOW. It was 5 — behind the 3D model, which
-         sat on a canvas at z-10 — and tucking it behind read well against a
-         model with real depth. The flat render is at the same z-10 and has
-         none, so a sticker half-hidden behind it looked clipped rather than
-         layered. 20 puts it in front, matching the balloons.
+      /* ⚠ BEHIND THE PHONE. `HERO.art` renders at z-10, so under that is
+         behind it and over it is in front — the same scale the 3D canvas
+         used, which is why this number did not change when the model came
+         out.
 
-         The z scale is unchanged: the art is z-10, so below that is behind
-         it and above is in front. */
-      z: 20,
+         5, not 0: the ground is -z-20, so a 0 would still clear it, but
+         leaving a gap means another sticker can later be slipped between
+         the two without renumbering this one. */
+      z: 5,
     },
   ],
 };
