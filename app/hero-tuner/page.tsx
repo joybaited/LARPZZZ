@@ -3,14 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { PriceEl as El } from "@/sections/Pricing";
 import PriceEl from "@/components/PriceEl";
-import SceneMount from "@/components/SceneMount";
-import PhoneBox from "@/components/PhoneBox";
-/* ⚠ TYPE-ONLY IMPORT. `components/Phone` is reached by the app ONLY through
-   SceneMount's dynamic(..., { ssr: false }) chunk, so importing a VALUE out of
-   it here gave `undefined` at module-eval and `phone.rotX` threw on first
-   render. A `import type` erases at compile time and cannot be undefined; the
-   seed below is a plain local constant. */
-import type { PhoneTune } from "@/components/Phone";
 /* ⚠ SEEDED FROM THE LIVE SECTION, not from a hand-kept copy. CLAUDE.md:
    a tuner SHOULD import the section's exported config, or the two drift —
    /faq-tuner and Faq.tsx had already reached four pills against six, with a
@@ -38,11 +30,13 @@ import { HERO } from "@/sections/Hero";
  * ⚠ POSITIONS ARE PERCENTAGES OF THE VIEWPORT, not pixels, or a placement
  * tuned at one window size is wrong at every other.
  *
- * ⚠ THE REAL PHONE IS IN THE STAGE, driven by the real <Scene>/<Phone> via
- * props. It is not a copy: `PhoneTune` is defined once in Phone.tsx and the
- * page uses the same component with the defaults, so a dial moved here maps
- * to the thing that ships. Every number — pose, size, camera, entrance
- * spring, idle float, wobble, parallax — is a dial.
+ * ⚠ NO 3D HERE. The phone and every phone dial were removed deliberately —
+ * this tunes the FLAT layout. WebGL ran every frame the stage was open, which
+ * is what made laying out against it feel heavy, and on a machine without a
+ * GPU it starves the main thread badly enough that drag and animation timing
+ * both stop being trustworthy. `HERO.phone` is untouched in Hero.tsx and the
+ * config block below does not print it, so pasting from here cannot disturb
+ * the pose. Use /hero itself to judge the phone.
  *
  * Mechanics are /pricing-tuner's, which were taken from how real editors
  * work: setPointerCapture filtered by pointerId, eight handles with
@@ -83,8 +77,20 @@ type Ground = {
      centre anchor the drag uses. */
   headYMin: number; headYMax: number; /* px from the top */
   headLeading: number;
+  /* ⚠ THE HEADLINE'S OWN TYPOGRAPHY. It renders in the display face at weight
+     700 uppercase on the page; these make each of those a dial rather than
+     something only editable in the section. `headCaps: false` is what lets a
+     headline keep its own casing instead of being forced upper. */
+  headWeight: number;
+  headTracking: number; /* em */
+  headAlign: "left" | "center" | "right";
+  headFont: "display" | "sans";
+  headCaps: boolean;
+  headItalic: boolean;
   showHead: boolean;
   showNav: boolean;
+  /* the dropdown's height, as a % of the viewport. */
+  menuH: number;
 };
 
 /* ⚠ SEEDED FROM WHAT IS LIVE IN sections/Hero.tsx. The nav is
@@ -119,8 +125,19 @@ const GROUND: Ground = {
   headXMin: HERO.headline.x[0], headXMax: HERO.headline.x[1],
   headYMin: HERO.headline.y[0], headYMax: HERO.headline.y[1],
   headLeading: HERO.headline.leading,
+  /* ⚠ `?? ` ON EVERY NEW FIELD. Hero.tsx's HERO.headline does not carry these
+     yet, so reading them bare would seed `undefined` into a slider and make
+     it uncontrolled. The fallbacks are what the live <h1> actually renders:
+     `font-display uppercase`, no explicit weight or tracking. */
+  headWeight: HERO.headline.weight ?? 700,
+  headTracking: HERO.headline.tracking ?? 0,
+  headAlign: HERO.headline.align ?? "left",
+  headFont: HERO.headline.font ?? "display",
+  headCaps: HERO.headline.caps ?? true,
+  headItalic: HERO.headline.italic ?? false,
   showHead: HERO.headline.show,
   showNav: HERO.nav.show,
+  menuH: HERO.menu.panelHeight ? +((HERO.menu.panelHeight / 900) * 100).toFixed(1) : 35,
 };
 
 /* ⚠ THIS IS `clamp()`, NOT A LERP BETWEEN THE ENDS.
@@ -162,20 +179,6 @@ const TOK = {
 const tok = ([mn, b, m, mx]: readonly number[], vw: number) =>
   Math.min(mx * 16, Math.max(mn * 16, b * 16 + (m * vw) / 100));
 
-/* ⚠ THE SAME NUMBERS AS components/Phone.tsx's PHONE_TUNE, and they have to
-   stay the same. Kept here as a local constant rather than imported because
-   Phone.tsx only ever loads inside an ssr:false chunk — see the import note.
-   If the phone is re-tuned, both move together; the config block prints every
-   value so a drift is visible rather than silent. */
-const PHONE_SEED: PhoneTune = {
-  rotX: HERO.phone.rotation[0], rotY: HERO.phone.rotation[1], rotZ: HERO.phone.rotation[2],
-  posX: HERO.phone.position[0], posY: HERO.phone.position[1], posZ: HERO.phone.position[2],
-  fit: HERO.phone.fit,
-  ...HERO.phone.entrance,
-  ...HERO.phone.idle,
-  ...HERO.phone.parallax,
-};
-
 const SNAP = 6; /* px — the threshold real tools use (6-10) */
 const KEY = "larpz.hero-tuner";
 
@@ -212,44 +215,6 @@ const CURSOR: Record<string, string> = {
 
 const cloneEls = (e: El[]): El[] => e.map((x) => ({ ...x }));
 
-/* every phone dial, with the range that is actually useful for it.
-   `replay` is not here — it is a button, not a slider. */
-type PF = { k: keyof PhoneTune; label: string; min: number; max: number; step: number };
-const PHONE_FIELDS: Record<"pose" | "entrance" | "idle" | "parallax", PF[]> = {
-  pose: [
-    { k: "rotX", label: "pitch °", min: -180, max: 180, step: 0.1 },
-    { k: "rotY", label: "yaw °", min: -180, max: 180, step: 0.1 },
-    { k: "rotZ", label: "roll °", min: -180, max: 180, step: 0.1 },
-    { k: "posX", label: "move x", min: -3, max: 3, step: 0.01 },
-    { k: "posY", label: "move y", min: -3, max: 3, step: 0.01 },
-    { k: "posZ", label: "move z", min: -3, max: 3, step: 0.01 },
-    { k: "fit", label: "size", min: 0.05, max: 2, step: 0.01 },
-  ],
-  entrance: [
-    /* ⚠ zeta STOPS AT 0.99. At 1 the system is critically damped and
-       sqrt(1 - zeta^2) is 0, so the phone disappears. */
-    { k: "zeta", label: "zeta", min: 0.05, max: 0.99, step: 0.01 },
-    { k: "wn", label: "speed", min: 1, max: 30, step: 0.1 },
-    { k: "fromScale", label: "from size", min: 0.01, max: 2, step: 0.01 },
-    { k: "overshoot", label: "overshoot", min: 0.5, max: 2, step: 0.01 },
-    { k: "fromYaw", label: "from yaw °", min: -180, max: 180, step: 0.1 },
-    { k: "fromRoll", label: "from roll °", min: -180, max: 180, step: 0.1 },
-    { k: "settleAt", label: "settle at s", min: 0, max: 6, step: 0.1 },
-    /* ⚠ settleOver DIVIDES, so it cannot be 0. */
-    { k: "settleOver", label: "settle over s", min: 0.1, max: 4, step: 0.1 },
-  ],
-  idle: [
-    { k: "floatHz", label: "float hz", min: 0, max: 3, step: 0.05 },
-    { k: "floatAmp", label: "float amt", min: 0, max: 0.6, step: 0.005 },
-    { k: "wobble", label: "wobble °", min: 0, max: 20, step: 0.1 },
-  ],
-  parallax: [
-    { k: "yaw", label: "yaw °", min: 0, max: 60, step: 0.1 },
-    { k: "pitch", label: "pitch °", min: 0, max: 60, step: 0.1 },
-    { k: "damp", label: "smoothing s", min: 0.01, max: 2, step: 0.01 },
-  ],
-};
-
 /* ⚠ DEFINED AT MODULE SCOPE, NOT INSIDE THE COMPONENT.
 
    A component declared inside another component is a NEW FUNCTION on every
@@ -268,10 +233,14 @@ const Row = ({ label, children }: { label: string; children: React.ReactNode }) 
   </label>
 );
 
-const PhoneRow = ({ f, v, on }: { f: PF; v: number | undefined; on: (n: number) => void }) => (
-  <Row label={f.label}>
-    <input type="range" min={f.min} max={f.max} step={f.step} value={v ?? 0} onChange={(e) => on(+e.target.value)} className="w-full" />
-    <input type="number" step={f.step} value={v ?? 0} onChange={(e) => on(+e.target.value)} className="w-16 rounded border border-black/15 px-1.5 py-1" />
+/* a labelled slider + number box. Every numeric dial in the panel is one of
+   these, so a range and its box can never disagree. */
+const Dial = ({
+  label, v, on, min, max, step = 0.1,
+}: { label: string; v: number; on: (n: number) => void; min: number; max: number; step?: number }) => (
+  <Row label={label}>
+    <input type="range" min={min} max={max} step={step} value={v} onChange={(e) => on(+e.target.value)} className="w-full" />
+    <input type="number" step={step} value={v} onChange={(e) => on(+e.target.value)} className="w-16 rounded border border-black/15 px-1.5 py-1" />
   </Row>
 );
 
@@ -287,6 +256,11 @@ export default function HeroTuner() {
   /* the stage's own width, so a fluid pair can show what it resolves to and
      the nav/headline render at the size they will be on the page. */
   const [vw, setVw] = useState(1440);
+  /* ⚠ READ FROM THE STAGE, NOT `window`, AND IN AN EFFECT. The dropdown's
+     height is a % of the viewport and has to resolve to px to render; reading
+     window.innerHeight during render is a hydration mismatch (the server has
+     no window) and never updates on resize. */
+  const [vh, setVh] = useState(900);
   /* which piece of furniture is selected, so it gets the same blue outline an
      element gets. null when an element is selected instead. */
   const [gsel, setGsel] = useState<"nav" | "head" | null>(null);
@@ -302,16 +276,18 @@ export default function HeroTuner() {
   const [inNav, setInNav] = useState<string[]>(() =>
     HERO.els.filter((e) => e.in === "nav").map((e) => e.name),
   );
+  /* the same idea for the dropdown. An element in here renders inside the
+     OPEN panel, so its x/y are percentages of the panel. */
+  const [inMenu, setInMenu] = useState<string[]>(() =>
+    HERO.els.filter((e) => e.in === "menu").map((e) => e.name),
+  );
   /* true while a moving element is over the bar, so the bar can show it is a
      drop target rather than leaving you to guess. */
   const [navHot, setNavHot] = useState(false);
-  const [phone, setPhone] = useState<PhoneTune>(PHONE_SEED);
-  const [camZ, setCamZ] = useState(HERO.phone.camera.z);
-  const [fov, setFov] = useState(HERO.phone.camera.fov);
-  const [showPhone, setShowPhone] = useState(true);
-  /* off by default: the stage stays light, and the 3D dials below are only
-     worth watching live when this is on. */
-  const [live3d, setLive3d] = useState(false);
+  /* ⚠ THE DROPDOWN IS A STAGE STATE, NOT AN ANIMATION TO WATCH. Held open so
+     elements can be arranged INSIDE the open panel; the real transition is on
+     /hero. Without this the panel's area cannot be laid out against at all. */
+  const [navOpen, setNavOpen] = useState(false);
   const stage = useRef<HTMLDivElement>(null);
 
   /* ---- persistence ------------------------------------------------------
@@ -336,16 +312,14 @@ export default function HeroTuner() {
       const raw = sessionStorage.getItem(KEY);
       if (raw) {
         const v = JSON.parse(raw) as {
-          els?: El[]; ground?: Ground; phone?: PhoneTune; camZ?: number; fov?: number; inNav?: string[];
+          els?: El[]; ground?: Ground; inNav?: string[]; inMenu?: string[];
         };
         if (Array.isArray(v.els)) setEls(v.els);
         /* spread over the defaults so a config saved before a new dial
            existed still loads, with the new dial at its default. */
         if (v.ground) setGround({ ...GROUND, ...v.ground });
-        if (v.phone) setPhone({ ...PHONE_SEED, ...v.phone });
-        if (typeof v.camZ === "number") setCamZ(v.camZ);
-        if (typeof v.fov === "number") setFov(v.fov);
         if (Array.isArray(v.inNav)) setInNav(v.inNav);
+        if (Array.isArray(v.inMenu)) setInMenu(v.inMenu);
         setToast("restored your last session");
         setTimeout(() => setToast(null), 2200);
       }
@@ -358,14 +332,17 @@ export default function HeroTuner() {
   useEffect(() => {
     if (!restored) return;
     try {
-      sessionStorage.setItem(KEY, JSON.stringify({ els, ground, phone, camZ, fov, inNav }));
+      sessionStorage.setItem(KEY, JSON.stringify({ els, ground, inNav, inMenu }));
     } catch {
       /* quota or blocked — the tuner still works, it just will not persist */
     }
-  }, [els, ground, phone, camZ, fov, inNav, restored]);
+  }, [els, ground, inNav, inMenu, restored]);
 
   useEffect(() => {
-    const read = () => setVw(stage.current?.clientWidth ?? window.innerWidth);
+    const read = () => {
+      setVw(stage.current?.clientWidth ?? window.innerWidth);
+      setVh(stage.current?.clientHeight ?? window.innerHeight);
+    };
     read();
     const ro = new ResizeObserver(read);
     if (stage.current) ro.observe(stage.current);
@@ -406,6 +383,7 @@ export default function HeroTuner() {
 
   const current = sel !== null ? els[sel] : undefined;
   const navOf = (el: El) => inNav.includes(el.name);
+  const menuOf = (el: El) => inMenu.includes(el.name);
 
   /* ---- snapping -------------------------------------------------------
      Every line worth snapping to: the viewport's edges and centre, the nav's
@@ -764,12 +742,17 @@ export default function HeroTuner() {
   });
 
   /* ---- the config block ------------------------------------------------ */
-  /* ⚠ FALL BACK TO THE SEED RATHER THAN READING STATE BLIND. A session saved
-     by an older build, or hand-edited storage, can leave `phone` missing —
-     and the template reads ~18 of its fields, so one undefined threw
-     "Cannot read properties of undefined (reading 'rotX')" on first render,
-     before anything could be clicked. */
-  const ph = phone ?? PHONE_SEED;
+  /* ⚠ `phone`, `wordmark`, `navLinks` AND `stickers` ARE PRINTED BACK VERBATIM
+     FROM THE LIVE HERO, not from any dial here. This tuner does not edit them,
+     and the block it prints REPLACES the whole `HERO` object — so emitting it
+     without them would silently delete the phone pose and the stickers the
+     moment it was pasted. Re-emitting what was imported keeps the paste
+     lossless.
+
+     `menu` is NOT in this list: its panel height IS tuned here, so it is
+     printed from the dial below with its other keys carried through. */
+  const verbatim = (k: "phone" | "wordmark" | "navLinks" | "stickers") =>
+    `  ${k}: ${JSON.stringify((HERO as Record<string, unknown>)[k], null, 2).split("\n").join("\n  ")},`;
   const config = `/* paste into sections/Hero.tsx — arranged in /hero-tuner */
 export const HERO = {
   bg: ${JSON.stringify(ground.bg)},
@@ -785,17 +768,22 @@ export const HERO = {
     x: [${ground.headXMin}, ${ground.headXMax}],
     y: [${ground.headYMin}, ${ground.headYMax}],
     leading: ${ground.headLeading},
+    weight: ${ground.headWeight},
+    tracking: ${ground.headTracking},
+    align: ${JSON.stringify(ground.headAlign)} as "left" | "center" | "right",
+    font: ${JSON.stringify(ground.headFont)} as "display" | "sans",
+    caps: ${ground.headCaps},
+    italic: ${ground.headItalic},
     show: ${ground.showHead},
   },
-  phone: {
-    rotation: [${ph.rotX}, ${ph.rotY}, ${ph.rotZ}],
-    position: [${ph.posX}, ${ph.posY}, ${ph.posZ}],
-    fit: ${ph.fit},
-    camera: { z: ${camZ}, fov: ${fov} },
-    entrance: { zeta: ${ph.zeta}, wn: ${ph.wn}, fromScale: ${ph.fromScale}, overshoot: ${ph.overshoot}, fromYaw: ${ph.fromYaw}, fromRoll: ${ph.fromRoll}, settleAt: ${ph.settleAt}, settleOver: ${ph.settleOver} },
-    idle: { floatHz: ${ph.floatHz}, floatAmp: ${ph.floatAmp}, wobble: ${ph.wobble} },
-    parallax: { yaw: ${ph.yaw}, pitch: ${ph.pitch}, damp: ${ph.damp} },
-  },
+  /* the dropdown. panelHeight is px; tuned as ${ground.menuH}% of the viewport,
+     = ${Math.round((ground.menuH / 100) * vh)}px at this stage height. */
+  menu: { x: ${HERO.menu.x}, y: ${HERO.menu.y}, panelHeight: ${Math.round((ground.menuH / 100) * vh)}, overlay: ${HERO.menu.overlay} },
+  /* ↓ not tuned here — carried through from Hero.tsx unchanged. */
+${verbatim("phone")}
+${verbatim("stickers")}
+${verbatim("wordmark")}
+${verbatim("navLinks")}
   els: [
 ${els.map((e) => {
     const keys: (keyof El)[] = ["name", "kind", "text", "x", "y", "w", "h", "size", "radius", "opacity", "rotate", "weight", "align", "font", "fill", "color", "border", "borderColor", "italic", "strike", "caps", "tracking", "show"];
@@ -805,6 +793,7 @@ ${els.map((e) => {
       .map((k) => `${k}: ${typeof e[k] === "number" ? +(e[k] as number).toFixed(2) : JSON.stringify(e[k])}`);
     /* `in: "nav"` means x/y are percentages OF THE NAV, not of the section. */
     if (navOf(e)) bits.push(`in: "nav"`);
+    if (menuOf(e)) bits.push(`in: "menu"`);
     return `    { ${bits.join(", ")} },`;
   }).join("\n")}
   ],
@@ -822,14 +811,12 @@ ${els.map((e) => {
      (undo does not survive it), so it asks first. */
   const reset = () =>
     setConfirm({
-      msg: `Discard ${els.length} element${els.length === 1 ? "" : "s"}, every ground and phone change, and clear the saved session? This cannot be undone.`,
+      msg: `Discard ${els.length} element${els.length === 1 ? "" : "s"}, every ground change, and clear the saved session? This cannot be undone.`,
       run: () => {
         setEls([]);
         setGround(GROUND);
-        setPhone(PHONE_SEED);
         setInNav([]);
-        setCamZ(5.9);
-        setFov(42);
+        setInMenu([]);
         setSel(null);
         undo.current = [];
         redo.current = [];
@@ -956,27 +943,6 @@ ${els.map((e) => {
            here and everything after it in DOM order paints on top. */
         className="relative isolate h-full w-full overflow-hidden pt-(--space-m)"
       >
-        {/* ⚠ THE REAL CANVAS, same <SceneMount> the hero uses, driven by the
-            phone dials as props — props, so changing one does NOT remount and
-            refetch the 3.3MB glb.
-
-            ⚠ -z-10 PUTS IT BEHIND THE ELEMENTS, which is safe only because
-            the stage `isolate`s. Scene.tsx's own wrapper is z-10 (session 3: a
-            canvas at -z-10 on the real page vanished behind the opaque section
-            background), and at z-10 inside this stage it painted OVER every
-            element — elementFromPoint returned CANVAS at an element's own
-            centre and no drag did anything. */}
-        {/* ⚠ THE GREY BOX BY DEFAULT, THE REAL CANVAS ON DEMAND. WebGL runs
-            every frame the stage is open, which is what made laying out
-            against it feel heavy. <PhoneBox> is the same box the model
-            renders in, so positions tuned against it hold when the phone
-            comes back. Tick "render the real 3D phone" to check the pose. */}
-        {showPhone && (
-          <div className="pointer-events-none absolute inset-0 -z-10">
-            {live3d ? <SceneMount tune={phone} camZ={camZ} fov={fov} /> : <PhoneBox />}
-          </div>
-        )}
-
         {/* the real nav, driven by the ground dials */}
         {ground.showNav && (
           <nav
@@ -1008,6 +974,28 @@ ${els.map((e) => {
                 BAR with no change to PriceEl at all — and a nav element moves
                 when the bar moves, which is the whole point of "inside". */}
             {els.map((el, i) => (navOf(el) ? elView(el, i) : null))}
+
+            {/* ⚠ THE DROPDOWN, HELD OPEN SO IT CAN BE LAID OUT AGAINST. On
+                /hero this expands with grid-template-rows 0fr -> 1fr; here it
+                is simply present or not, because a panel mid-transition is
+                not a thing you can arrange elements inside.
+
+                ⚠ ITS HEIGHT IS A PERCENTAGE OF THE VIEWPORT, like every other
+                dimension here, so what is arranged against it holds at any
+                window size. Hero.tsx states it in px, so the config block
+                converts — see `menuH` there. */}
+            {navOpen && (
+              <div
+                className="absolute right-0 left-0 top-full mt-[6px]"
+                style={{
+                  height: `${(ground.menuH / 100) * vh}px`,
+                  background: ground.navFill,
+                  borderRadius: `${ground.navRadius}px`,
+                }}
+              >
+                {els.map((el, i) => (menuOf(el) ? elView(el, i) : null))}
+              </div>
+            )}
           </nav>
         )}
 
@@ -1027,8 +1015,16 @@ ${els.map((e) => {
               color: ground.headColor,
               fontSize: `${headSize}px`,
               lineHeight: ground.headLeading,
+              /* the same styles the live <h1> takes, so the stage is the
+                 page rather than an approximation of it. */
+              fontFamily: ground.headFont === "display" ? "var(--font-display)" : undefined,
+              fontWeight: ground.headWeight,
+              letterSpacing: ground.headTracking ? `${ground.headTracking}em` : undefined,
+              textAlign: ground.headAlign,
+              textTransform: ground.headCaps ? "uppercase" : "none",
+              fontStyle: ground.headItalic ? "italic" : undefined,
             }}
-            className={`z-20 m-0 cursor-grab font-display uppercase active:cursor-grabbing ${gsel === "head" ? "outline-2 outline-offset-2 outline-sky-400" : ""}`}
+            className={`z-20 m-0 cursor-grab active:cursor-grabbing ${gsel === "head" ? "outline-2 outline-offset-2 outline-sky-400" : ""}`}
           >
             {ground.headline.split("\n").map((l, i) => (
               <span key={i} className="block">{l}</span>
@@ -1040,7 +1036,7 @@ ${els.map((e) => {
         {/* ⚠ STAGE-LEVEL ELEMENTS ONLY. One parented to the nav is rendered
             INSIDE the <nav> instead, so it moves with the bar and its
             percentages resolve against it. */}
-        {els.map((el, i) => (navOf(el) ? null : elView(el, i)))}
+        {els.map((el, i) => (navOf(el) || menuOf(el) ? null : elView(el, i)))}
 
         {/* snap guides */}
         {guides.map((gg, k) =>
@@ -1203,70 +1199,59 @@ ${els.map((e) => {
               <input type="color" value={ground.headColor} onChange={(e) => g({ headColor: e.target.value })} className="h-7 w-10 rounded border border-black/15" />
               <input value={ground.headColor} onChange={(e) => g({ headColor: e.target.value })} className="w-full rounded border border-black/15 px-1.5 py-1" />
             </Row>
+
+            {/* ⚠ THESE FIVE WERE TAILWIND CLASSES ON THE <h1> and could not be
+                tuned at all. They are styles on both sides now. */}
+            <Dial label="weight" v={ground.headWeight} on={(n) => g({ headWeight: n })} min={100} max={900} step={100} />
+            <Dial label="tracking" v={ground.headTracking} on={(n) => g({ headTracking: n })} min={-0.1} max={0.4} step={0.005} />
+            <Row label="align">
+              <select value={ground.headAlign} onChange={(e) => g({ headAlign: e.target.value as Ground["headAlign"] })} className="w-full rounded border border-black/15 px-1.5 py-1">
+                <option value="left">left</option>
+                <option value="center">center</option>
+                <option value="right">right</option>
+              </select>
+            </Row>
+            <Row label="face">
+              <select value={ground.headFont} onChange={(e) => g({ headFont: e.target.value as Ground["headFont"] })} className="w-full rounded border border-black/15 px-1.5 py-1">
+                <option value="display">display (Megion)</option>
+                <option value="sans">sans (Neue Montreal)</option>
+              </select>
+            </Row>
+            <div className="mb-1.5 flex gap-3">
+              <label className="flex items-center gap-1">
+                <input type="checkbox" checked={ground.headCaps} onChange={(e) => g({ headCaps: e.target.checked })} />
+                caps
+              </label>
+              <label className="flex items-center gap-1">
+                <input type="checkbox" checked={ground.headItalic} onChange={(e) => g({ headItalic: e.target.checked })} />
+                italic
+              </label>
+            </div>
           </div>
         </details>
 
-        {/* ---- the phone ---- */}
+        {/* ---- the dropdown ---- */}
         <details className="mb-3 rounded border border-black/10 p-2">
-          <summary className="cursor-pointer select-none font-medium">
-            phone (3D)
-          </summary>
-
+          <summary className="cursor-pointer select-none font-medium">dropdown panel</summary>
           <div className="mt-2">
             <label className="mb-2 flex items-center gap-2">
-              <input type="checkbox" checked={showPhone} onChange={(e) => setShowPhone(e.target.checked)} />
-              show the phone
+              <input type="checkbox" checked={navOpen} onChange={(e) => setNavOpen(e.target.checked)} />
+              hold the panel open
             </label>
-            <label className="mb-2 flex items-center gap-2">
-              <input type="checkbox" checked={live3d} onChange={(e) => setLive3d(e.target.checked)} />
-              render the real 3D phone
-            </label>
-            {!live3d && (
-              <p className="mb-2 text-[11px] text-black/40">
-                showing the grey stand-in. the dials below still write the
-                config — tick the box above to watch them.
-              </p>
-            )}
-            <button
-              onClick={() => setPhone((v) => ({ ...v, replay: (v.replay ?? 0) + 1 }))}
-              className="mb-2 w-full rounded border border-black/15 px-2 py-1"
-            >
-              replay entrance
-            </button>
-
-            <div className="mt-1 mb-1 font-medium">pose</div>
-            {PHONE_FIELDS.pose.map((f) => (
-              <PhoneRow key={f.k} f={f} v={phone[f.k]} on={(n) => setPhone((p2) => ({ ...p2, [f.k]: n }))} />
-            ))}
-
-            <div className="mt-2 mb-1 font-medium">camera</div>
-            <Row label="distance">
-              <input type="range" min={1} max={20} step={0.1} value={camZ} onChange={(e) => setCamZ(+e.target.value)} className="w-full" />
-              <input type="number" step={0.1} value={camZ} onChange={(e) => setCamZ(+e.target.value)} className="w-16 rounded border border-black/15 px-1.5 py-1" />
-            </Row>
-            <Row label="fov">
-              <input type="range" min={10} max={110} step={0.1} value={fov} onChange={(e) => setFov(+e.target.value)} className="w-full" />
-              <input type="number" step={0.1} value={fov} onChange={(e) => setFov(+e.target.value)} className="w-16 rounded border border-black/15 px-1.5 py-1" />
-            </Row>
-
-            <div className="mt-2 mb-1 font-medium">entrance spring</div>
-            <p className="mb-1 text-[11px] text-black/40">
-              zeta is the bounce: low overshoots for longer, 0.99 barely
-              bounces at all. it cannot reach 1 — the maths goes imaginary.
+            <p className="mb-2 text-[11px] text-black/40">
+              open it, then use <b>put in panel</b> on an element to arrange it
+              inside. its x/y become percentages of the panel, so it moves with
+              the panel and holds at any width. the real open/close animation is
+              on /hero — this is just the end state to lay out against.
             </p>
-            {PHONE_FIELDS.entrance.map((f) => (
-              <PhoneRow key={f.k} f={f} v={phone[f.k]} on={(n) => setPhone((p2) => ({ ...p2, [f.k]: n }))} />
-            ))}
-
-            <div className="mt-2 mb-1 font-medium">idle float + wobble</div>
-            {PHONE_FIELDS.idle.map((f) => (
-              <PhoneRow key={f.k} f={f} v={phone[f.k]} on={(n) => setPhone((p2) => ({ ...p2, [f.k]: n }))} />
-            ))}
-
-            <div className="mt-2 mb-1 font-medium">mouse parallax</div>
-            {PHONE_FIELDS.parallax.map((f) => (
-              <PhoneRow key={f.k} f={f} v={phone[f.k]} on={(n) => setPhone((p2) => ({ ...p2, [f.k]: n }))} />
-            ))}
+            {/* ⚠ A % OF THE VIEWPORT, NOT PX, like every other dimension here.
+                Hero.tsx wants px, so the config block converts at the current
+                stage height and prints both. */}
+            <Dial label="height %" v={ground.menuH} on={(n) => g({ menuH: n })} min={0} max={90} step={0.5} />
+            <p className="mb-1.5 text-[11px] text-black/40">
+              = {Math.round((ground.menuH / 100) * vh)}px at this stage height.
+              it takes the nav&apos;s fill and radius.
+            </p>
           </div>
         </details>
 
@@ -1281,6 +1266,7 @@ ${els.map((e) => {
             >
               <span className="truncate">{e.name}</span>
               {navOf(e) && <span className={`shrink-0 text-[10px] ${sel === i ? "text-white/60" : "text-sky-600"}`}>nav</span>}
+              {menuOf(e) && <span className={`shrink-0 text-[10px] ${sel === i ? "text-white/60" : "text-fuchsia-600"}`}>panel</span>}
               <button
                 onClick={(ev) => { ev.stopPropagation(); push(); set(i, { show: e.show === false }); }}
                 className={`ml-auto shrink-0 text-[11px] ${sel === i ? "text-white/70" : "text-black/40"}`}
@@ -1296,6 +1282,31 @@ ${els.map((e) => {
           <div className="mb-3 rounded border border-black/10 p-2">
             <Row label="name">
               <input value={current.name} onChange={(e) => set(sel, { name: e.target.value })} className="w-full rounded border border-black/15 px-1.5 py-1" />
+            </Row>
+            {/* ⚠ PARENTING AS A DROPDOWN, NOT ONLY AS A DRAG. Dragging onto
+                the bar already worked, but there was no way to put something
+                in the panel (you cannot drop onto a panel that is closed) and
+                no way to see where an element currently lives. Changing this
+                does NOT convert x/y — the element keeps its numbers and they
+                now mean percentages of the new parent, which is usually what
+                is wanted when moving something into a bar. */}
+            <Row label="lives in">
+              <select
+                value={menuOf(current) ? "menu" : navOf(current) ? "nav" : "section"}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const n = current.name;
+                  push();
+                  setInNav((a) => (v === "nav" ? [...new Set([...a, n])] : a.filter((m) => m !== n)));
+                  setInMenu((a) => (v === "menu" ? [...new Set([...a, n])] : a.filter((m) => m !== n)));
+                  if (v === "menu") setNavOpen(true);
+                }}
+                className="w-full rounded border border-black/15 px-1.5 py-1"
+              >
+                <option value="section">the section</option>
+                <option value="nav">the nav bar</option>
+                <option value="menu">the dropdown panel</option>
+              </select>
             </Row>
             <Row label="text">
               <textarea value={current.text ?? ""} onChange={(e) => set(sel, { text: e.target.value })} rows={2} className="w-full rounded border border-black/15 px-1.5 py-1" />

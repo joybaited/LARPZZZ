@@ -59,6 +59,7 @@ export function NavMenuWithPanel({
   radius,
   panelHeight,
   overlay,
+  children,
 }: {
   x: number;
   y: number;
@@ -67,6 +68,9 @@ export function NavMenuWithPanel({
   radius: number;
   panelHeight: number;
   overlay: boolean;
+  /* the `in: "menu"` elements, rendered by the section and passed in so this
+     component stays unaware of <PriceEl> and of HERO. */
+  children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
@@ -257,9 +261,17 @@ export function NavMenuWithPanel({
           }}
         >
           <div className="min-h-0 overflow-hidden">
-            {/* empty on purpose — `panelHeight` is the stand-in that gives
-                the row something to resolve to. See HERO.menu. */}
-            <div style={{ minHeight: `${panelHeight}px` }} />
+            {/* ⚠ `relative`, SO AN `in: "menu"` ELEMENT RESOLVES AGAINST THIS
+                BOX. <PriceEl> is absolute with percentage x/y and takes the
+                nearest positioned ancestor — without this they would resolve
+                against the <nav> and land in the bar. Same arrangement the
+                nav's own elements already rely on.
+
+                `panelHeight` is what gives the row a height to animate to;
+                with real children it can go once they fill it. */}
+            <div className="relative" style={{ minHeight: `${panelHeight}px` }}>
+              {children}
+            </div>
           </div>
         </div>
       </div>

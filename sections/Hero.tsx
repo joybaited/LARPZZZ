@@ -35,6 +35,16 @@ export const HERO = {
     x: [64, 102],
     y: [232.8, 264.8],
     leading: 0.9,
+    /* ⚠ THESE FIVE WERE TAILWIND CLASSES ON THE <h1> AND ARE DIALS NOW, so
+       /hero-tuner can set them. The values here are exactly what the classes
+       rendered — `font-display uppercase` at the face's own weight — so this
+       is the same headline, stated rather than implied. */
+    weight: 700,
+    tracking: 0,
+    align: "left" as "left" | "center" | "right",
+    font: "display" as "display" | "sans",
+    caps: true,
+    italic: false,
     show: true,
   },
   phone: {
@@ -339,7 +349,9 @@ export default function Hero() {
             radius={HERO.nav.radius}
             panelHeight={HERO.menu.panelHeight}
             overlay={HERO.menu.overlay}
-          />
+          >
+            {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} /> : null))}
+          </NavMenuWithPanel>
 
           {/* ⚠ A CLIENT COMPONENT, AND ONLY BECAUSE OF TWO HANDLERS. This
               section is a server component, so an onMouseEnter here is the
@@ -368,13 +380,24 @@ export default function Hero() {
       */}
       {h.show && (
         <h1
-          className="absolute z-20 m-0 font-display uppercase"
+          className="absolute z-20 m-0"
+          /* ⚠ THE FACE, CASE AND WEIGHT ARE STYLES NOW, NOT CLASSES. They
+             were `font-display uppercase`; as classes they could not be
+             tuned, and a template-literal Tailwind class generates no css at
+             all (session 11), so a dial had to become a style rather than an
+             interpolated class name. */
           style={{
             left: fluid(h.x),
             top: fluid(h.y),
             color: h.color,
             fontSize: headSize(h.min, h.max),
             lineHeight: h.leading,
+            fontFamily: h.font === "display" ? "var(--font-display)" : undefined,
+            fontWeight: h.weight,
+            letterSpacing: h.tracking ? `${h.tracking}em` : undefined,
+            textAlign: h.align,
+            textTransform: h.caps ? "uppercase" : "none",
+            fontStyle: h.italic ? "italic" : undefined,
           }}
         >
           {h.lines.map((l, i) => (
@@ -386,7 +409,7 @@ export default function Hero() {
       )}
 
       {/* stage-level elements. the nav's own are rendered inside it above. */}
-      {HERO.els.map((el, i) => (el.in === "nav" ? null : <PriceEl key={i} el={el} />))}
+      {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
 
       {/* ⚠ THE STICKERS FLOAT, AND IT IS CSS, NOT GSAP. GSAP is on this page
           and section two uses it, but this is a constant-speed loop that reads

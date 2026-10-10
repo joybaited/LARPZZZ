@@ -104,9 +104,10 @@ export type PriceEl = {
   show?: boolean;
   /* HERO ONLY. `in: "nav"` means x/y are percentages OF THE NAV BAR, not of
      the section — the nav is the nearest positioned ancestor, so <PriceEl>
-     resolves against it with no change to the renderer. Unused by Pricing;
-     it lives here because this is where the shared element type lives. */
-  in?: "nav";
+     resolves against it with no change to the renderer. `in: "menu"` is the
+     same thing for the nav's dropdown panel. Unused by Pricing; it lives
+     here because this is where the shared element type lives. */
+  in?: "nav" | "menu";
 };
 
 /* `fill` is the card's own background. Only the middle card sets one —
