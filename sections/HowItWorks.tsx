@@ -44,15 +44,36 @@ import Section from "@/components/Section";
  * anonymous boxes. Same reasoning as Pricing's row.
  */
 
-/* the four cards. `text` is the whole heading — their cards are a heading and
- * an image, and the images are product renders we do not have, so the card is
- * the heading alone. Art drops into the lower part when it exists, which is
- * why the heading is pinned to the top rather than centred. */
+/* the four steps. Kez's copy.
+ *
+ * ⚠ THE BODY SIZE IS NOT COPIED FROM METAMASK, BECAUSE THEIRS HAVE NO BODY.
+ * Checked every bento card on their page: each is a 24px heading and an
+ * image, and `querySelectorAll('p')` returns nothing in all of them. So there
+ * was no "same body sizing as the metamask one" to read off. It is derived
+ * instead: 0.58 of the heading, which is the ratio Testimonials already uses
+ * between its quote and its footer, and the same clamp shape so the two
+ * scale together. */
 const CARDS = [
-  { id: "earn", text: "Earn up to 4% with the Money Account" },
-  { id: "send", text: "Send and receive money globally, instantly" },
-  { id: "spend", text: "Spend anywhere with your card, get up to 3% back" },
-  { id: "connect", text: "One account that connects to everything" },
+  {
+    id: "purchase",
+    text: "Purchase a License",
+    body: 'Grab Larpz Wallet in the "Buy" page. Choose the plan that works for you, no hidden fees.',
+  },
+  {
+    id: "key",
+    text: "Receive your Key",
+    body: "After payment, you'll receive a unique license key via Telegram or email. Keep it safe.",
+  },
+  {
+    id: "activate",
+    text: "Activate your Wallet",
+    body: "Enter your license key, and download the app",
+  },
+  {
+    id: "flex",
+    text: "Flex to your hearts content",
+    body: "Customize Your Portfolio to your hearts content.",
+  },
 ];
 
 /* ⚠ ONE FLAT GRID, NOT COLUMNS OF COLUMNS. The first build wrapped each
@@ -110,9 +131,22 @@ export default function HowItWorks() {
                   synthesise it. The `font-normal` that was here came off with
                   the face. `uppercase` is how every other section sets it:
                   Faq's heading, Testimonials' names, the hero's. */}
-              <h3 className="font-display text-[clamp(16px,1.667vw,32px)] leading-[1.05] uppercase text-balance">
+              {/* ⚠ ENLARGED PAST METAMASK'S OWN 24px AT KEZ'S ASK — 2.25vw is
+                  32px at 1440 where theirs is 24. The clamp ceiling is what
+                  keeps it inside the card: the heading is the taller of the
+                  two blocks and a bare vw would outgrow a short card on a
+                  wide, shallow window (1522x738 is the worst case checked). */}
+              <h3 className="font-display text-[clamp(19px,2.25vw,40px)] leading-[1.05] uppercase text-balance">
                 {c.text}
               </h3>
+              {/* the body. Neue Montreal, not Megion — Megion is display-only
+                  and a paragraph of it at this size is unreadable. Held at
+                  0.58 of the heading (1.3vw against 2.25vw) so the two scale
+                  together rather than drifting apart as separate numbers.
+                  `max-w-[38ch]` keeps the measure readable on a wide card. */}
+              <p className="mt-[clamp(8px,1vw,18px)] max-w-[38ch] text-[clamp(13px,1.3vw,23px)] leading-[1.35] opacity-80">
+                {c.body}
+              </p>
             </li>
           ))}
         </ul>
