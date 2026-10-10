@@ -145,6 +145,63 @@ body {
   animation: sticker-float var(--dur, 9s) ease-in-out var(--delay, 0s) infinite;
 }
 
+/* ── THE NAV'S LINKS MOVE INTO THE DROPDOWN ───────────────────────────────
+ *
+ * The four labels in the bar fade out as the panel opens, and the panel's own
+ * copy of the same four fades in. The CTA stays in the bar throughout.
+ *
+ * ⚠ ONE ATTRIBUTE DRIVES IT, written onto the <nav> by NavMenu.tsx. That is
+ * osmo.supply's pattern: their nav javascript animates nothing at all, it
+ * flips `data-nav-status` and every pixel is a css transition keyed off it.
+ *
+ * ⚠ OURS NEEDS THIS AND THEIRS DOES NOT. Checked their markup: osmo's top bar
+ * carries NO links — hamburger, logo and buttons only — and all eight live
+ * inside the panel, so they have one copy and nothing to hide. Ours shows
+ * four in the bar, so the bar's copy has to leave when the panel's arrives,
+ * or the same four labels are readable twice at once.
+ *
+ * ⚠ `visibility`, NOT `display`. The links keep their space in the flex row
+ * while hidden; removing them from layout would let the CTA slide left while
+ * the bar is still animating, which reads as the nav collapsing rather than
+ * the panel opening. visibility also takes them off the tab order, which
+ * opacity alone would not.
+ *
+ * ⚠ THE STAGGER REVERSES. Leaving, the leftmost goes first (`--i`); arriving,
+ * the panel's list runs the same direction, so the eye follows one sweep
+ * across rather than two opposing ones. */
+.nav-link {
+  transition:
+    opacity 260ms ease-out calc(var(--i, 0) * 40ms),
+    visibility 0s linear calc(var(--i, 0) * 40ms + 260ms);
+}
+
+[data-nav-open="true"] .nav-link {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ⚠ THE PANEL'S COPY STARTS HIDDEN AND WAITS FOR THE PANEL ITSELF. The panel
+   opens on a 300ms delay (see the dropdown rules in NavMenu.tsx), so these
+   start after it rather than appearing in a box that is still unrolling. */
+.panel-link {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 320ms ease-out calc(380ms + var(--i, 0) * 55ms),
+    transform 420ms cubic-bezier(0.625, 0.05, 0, 1) calc(380ms + var(--i, 0) * 55ms);
+}
+
+[data-nav-open="true"] .panel-link {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* closing, they go at once and quickly — the panel is collapsing over them
+   and a stagger on the way out just delays the close. */
+[data-nav-open="false"] .panel-link {
+  transition: opacity 140ms ease-in 0ms, transform 0s linear 140ms;
+}
+
 /* ⚠ KILLS THE TRAVEL, DOES NOT HIDE THE CARDS. The marquee is decoration, so
    at this setting it simply sits still and stays readable. !important because
    the duration is set inline per row. */
@@ -153,5 +210,16 @@ body {
   .animate-sticker {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  /* the swap still has to HAPPEN — both copies readable at once is the bug
+     it exists to prevent — so only the travel and the stagger go. */
+  .nav-link,
+  .panel-link {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .panel-link {
+    transform: none !important;
   }
 }

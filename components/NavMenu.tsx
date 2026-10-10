@@ -75,6 +75,21 @@ export function NavMenuWithPanel({
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
 
+  /* ⚠ THE OPEN STATE IS WRITTEN ONTO THE PARENT <nav> AS AN ATTRIBUTE, which
+     is how anything outside this component animates on it — the bar's own
+     links fade out from globals.css by matching `[data-nav-open="true"]`.
+
+     It is set from an effect rather than rendered, because the <nav> belongs
+     to <Hero> (a server component) and is this component's ancestor, not its
+     child. Osmo does the same thing: their entire nav script flips one
+     `data-nav-status` attribute and every pixel of motion is css keyed off
+     it. */
+  useEffect(() => {
+    const nav = btn.current?.closest("nav");
+    if (!nav) return;
+    nav.setAttribute("data-nav-open", String(open));
+  }, [open]);
+
   /* ⚠ THE SURFACE MEASURES THE PANEL RATHER THAN TRUSTING `panelHeight`.
      The surface has to reach exactly as far down as the panel does, and
      `panelHeight` is only the EMPTY panel's stand-in height — the moment the
@@ -125,6 +140,7 @@ export function NavMenuWithPanel({
     document.addEventListener("pointerdown", onDown, true);
     return () => {
       document.removeEventListener("keydown", onKey);
+
       document.removeEventListener("pointerdown", onDown, true);
     };
   }, [open]);

@@ -402,15 +402,38 @@ export default function Hero() {
               still readable, and squeezing them is what makes a nav break.
               That is the whole reason the burger exists. */}
           <div className="absolute top-1/2 right-[2.5%] hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
-            {HERO.navLinks.items.map((label) => (
+            {/* ⚠ THE LINKS LEAVE THE BAR WHEN THE PANEL OPENS, THE CTA DOES
+                NOT. They are the same four labels the panel lists, so with
+                the panel open the bar would show them twice — and the panel
+                is where they belong at that point. `nav-links` is matched
+                from globals.css off the same open/closed attribute the panel
+                uses, so the two cannot fall out of step.
+
+                ⚠ THEY FADE AND STOP TAKING CLICKS, BUT KEEP THEIR SPACE —
+                `visibility`, not `display`. Removing them from layout would
+                let the CTA slide left while the bar is mid-animation, which
+                reads as the nav collapsing rather than the panel opening.
+
+                Osmo does not need any of this: their top bar carries NO
+                links at all (checked their markup — hamburger, logo and
+                buttons only) and all eight live inside the panel. Ours shows
+                four in the bar, so ours has something to hide. */}
+            {HERO.navLinks.items.map((label, i) => (
               <a
                 key={label}
                 href="#"
-                className="whitespace-nowrap no-underline opacity-90 transition-opacity duration-200 hover:opacity-100"
+                /* ⚠ THE CLASS GOES ON EACH LINK, NOT ON A WRAPPER. A wrapper
+                   would need `display: contents` to leave the flex row's
+                   spacing alone, and a contents box has nothing to fade —
+                   opacity on it does nothing at all. */
+                className="nav-link whitespace-nowrap no-underline transition-opacity hover:opacity-100"
                 style={{
                   color: HERO.navLinks.color,
                   fontSize: "clamp(14px, 0.6rem + 0.5vw, 20px)",
-                }}
+                  /* a short stagger so they leave as a sweep rather than a
+                     block. Reversed on the way back in by the css. */
+                  "--i": i,
+                } as React.CSSProperties}
               >
                 {label}
               </a>
@@ -440,6 +463,35 @@ export default function Hero() {
             panelHeight={HERO.menu.panelHeight}
             overlay={HERO.menu.overlay}
           >
+            {/* ⚠ THE SAME FOUR LABELS THE BAR SHOWS, FROM THE SAME CONFIG.
+                One list, rendered in two places, so they cannot drift — the
+                failure the tuners in this repo keep hitting. The bar's copy
+                fades out as these fade in, so only one set is ever readable.
+
+                Laid out as a list rather than placed with coordinates: the
+                panel is a container, not a canvas, and a stacked list
+                reflows at any width without a second set of numbers. */}
+            <ul className="m-0 flex list-none flex-col gap-[clamp(6px,0.3rem+0.6vw,16px)] p-[clamp(20px,1rem+2vw,48px)]">
+              {HERO.navLinks.items.map((label, i) => (
+                <li key={label}>
+                  <a
+                    href="#"
+                    className="panel-link inline-block no-underline"
+                    style={{
+                      color: HERO.navLinks.color,
+                      fontFamily: "var(--font-display)",
+                      textTransform: "uppercase",
+                      fontSize: "clamp(28px, 1.2rem + 2.6vw, 56px)",
+                      lineHeight: 1.05,
+                      "--i": i,
+                    } as React.CSSProperties}
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
             {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} /> : null))}
           </NavMenuWithPanel>
 
