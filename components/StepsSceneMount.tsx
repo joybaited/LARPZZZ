@@ -14,14 +14,14 @@ const StepsScene = dynamic(() => import("./StepsScene"), { ssr: false });
    - `pointer-events-none` — the model never eats a click meant for a card.
    - `aria-hidden` — decorative, so a screen reader meets the four steps and
      not an unlabelled canvas. */
-export default function StepsSceneMount({ scale }: { scale?: number }) {
+export default function StepsSceneMount({ fit }: { fit?: number }) {
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 isolate"
       style={{ contain: "layout paint size" }}
     >
-      <StepsScene scale={scale} />
+      <StepsScene fit={fit} />
     </div>
   );
 }

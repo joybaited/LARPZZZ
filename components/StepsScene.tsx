@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { Environment, useGLTF } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Center, Environment, Resize, useGLTF } from "@react-three/drei";
+import { easing } from "maath";
 import type * as THREE from "three";
 
 /* The How it works model. STATIC — no entrance, no float, no parallax.
@@ -39,14 +40,16 @@ useGLTF.setDecoderPath("/draco/");
 
 const MODEL = "/models/iphone.glb";
 
-/* ⚠ PAUSE WHEN OFFSCREEN, BUT NOT WITH `frameloop: "never"`. That is what
-   caused the hero's entrance-replay bug: "never" stops the CLOCK advancing,
-   so on return `elapsedTime` resumes near where it paused while any t0 refers
-   to the pre-pause timeline (HANDOVER.md, session 14).
-   `demand` has no such problem — it renders only when something invalidates,
-   and a static model invalidates nothing, so offscreen it costs zero frames
-   AND the clock keeps its own time. One render is forced on the way in so the
-   model is actually painted. */
+/* ⚠ PAUSE WHEN OFFSCREEN BY SWITCHING "always" <-> "never".
+   `demand` was tried first and the model NEVER RENDERED — read back through
+   toDataURL, the canvas was 0 model pixels with a live context, correct size
+   and no errors. On `demand` nothing draws until something calls invalidate,
+   and a static model asks for nothing; the invalidate in <Model> fires before
+   the GPU upload finishes, so the one render it buys is empty. The hero uses
+   the default "always" and works, so this does too.
+   The entrance-replay bug that "never" caused in the hero cannot happen here:
+   that was a CLOCK desync (elapsedTime resuming against a pre-pause t0), and
+   this scene has no timeline to desync — nothing reads the clock. */
 function PauseOffscreen() {
   const setFrameloop = useThree((s) => s.setFrameloop);
   const invalidate = useThree((s) => s.invalidate);
@@ -57,7 +60,7 @@ function PauseOffscreen() {
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        setFrameloop(e.isIntersecting ? "demand" : "never");
+        setFrameloop(e.isIntersecting ? "always" : "never");
         if (e.isIntersecting) invalidate();
       },
       { rootMargin: "300px" },
@@ -69,26 +72,89 @@ function PauseOffscreen() {
   return null;
 }
 
-/* the model, centred and scaled to fill the slot. `scale` is generous
-   because Kez asked for it "pretty enlarged" — the centre column is ~1.15
-   of a card wide and the model should read as the hero of the section. */
-function Model({ scale }: { scale: number }) {
+/* ⚠ THE MODEL IS NORMALISED, NOT RAW-SCALED, AND THAT IS WHY THE FIRST
+   VERSION WAS INVISIBLE. A raw `scale={9.2}` on the glb means nothing: the
+   file's own units put the phone at some arbitrary size and origin, so a
+   hand-picked multiplier lands it off-camera. The hero does the real thing
+   and this copies it exactly:
+     <Resize>  normalises the bounding box to 1 unit
+     <Center>  moves the origin to the middle of that box
+     scale     = viewport.height * fit, so it is a FRACTION OF THE VISIBLE
+                 HEIGHT and therefore the same proportion on every display.
+   `viewport.height` is the world height visible at z=0.
+
+   Rotation and fit are the hero's tuned values, Kez's own, from /tuner on
+   2026-10-04 — not re-derived here. */
+/* ⚠ NOT THE HERO'S PITCH ANY MORE. The hero's tuned pose is [-18, 159, 6],
+   and -18 on X tips the top of the phone AWAY from the viewer — in the hero
+   that reads fine against a tall section, but in this slot it showed the
+   phone from below-left with the screen foreshortened. Kez: face left but a
+   bit down, so more of the screen is visible.
+   X -18 -> -10 is a small nudge, not a stand-up: it tips the top back toward
+   the viewer by 8 degrees, which opens the screen a little without losing the
+   angled look. (A first pass at +6 was a 24-degree swing and far too much.)
+   Y 159 (the left-facing yaw) and Z 6 are the hero's and unchanged. */
+const TUNED_ROT = [-10, 159, 6] as const; // degrees
+const DEG = Math.PI / 180;
+
+/* cursor parallax, the hero's: yaw 10deg, pitch 5deg, damp 0.35s.
+   ⚠ `easing.damp` RATHER THAN A PER-FRAME LERP. A fixed lerp moves at a
+   different speed on a 60Hz and a 144Hz screen, which is the usual reason
+   this kind of motion feels different machine to machine. `damp` is a
+   smoothing TIME in seconds, so it is frame-rate independent. */
+const PARALLAX = { yaw: 10, pitch: 5, damp: 0.35 };
+
+function Model({ fit }: { fit: number }) {
   const { scene } = useGLTF(MODEL);
   const invalidate = useThree((s) => s.invalidate);
-  const ref = useRef<THREE.Group>(null);
+  const viewport = useThree((s) => s.viewport);
+  const root = useRef<THREE.Group>(null);
+  const mouse = useRef({ x: 0, y: 0 });
 
-  /* one render once the scene is in the tree — on `demand` nothing draws
-     until something asks, and a static model never asks. */
-  useEffect(() => invalidate(), [scene, invalidate]);
+  /* nudge a render when the model resolves or the viewport resizes. Harmless
+     under "always"; it is what makes the first painted frame prompt. */
+  useEffect(() => invalidate(), [scene, viewport.height, invalidate]);
+
+  /* normalised to -1..1 across the window, same as the hero — the pointer is
+     tracked on the window, not the canvas, because the canvas is
+     pointer-events-none and would never see the event. */
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.current.y = 1 - (e.clientY / window.innerHeight) * 2;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+
+  useFrame((_, delta) => {
+    const r = root.current;
+    if (!r) return;
+    easing.damp(r.rotation, "x", -mouse.current.y * PARALLAX.pitch * DEG, PARALLAX.damp, delta);
+    easing.damp(r.rotation, "y", mouse.current.x * PARALLAX.yaw * DEG, PARALLAX.damp, delta);
+  });
 
   return (
-    <group ref={ref} scale={scale} rotation={[-0.12, 0.42, 0.04]}>
-      <primitive object={scene} />
+    /* ⚠ TWO GROUPS, NOT ONE. Parallax turns the OUTER group; the tuned rest
+       pose sits on the inner one. Putting both on a single group means the
+       damp writes rotation.x/y every frame and wipes the tuned angles — the
+       phone would snap flat on the first pointer move. */
+    <group ref={root}>
+      <group
+        rotation={[TUNED_ROT[0] * DEG, TUNED_ROT[1] * DEG, TUNED_ROT[2] * DEG]}
+        scale={viewport.height * fit}
+      >
+        <Resize>
+          <Center>
+            <primitive object={scene} />
+          </Center>
+        </Resize>
+      </group>
     </group>
   );
 }
 
-export default function StepsScene({ scale = 9.2 }: { scale?: number }) {
+export default function StepsScene({ fit = 0.84 }: { fit?: number }) {
   /* ⚠ THE CANVAS MOUNTS ONLY AFTER THE PAGE IS INTERACTIVE. The glb is
      3.3MB with 2.3MB of webp textures that decode and upload ON THE MAIN
      THREAD — measured in session 14 as 99% of the page's jank, including a
@@ -99,17 +165,28 @@ export default function StepsScene({ scale = 9.2 }: { scale?: number }) {
      is warm on arrival without competing with the hero. */
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    /* ⚠ FETCHING AND MOUNTING ARE SEPARATED, AND THAT IS THE WHOLE TRICK.
+       The DOWNLOAD is network work off the main thread — starting it at once
+       costs the hero nothing but bandwidth, and it is the long pole at 3.3MB.
+       The MOUNT is what decodes 2.3MB of webp and uploads to the GPU on the
+       main thread, so only that is deferred.
+       The first build delayed both behind requestIdleCallback and the glb did
+       not start until 5636ms. Now the bytes are already arriving while the
+       page settles, and the canvas mounts into a warm cache. */
+    useGLTF.preload(MODEL);
+
     const w = window as Window & {
       requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
     };
     const go = () => setMounted(true);
-    /* Safari has no requestIdleCallback; a timeout is the documented fallback
-       and the exact delay does not matter, only that it is after first paint. */
+    /* Safari has no requestIdleCallback; a timeout is the documented fallback.
+       The timeout is short because the fetch is already in flight — this is
+       only waiting for first paint to be out of the way, not for the model. */
     if (w.requestIdleCallback) {
-      const id = w.requestIdleCallback(go, { timeout: 3000 });
+      const id = w.requestIdleCallback(go, { timeout: 600 });
       return () => (w as unknown as { cancelIdleCallback?: (i: number) => void }).cancelIdleCallback?.(id);
     }
-    const id = setTimeout(go, 1200);
+    const id = setTimeout(go, 300);
     return () => clearTimeout(id);
   }, []);
 
@@ -117,10 +194,9 @@ export default function StepsScene({ scale = 9.2 }: { scale?: number }) {
 
   return (
     <Canvas
-      /* ⚠ `demand`, NOT THE DEFAULT `always`. A static model has nothing to
-         animate, so there is no reason to run a WebGL render every frame for
-         the length of the page. */
-      frameloop="demand"
+      /* `always`, but only while the section is on screen — PauseOffscreen
+         flips it to "never" the rest of the time, which is the whole page for
+         most of a visit. */
       camera={{ position: [0, 0, 5.9], fov: 42, near: 0.1, far: 1000 }}
       /* capped at 2: a 3x retina render of this model is three times the
          fragment cost for no visible gain at this size. */
@@ -138,7 +214,7 @@ export default function StepsScene({ scale = 9.2 }: { scale?: number }) {
       <directionalLight position={[-4, -2, -3]} intensity={0.8} />
       <PauseOffscreen />
       <Suspense fallback={null}>
-        <Model scale={scale} />
+        <Model fit={fit} />
         {/* self-hosted, same reasoning as the hero's: the drei preset pulls
             1.5MB from a third-party CDN on every load. */}
         <Environment files="potsdamer_platz_1k.hdr" path="/hdri/" />

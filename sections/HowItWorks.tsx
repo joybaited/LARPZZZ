@@ -54,7 +54,10 @@ import StepsSceneMount from "@/components/StepsSceneMount";
  * instead: 0.58 of the heading, which is the ratio Testimonials already uses
  * between its quote and its footer, and the same clamp shape so the two
  * scale together. */
-const CARDS = [
+const CARDS: {
+  id: string; text: string; body: string;
+  art?: { src: string; w: number; h: number; alt: string };
+}[] = [
   {
     id: "purchase",
     text: "Purchase a License",
@@ -74,6 +77,12 @@ const CARDS = [
     id: "flex",
     text: "Flex to your hearts content",
     body: "Customize Your Portfolio to your hearts content.",
+    /* ⚠ TRIMMED AND CONVERTED, NOT DROPPED IN AS EXPORTED. The source was a
+       736x736 png at 353KB with the artwork floating in transparent padding —
+       the same trap as the hero's flat render, where uncropped padding scales
+       with the image and no width can centre it. `sharp().trim()` cut it to
+       the art (560x432), webp took it to 26.6KB. */
+    art: { src: "/images/step-cash.webp", w: 560, h: 432, alt: "" },
   },
 ];
 
@@ -161,6 +170,30 @@ export default function HowItWorks() {
               <p className="mt-[clamp(8px,1vw,18px)] max-w-[38ch] text-[clamp(13px,1.3vw,23px)] leading-[1.35] opacity-80">
                 {c.body}
               </p>
+              {/* the art, where a card has it. `mt-auto` pushes it to the
+                  bottom of the card, which is where MetaMask's renders sit,
+                  and `min-h-0` lets it shrink rather than forcing the card
+                  taller on a shallow window. Decorative, so alt="". */}
+              {c.art && (
+                /* ⚠ `flex-1 min-h-0`, NOT A PERCENTAGE MAX-HEIGHT. A
+                   `max-h-[42%]` on a flex child resolved against nothing and
+                   collapsed the art to 103x79. Giving the wrapper the leftover
+                   column space with flex-1 and letting the image fill it is
+                   what actually sizes it, and min-h-0 lets it shrink on a
+                   shallow card instead of pushing the card taller. */
+                <div className="mt-auto flex min-h-0 flex-1 items-end justify-end pt-[clamp(8px,1vw,16px)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={c.art.src}
+                    alt={c.art.alt}
+                    width={c.art.w}
+                    height={c.art.h}
+                    className="max-h-full w-auto max-w-[72%] object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
             </li>
           ))}
         </ul>
