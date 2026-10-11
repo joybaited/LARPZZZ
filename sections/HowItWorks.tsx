@@ -56,33 +56,47 @@ import StepsSceneMount from "@/components/StepsSceneMount";
  * scale together. */
 const CARDS: {
   id: string; text: string; body: string;
-  art?: { src: string; w: number; h: number; alt: string };
+  /* `h%` is an optional override for the shared height dial below — the
+     portrait sticker needs it, the other three sit on the default. */
+  art?: { src: string; w: number; h: number; alt: string;
+          "h%"?: string; rot?: number; down?: string };
 }[] = [
   {
     id: "purchase",
     text: "Purchase a License",
     body: 'Grab Larpz Wallet in the "Buy" page. Choose the plan that works for you, no hidden fees.',
-  },
-  {
-    id: "key",
-    text: "Receive your Key",
-    body: "After payment, you'll receive a unique license key via Telegram or email. Keep it safe.",
-  },
-  {
-    id: "activate",
-    text: "Activate your Wallet",
-    body: "Enter your license key, and download the app",
-  },
-  {
-    id: "flex",
-    text: "Flex to your hearts content",
-    body: "Customize Your Portfolio to your hearts content.",
     /* ⚠ TRIMMED AND CONVERTED, NOT DROPPED IN AS EXPORTED. The source was a
        736x736 png at 353KB with the artwork floating in transparent padding —
        the same trap as the hero's flat render, where uncropped padding scales
        with the image and no width can centre it. `sharp().trim()` cut it to
        the art (560x432), webp took it to 26.6KB. */
     art: { src: "/images/step-cash.webp", w: 560, h: 432, alt: "" },
+  },
+  {
+    id: "key",
+    text: "Receive your Key",
+    body: "After payment, you'll receive a unique license key via Telegram or email. Keep it safe.",
+    art: { src: "/images/step-key.webp", w: 512, h: 390, alt: "", down: "8px" },
+  },
+  {
+    id: "activate",
+    text: "Activate your Wallet",
+    body: "Enter your license key, and download the app",
+    /* ⚠ PORTRAIT, UNLIKE THE OTHER THREE (584x1002, ratio 0.58). The shared
+       `height: 128%` dial sizes on HEIGHT, so a tall sticker ends up NARROW:
+       this renders 166px wide against 292-357 for the others. If it wants to
+       match them visually it needs its own dial, not the shared one. */
+    art: { src: "/images/step-activate.webp", w: 584, h: 1002, alt: "",
+           "h%": "160%", rot: 12, down: "14px" },
+  },
+  {
+    id: "flex",
+    text: "Flex to your hearts content",
+    body: "Customize Your Portfolio to your hearts content.",
+    /* ⚠ THE SOURCE IS 167x155 — the smallest of the four by far. Trimmed to
+       113x124, so it is being scaled UP to fill the card and will soften.
+       A larger source is the only fix. */
+    art: { src: "/images/step-flex.webp", w: 113, h: 124, alt: "" },
   },
 ];
 
@@ -188,7 +202,22 @@ export default function HowItWorks() {
                     alt={c.art.alt}
                     width={c.art.w}
                     height={c.art.h}
-                    className="max-h-full w-auto max-w-[72%] object-contain"
+                    /* ⚠ HEIGHT IS THE BINDING CONSTRAINT, NOT WIDTH, and the
+                       rotation is inline on purpose. Raising max-w from 72% to
+                       100% changed nothing: the art hit `max-h-full` (204px of
+                       wrapper) long before the width cap, so the size dial is
+                       the height, not the width. And `rotate-[6deg]` as a class
+                       never generated a rule — it is the only arbitrary rotate
+                       in the project and computed to `transform: none`. Inline
+                       style sidesteps the JIT scan entirely. */
+                    className="w-auto max-w-none object-contain"
+                    style={{
+                      height: c.art["h%"] ?? "128%",
+                      /* translate, NOT margin — a transform cannot push the
+                         flex line, so a nudge can never change the card's
+                         height or shift the copy above it. */
+                      transform: `translateY(${c.art.down ?? "0px"}) rotate(${c.art.rot ?? 6}deg)`,
+                    }}
                     loading="lazy"
                     decoding="async"
                   />
