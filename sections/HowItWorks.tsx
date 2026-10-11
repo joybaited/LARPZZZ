@@ -165,16 +165,32 @@ export default function HowItWorks() {
                  and it reads as tiles sliding about; dense enough and the
                  same mechanism reads as the image pixelating. 484 divs is
                  still nothing to animate — they only toggle `display`. */
-              grid={22}
+              /* ⚠ 34, NOT 22. The cell is ~408px wide, so 22 across is an
+                 18px square — big enough that a 3-row band of them touching
+                 reads as a solid bar rather than as pixels. 34 is ~12px,
+                 and 1156 divs is still only a display toggle each. */
+              grid={34}
+              /* a thin band of pixels climbing from the bottom, carrying the
+                 next mockup up with it. */
+              pattern="wave"
+              waveRows={4}
+              /* scatters each cell off its row so the band's edges are
+                 ragged squares, not two straight lines. */
+              jitterRows={1.4}
               /* snappy: each half is 0.22s, so the whole swap is under half a
                  second. The original's 0.3 felt slow at this density because
                  the stagger is spread across far more cells. */
-              stepDuration={0.3}
+              /* ⚠ THIS IS THE CLIMB, NOT A HALF-DISSOLVE. For `wave` it is
+                 the time the band takes to cross all 22 rows, so 0.3 was
+                 ~13ms a row — about one frame each, far too fast to read as
+                 a wave. 1.1s is ~50ms a row, which is a band you can watch
+                 travel. */
+              stepDuration={1.1}
               /* plays itself when the section scrolls in — there is nothing
                  to hover in the middle of a card grid. */
               auto
-              /* swaps every 4s while the section is on screen */
-              loopEvery={4000}
+              /* swaps every 2.8s while the section is on screen */
+              loopEvery={2800}
               /* the squares stop at the phone's own edge — the grid is masked
                  with the artwork, so nothing paints on the transparent
                  corners. */

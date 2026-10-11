@@ -43,6 +43,18 @@ type Props = {
   maskToArt?: boolean;
   /** ms between automatic plays. 0 (the default) plays once per trigger. */
   loopEvery?: number;
+  /** how the pixels move.
+      `dissolve` — the original: the whole grid covers in random order, the
+      image swaps under it, the grid clears. The cover is total.
+      `wave` — a thin band of pixels travels bottom to top and the new image
+      is revealed BEHIND it as it passes, so the swap rides the band rather
+      than happening all at once. */
+  pattern?: "dissolve" | "wave";
+  /** `wave` only: band thickness, in rows. */
+  waveRows?: number;
+  /** `wave` only: how far each cell's timing is scattered from its row, in
+      rows. 0 is a hard-edged bar; around 1 reads as pixels. */
+  jitterRows?: number;
   className?: string;
 };
 
@@ -55,6 +67,9 @@ export default function PixelatedImageReveal({
   square = true,
   maskToArt = false,
   loopEvery = 0,
+  pattern = "dissolve",
+  waveRows = 3,
+  jitterRows = 1.2,
   className = "",
 }: Props) {
   const card = useRef<HTMLDivElement>(null);
@@ -102,7 +117,83 @@ export default function PixelatedImageReveal({
       frames.forEach((f, n) => { f.style.display = n === i ? "block" : "none"; });
     };
 
-    const goTo = (next: number) => {
+    /* ⚠ THE WAVE NEEDS CLIP, NOT display, ON THE FRAMES. A dissolve can swap
+       the whole image at one moment because the grid covers it completely.
+       A travelling band only covers a few rows, so the rest of the image is
+       visible the whole time — swapping it wholesale would flash the parts
+       the band has not reached yet. Instead the incoming frame is revealed
+       top-down with `clip-path`, and the band is parked exactly on that
+       edge, so the pixels appear to carry the new image up with them. */
+    const bandRows = Math.max(1, Math.min(waveRows, grid));
+
+    const waveTo = (next: number) => {
+      const from = index;
+      index = ((next % frames.length) + frames.length) % frames.length;
+      gsap.killTweensOf(pixels);
+      delayed?.kill();
+
+      const incoming = frames[index];
+      const outgoing = frames[from];
+
+      /* ⚠ THE REVEAL IS PER ROW, NOT A clip-path. A clip edge is a straight
+         CSS line and it reads as a smooth wipe — it dominates the pixels
+         entirely, which is exactly what it looked like. Instead the incoming
+         frame is clipped in WHOLE ROWS, the same 1/grid steps the band moves
+         in, so the boundary is always on a pixel edge and the band is the
+         only thing the eye can see doing the revealing. */
+      outgoing.style.display = "block";
+      incoming.style.display = "block";
+      incoming.style.clipPath = "inset(100% 0% 0% 0%)";
+      gsap.set(pixels, { display: "none" });
+
+      const rowStep = stepDuration / grid;
+
+      /* ⚠ EVERY CELL IS JITTERED, OR THE BAND IS A BAR. Timed purely by row,
+         all 22 cells in a row flip at the same instant and they are
+         touching — so the band renders as a solid stripe with two straight
+         edges, which is exactly what it looked like. Scattering each cell's
+         own timing by up to a row either way breaks both edges into
+         individual squares appearing and vanishing: the band still travels
+         as a band, but it is made of pixels rather than being a bar.
+         Jitter is per cell and fixed per pass, so a cell cannot turn off
+         before it has turned on. */
+      pixels.forEach((px, i) => {
+        /* row-major build, so the LAST rows are the lowest on screen —
+           the band starts at the bottom and climbs. */
+        const row = grid - 1 - Math.floor(i / grid);
+        const jitter = (Math.random() - 0.5) * 2 * rowStep * jitterRows;
+        const on = Math.max(0, row * rowStep + jitter);
+        /* the off time keeps the SAME jitter, so each cell is lit for the
+           full band thickness wherever it happens to fall. */
+        const off = on + bandRows * rowStep;
+        gsap.to(px, { display: "block", duration: 0, delay: on });
+        gsap.to(px, { display: "none", duration: 0, delay: off });
+      });
+
+      /* the reveal steps one row at a time, trailing the band's back edge:
+         the rows it has already cleared are the ones showing the new image.
+         Quantised with `snap` so it can never sit mid-row and expose a
+         straight edge between two pixel rows. */
+      const prog = { row: 0 };
+      gsap.to(prog, {
+        row: grid,
+        duration: grid * rowStep,
+        delay: bandRows * rowStep,
+        ease: "none",
+        snap: { row: 1 },
+        onUpdate: () => {
+          const pct = 100 - (prog.row / grid) * 100;
+          incoming.style.clipPath = `inset(${pct}% 0% 0% 0%)`;
+        },
+      });
+
+      delayed = gsap.delayedCall((grid + bandRows + jitterRows) * rowStep, () => {
+        show(index);
+        incoming.style.clipPath = "";
+      });
+    };
+
+    const dissolveTo = (next: number) => {
       index = ((next % frames.length) + frames.length) % frames.length;
       /* ⚠ KILL BEFORE RE-RUNNING, or a fast in-out-in leaves half the grid
          mid-stagger and the two passes fight: pixels stick visible and the
@@ -127,6 +218,8 @@ export default function PixelatedImageReveal({
         stagger: { each: stagger, from: "random" },
       });
     };
+
+    const goTo = pattern === "wave" ? waveTo : dissolveTo;
 
     show(0);
 
@@ -176,7 +269,7 @@ export default function PixelatedImageReveal({
       pixelGrid.replaceChildren();
       show(0);
     };
-  }, [grid, stepDuration, auto, loopEvery, images.length]);
+  }, [grid, stepDuration, auto, loopEvery, images.length, pattern, waveRows, jitterRows]);
 
   const objectFit = fit === "contain" ? "object-contain" : "object-cover";
 
@@ -193,7 +286,7 @@ export default function PixelatedImageReveal({
           one would fetch mid-transition and flash on the first cycle.
           `eager` on the first, lazy on the rest: the first is what is on
           screen at rest, the others have until the first 4s tick. */}
-      <div ref={stack} className="absolute inset-0">
+      <div ref={stack} data-pixel-frames="" className="absolute inset-0">
         {images.map((im, i) => (
           <div key={im.src} className="absolute inset-0" style={{ display: i === 0 ? "block" : "none" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -221,6 +314,7 @@ export default function PixelatedImageReveal({
       <div
         ref={gridRef}
         aria-hidden="true"
+        data-pixel-grid=""
         className="absolute inset-0"
         style={
           maskToArt
