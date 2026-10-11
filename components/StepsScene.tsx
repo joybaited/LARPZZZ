@@ -2,9 +2,10 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Center, Environment, Resize, useGLTF } from "@react-three/drei";
+import { Center, Resize, useGLTF } from "@react-three/drei";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { easing } from "maath";
-import type * as THREE from "three";
+import * as THREE from "three";
 
 /* The How it works model. STATIC — no entrance, no float, no parallax.
  *
@@ -103,6 +104,31 @@ const DEG = Math.PI / 180;
    this kind of motion feels different machine to machine. `damp` is a
    smoothing TIME in seconds, so it is frame-rate independent. */
 const PARALLAX = { yaw: 10, pitch: 5, damp: 0.35 };
+
+/* ⚠ PROCEDURAL ENVIRONMENT, NOT THE 1.5MB .hdr. Measured on this page:
+   potsdamer_platz_1k.hdr fetched at 3198ms — BEFORE the glb at 3611ms, so a
+   1.5MB reflection map was competing with the model for bandwidth and winning.
+   Nearly half the glb's size, for reflections on a phone the size of a card.
+   `RoomEnvironment` ships inside the installed `three` package and is built on
+   the GPU from geometry, so it costs ZERO network bytes and no decode. It is
+   what three.js's own examples use for product shots.
+   Scene.tsx still loads the .hdr — that is the hero's and is not touched here,
+   and the file stays in public/hdri for it. */
+function RoomEnv() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const env = pmrem.fromScene(new RoomEnvironment(), 0.04);
+    scene.environment = env.texture;
+    return () => {
+      env.texture.dispose();
+      pmrem.dispose();
+      scene.environment = null;
+    };
+  }, [gl, scene]);
+  return null;
+}
 
 function Model({ fit }: { fit: number }) {
   const { scene } = useGLTF(MODEL);
@@ -215,9 +241,7 @@ export default function StepsScene({ fit = 0.84 }: { fit?: number }) {
       <PauseOffscreen />
       <Suspense fallback={null}>
         <Model fit={fit} />
-        {/* self-hosted, same reasoning as the hero's: the drei preset pulls
-            1.5MB from a third-party CDN on every load. */}
-        <Environment files="potsdamer_platz_1k.hdr" path="/hdri/" />
+        <RoomEnv />
       </Suspense>
     </Canvas>
   );

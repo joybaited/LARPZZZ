@@ -120,6 +120,23 @@ const PLACE = [
 export default function HowItWorks() {
   return (
     <Section id="how-it-works" className="bg-violet text-grape">
+      {/* ⚠ THE PRELOAD HINT IS WHY THE MODEL ARRIVES EARLY, AND IT CANNOT BE
+          DONE FROM JS. `useGLTF.preload` sits inside StepsScene's effect, so
+          it cannot run until ~4MB of three.js has downloaded and parsed —
+          measured, the glb did not start until 3611ms. A <link rel=preload>
+          is in the HTML, so the browser starts the 3.2MB at ~0ms, in parallel
+          with the JS instead of after it. Next hoists this into <head>.
+          `fetchPriority=low` keeps it behind the hero's own assets: this
+          section is below the fold, so it should fill idle bandwidth, not
+          compete for it. */}
+      <link
+        rel="preload"
+        as="fetch"
+        href="/models/iphone.glb"
+        type="model/gltf-binary"
+        crossOrigin="anonymous"
+        fetchPriority="low"
+      />
       {/* ⚠ `h-[100svh]`, NOT `min-h-`. The grid below sizes its rows off this
           box, and a min-height gives a percentage row nothing to resolve
           against — the rows collapse to content and the ~90% is ignored.
