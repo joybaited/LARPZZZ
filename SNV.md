@@ -58,18 +58,42 @@ The line breaks are `<span className="block">`, not wrapping. That's
 deliberate — a width that happens to break in the right place re-breaks at
 every other width.
 
-### The phone isn't in the hero
+### ⚠ THERE IS NO 3D ON THE SITE ANY MORE (2026-10-11)
 
-It looks like it is. It isn't. It's rendered by the one `<Canvas>` in
-`components/Scene.tsx`, fixed behind the whole page.
+This section used to say the phone was rendered by a `<Canvas>` behind the
+page. That is no longer true and it is the biggest thing to know when you
+pull.
 
-**That canvas has one owner and it isn't the hero.** If you need the phone to
-do something, that's a request, not an edit. `docs/3D.md` explains the whole
-thing and is worth reading before you touch anything 3D.
+**Every canvas is gone from the live site.** No three.js, no glb, no Draco on
+the wire — verified, zero 3D network requests on a full page scroll. It went
+in two steps: the hero's canvas was commented out in session 14 for
+performance, and the How it works canvas was removed entirely on Kez's call.
 
-**The tuned values are the owner's**, chosen by eye in `/tuner` — rotation
-`[-18, 159, 6]`, camera `z 5.9 / fov 42`, `fit 0.72`. Don't "improve" them. If
-something looks wrong that's a question, not a commit.
+**Your glb is untouched.** `public/models/iphone.glb` is still in the repo,
+exactly as you committed it at `62d1880` — your seam fix. Nothing has run any
+of the three scripts that write that path. `CLAUDE.md` records why: they each
+clobber the other two, and `apply-all-fixes.mjs` reads a scratch directory on
+your machine, so the binary is the artifact and it is not reproducible from
+source. "Remove the 3D" meant the code, not your file.
+
+**Nothing of the hero's 3D is deleted either.** `components/Scene.tsx`,
+`Phone.tsx`, `SceneMount.tsx` and `public/hdri/` are all still here and still
+wired. Putting the hero phone back is one line in `sections/Hero.tsx` — the
+comment there has it verbatim.
+
+**If you restore it, that is a conversation first.** It would be the only live
+canvas again, and `CLAUDE.md` asks for an architecture discussion before there
+are two. The tuned values are still the owner's, still chosen by eye in
+`/tuner` — rotation `[-18, 159, 6]`, camera `z 5.9 / fov 42`, `fit 0.72`.
+Don't "improve" them.
+
+`docs/3D.md` has the full picture and a section at the top addressed to you.
+
+### What replaced it
+
+The How it works centre now holds six flat phone mockups with a pixel-wave
+transition between them (`components/PixelatedImageReveal.tsx`) — DOM divs
+plus GSAP, no WebGL. It cycles every 2.8s while the section is on screen.
 
 ---
 
@@ -77,14 +101,45 @@ something looks wrong that's a question, not a commit.
 
 | What | Why |
 |---|---|
-| `app/page.tsx` | Owner is in it — PR #2, the Features section |
-| `sections/Features.tsx` | Same PR |
-| `components/Scene.tsx` | The canvas. One owner. |
+| `components/Scene.tsx` / `Phone.tsx` | The hero's 3D. One owner, and it is out of the site — see above before restoring it. |
+| `public/models/iphone.glb` | Yours. Three scripts write that path and each clobbers the other two. |
+| `components/Section.tsx` | Every section's height and heading space comes from here now. A change there moves the whole page. |
 
-`app/globals.css` is shared and holds the design tokens. It gained
-`--color-haze` (`#f5f2ff`, the hero's ground colour) and `--nav-inset`. Agree
-changes before adding to it — if you each invent your own spacing values the
-page ends up looking like two websites.
+`app/globals.css` is shared and holds the design tokens. Besides
+`--color-haze` (`#f5f2ff`, the hero's ground) and `--nav-inset`, it gained
+**`--color-violet` (`#eac2ff`) and `--color-grape` (`#3d065f`)** — purely
+additive, no existing token changed value. They are the pair that Faq and
+Testimonials already had hardcoded. Agree changes before adding to it — if you
+each invent your own spacing values the page ends up looking like two
+websites.
+
+### ⚠ `npm install` before you run anything
+
+`package.json` gained two runtime dependencies and they are both load-bearing:
+
+| Package | Why |
+|---|---|
+| `lenis` | Site-wide smooth scroll, mounted in `app/layout.tsx`. |
+| `embla-carousel-react` | The Features carousel. |
+
+**`lenis` changes how scrolling works everywhere, so two things that used to
+be true no longer are:**
+
+- **`overflow: hidden` does not lock the page.** Lenis drives it with its own
+  transform and keeps going. Use `window.__lenis?.stop()` / `.start()` — that
+  is what the nav does.
+- **ScrollTrigger needs Lenis's position, not the browser's.** It is wired up
+  once in `components/SmoothScroll.tsx`. If you add a pinned or scrubbed
+  trigger it will work; if you ever remove that wiring, every pin silently
+  stops tracking.
+
+### Features is not a scroll-pinned rail any more
+
+It was a GSAP ScrollTrigger pin that mapped vertical scroll onto a horizontal
+transform. It is now an Embla carousel with arrow buttons and drag, rebuilt
+1:1 against phantom.com's mechanics. The `extra={1}` is gone with it, so the
+section is one viewport and the card height no longer decides the section
+height.
 
 ---
 

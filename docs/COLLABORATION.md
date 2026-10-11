@@ -135,7 +135,9 @@ need:
 | `app/page.tsx` | One import + one tag per new section. Nothing else. |
 | `app/globals.css` | Design tokens only. Agree on changes before touching. |
 | `package.json` | Say it in chat before adding a dependency. |
-| The `<Canvas>` | **One owner.** The other person requests props. |
+| `app/layout.tsx` | Site-wide providers live here now. One line each, say it in chat. |
+| `components/Section.tsx` | Every section's height and heading space. A change here moves the whole page. |
+| The `<Canvas>` | **One owner.** The other person requests props. There is currently none live — see `SNV.md`. |
 
 ### `page.tsx`: the one edit that is allowed
 
