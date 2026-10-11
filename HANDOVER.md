@@ -38,6 +38,245 @@ dependencies. It shapes what gets built here — do not over-engineer this site.
 
 ---
 
+## Session — 2026-10-11 (session 15)
+
+Pricing inverted to the house violet pair and **pushed to `main`**, then
+**How it works built from scratch** on `making/how-it-works` — four cards
+around the phone model, MetaMask's bento measured off their live page. That
+branch is **5 commits, UNPUSHED**.
+
+### ⚠ START HERE
+
+1. **The current branch is `making/how-it-works`, 5 commits, NOT PUSHED.**
+   `git pull --rebase origin main` before anything leaves the machine.
+2. **`main` is at `7178641` and pushed** — the Pricing inversion. The owner
+   said "just push everything okay, snv needs to pull", which is the **third
+   per-merge waiver** of "nothing goes directly on `main`". Same as sessions
+   13 and 14: **not a standing change.**
+3. **⚠ @snvzyn HAS STILL NOT BEEN TOLD ABOUT `globals.css`.** Twelve
+   sessions. It gained two tokens this session and is on `main` now, so it is
+   in their tree whether or not anyone mentions it. The draft message to send
+   them is at the end of this entry.
+4. **The next task is beautifying the cards.** They are currently flat grape
+   rectangles with a heading, a body line and (card 4 only) art.
+5. **The dev server is running** on port 3000.
+
+### Done
+
+- **Pricing inverted** to violet ground / grape cards, tier names in Megion.
+  All three cards identical — the middle-tier emphasis was dropped at the
+  owner's call. Pushed to `main`.
+- **`--color-violet` and `--color-grape` added to `globals.css`.** The pair
+  was hardcoded in Faq and Testimonials already; Pricing would have been the
+  third copy.
+- **How it works built**: four cards, two flanking columns, empty centre.
+- **The phone model in that centre**, static but with cursor parallax.
+- **Self-hosted the Draco decoder** — an item open three sessions.
+- **Card 4 art** from the owner's banknote png.
+
+### ⚠ THE CARD HAS NO FIXED ASPECT RATIO — THIS BROKE THE FIRST BUILD
+
+Measured off metamask.io at five viewports:
+
+| viewport | card | ratio | column as % of viewport height |
+|---|---|---|---|
+| 1522x738 | 367x308 | 1.193 | 90.5 |
+| 1440x900 | 347x378 | 0.918 | 89.6 |
+| 1440x700 | 347x292 | 1.188 | 90.6 |
+| 1280x800 | 308x336 | 0.916 | 89.6 |
+| 1920x1080 | 464x463 | 1.003 | 91.8 |
+
+**The ratio swings 0.92 to 1.19 while the column holds ~90% of viewport
+height every time.** The height is the fixed thing; the ratio is an output.
+Reading the ratio off one 900px-tall window and pinning `aspect-[347/378]`
+gave 383x417 cards — two plus a gap overflows any normal viewport, which the
+owner caught on the deploy. **Their page fits one screen; ours does now too.**
+
+**⚠ THEIR BENTO CSS IS NOT IN ANY OF THE FOUR `<link>` STYLESHEETS.** It is a
+lazily-loaded chunk. Fetching the sheets and grepping for `bento` returns
+nothing — the numbers above come from `getComputedStyle` on the live page.
+
+**Their type and radius are pure viewport functions with no constant:**
+font = `w/60` (1.667vw), radius = `w/36` (2.778vw), both within 0.1px at every
+sample. Written as the vw they are. Ours match theirs exactly at 1440 and 1522.
+
+**⚠ `1.15fr` MEASURES 1.234.** The centre gap is 1.15 of a card's width on
+their page. `fr` splits what is left AFTER the gaps, so the two 16px gaps land
+inside the span being measured. **`1.066fr` is the value that measures 1.150.**
+Also tried and rejected: bare percentages (gaps are added on top, row
+overflows) and `calc()` against a `--g` custom property (**the arbitrary value
+does not resolve, the whole three-column rule is dropped, and the cards fall
+back to the 2-col track at 620px wide**).
+
+### ⚠ THE 3D: TWO BUGS THAT BOTH LOOKED LIKE "IT DOES NOT RENDER"
+
+The model was invisible for most of the session. Two independent causes:
+
+1. **`frameloop="demand"` NEVER DREW.** Read back through `toDataURL`: 0 model
+   pixels, with a live context, correct canvas size and no console errors. On
+   `demand` nothing draws until something calls `invalidate`, and the
+   `invalidate` in `<Model>` fires **before the GPU upload finishes**, so the
+   one render it buys is empty. **The hero uses the default `always` and
+   works.** Switched; coverage went 0% -> 83%. `PauseOffscreen` still flips to
+   `never` off screen, which is most of a visit.
+2. **`scale={9.2}` ON THE RAW GLB IS MEANINGLESS.** The file's own units put
+   the phone at an arbitrary size and origin, so a hand-picked multiplier
+   lands it off-camera. **The hero normalises first:** `<Resize>` takes the
+   bounding box to 1 unit, `<Center>` moves the origin to the middle, then
+   `scale={viewport.height * fit}` makes it a fraction of the VISIBLE HEIGHT.
+   Copied exactly.
+
+**⚠ MEASURING WHETHER A CANVAS DREW: `readPixels` LIES, `toDataURL` DOES
+NOT.** A `readPixels` check returned 0 opaque pixels on a canvas that was
+rendering correctly — the drawing buffer is not preserved, so it reads a
+cleared buffer. `toDataURL` forces a flush and gives the true answer. This
+cost a wrong diagnosis before it was caught.
+
+**⚠ PARALLAX NEEDS TWO GROUPS.** It turns the OUTER group; the tuned rest pose
+sits on an inner one. On a single group the `easing.damp` writes
+`rotation.x`/`y` every frame and **wipes the tuned angles — the phone snaps
+flat on the first pointer move.**
+
+**⚠ `contain` ON `<Canvas style>` DOES NOT REACH THE CANVAS.** r3f writes its
+own inline style on that element and inserts its own div. Verified by walking
+the DOM chain: containment lands on the r3f container two levels up, which is
+what matters, but the canvas itself reads `contain: none` and looks broken.
+
+### The 3D setup, and the numbers that are the owner's
+
+`components/StepsScene.tsx` — **deliberately NOT the hero's `<Scene>`/
+`<Phone>`.** Those carry an entrance spring, idle float and parallax; reusing
+them would mean passing a tune that zeroes six dials and hoping none is
+re-tuned from `/hero-tuner`. **The hero's pair are untouched, so session 14's
+one-line path back to the hero phone still works.**
+
+- **`fit = 0.84`** — the owner's. They tried 0.95 and asked for 0.84.
+- **`TUNED_ROT = [-10, 159, 6]`** — X is the owner's call. The hero's `-18`
+  showed the phone from below-left with the screen foreshortened; they asked
+  for "face left but a bit down so the screen is more visible". **A first pass
+  at `+6` was a 24-degree swing and far too much** — they said "too much, I
+  js wanted a small jump". 8 degrees is what they approved.
+- **`PARALLAX = { yaw: 10, pitch: 5, damp: 0.35 }`** — the hero's values.
+  `easing.damp`, not a per-frame lerp, so it is frame-rate independent.
+
+**⚠ THE GLB IS NOT REBUILT.** `public/models/iphone.glb` is read as committed
+at `62d1880` (@snvzyn's seam fix). No script was run. CLAUDE.md's rule stands.
+
+**⚠ THIS IS NOW THE ONLY LIVE `<Canvas>`.** The hero's is still commented out.
+The owner said "the glb is only gonna be here nowhere else". **If the hero's
+phone is ever restored that is two live canvases** and the architecture
+conversation CLAUDE.md asks for.
+
+### Draco: an item open three sessions, now closed (for this section)
+
+The decoder was fetched **2374ms after the glb** — it is only discovered once
+the glb parses, so the two were serial. **The files ship inside the installed
+`three` package** (`examples/jsm/libs/draco/gltf`), so self-hosting added no
+dependency: copied to `public/draco`, **the gap is now 284ms and nothing on
+the critical path is third-party.**
+
+**`Scene.tsx:11` still points at gstatic.** It is the hero's and was not
+touched — live again the moment the hero phone goes back.
+
+### Loading
+
+**Fetching and mounting are separated, and that is the whole trick.** The
+download is off-thread network work and the 3.3MB is the long pole, so
+`useGLTF.preload` starts it immediately. The mount is what decodes 2.3MB of
+webp and uploads to the GPU **on the main thread**, so only that waits for
+`requestIdleCallback`. Previously both waited and **the glb did not start
+until 5636ms; it is 1868ms now.**
+
+### Gotchas
+
+- **⚠ A PERCENTAGE `max-height` ON A FLEX CHILD RESOLVES AGAINST NOTHING.**
+  `max-h-[min(42%,180px)]` collapsed card 4's art to 103x79. `flex-1` +
+  `min-h-0` + `max-h-full` is what sizes it.
+- **⚠ THE SOURCE PNG HAD THE SAME PADDING TRAP AS THE HERO RENDER.** 736x736
+  with the art floating in transparency. `sharp().trim()` to 560x432, webp,
+  353KB -> 26.6KB. **Re-exporting from an uncropped source silently changes
+  what the size numbers mean.**
+- **⚠ `display: contents` AGAIN.** The first grid wrapped each column in an
+  `<li>` holding its own `<ul>`. Cards measured 0x0 with a 0.45 ratio: **a
+  `contents` box has no box, so the height had nothing to resolve against.**
+  One flat grid with explicit `col-start`/`row-start` needs no nesting.
+- **⚠ `scrollIntoView()` DID NOT REACH THE SECTION** — it landed at 2105px and
+  several "at the section" measurements were taken with the canvas off screen
+  entirely. Scroll by `getBoundingClientRect().top` and verify the element is
+  actually in the viewport before trusting what follows.
+- **⚠ SWIFTSHADER MAKES A LIVE CANVAS LOOK CATASTROPHIC.** A/B on the same
+  loaded page: canvas alive 6602ms blocked, canvas removed 107ms — **while
+  the canvas drew ZERO frames.** The cost is compositing a WebGL surface with
+  no GPU, not rendering. **Real-GPU numbers are still unmeasured, open since
+  session 10.**
+- **A native `<input type="color">` only accepts a hex literal.** Handed
+  `var(--color-violet)` it shows BLACK with no error, then writes that black
+  into the config the moment a neighbouring dial is touched. `/pricing-tuner`
+  resolves the token off live computed styles now.
+- **`"use client"` DOES NOT MEAN BROWSER-ONLY.** A client component still
+  prerenders on the server. `/pricing-tuner` 500'd on `getComputedStyle is
+  not defined` until it was guarded.
+- **A bash heredoc running node needs the script inside the project** or
+  `require('playwright')` fails — the scratchpad is outside the module scope.
+
+### Open
+
+1. **⚠ `making/how-it-works` IS 5 COMMITS AND UNPUSHED.**
+2. **⚠ @snvzyn NOT TOLD ABOUT `globals.css`** — twelve sessions. Draft below.
+3. **BEAUTIFYING THE CARDS IS THE NEXT TASK** — the owner's words. They are
+   flat grape rectangles right now: heading, body, art on card 4 only. No
+   per-card treatment, no hover, no texture, no art on cards 1-3.
+4. **Cards 1, 2 and 3 have no art.** Card 4's banknote is the only one. The
+   layout already leaves room in the lower portion.
+5. **⚠ `Scene.tsx:11` STILL POINTS AT gstatic** — moot while the hero phone is
+   out, live the moment it returns.
+6. **Faq and Testimonials still hardcode `#EAC2FF`/`#3D065F`.** Two lines each
+   to convert to the new tokens; left alone because it was not asked for.
+7. **KTX2 / the texture upload** — still the only real fix for the model's
+   load cost, still needs @snvzyn because it rewrites their glb.
+8. **Real-GPU performance** — unmeasured since session 10.
+9. **Three pre-existing lint errors** at `app/pricing-tuner/page.tsx:581`,
+   refs during render in the undo/redo buttons. Not touched.
+10. **`/pricing-tuner`'s 0-height wrapper bug** is still open — not hit this
+    session because the tuner was never driven interactively.
+11. Everything from sessions 4-14 stands: the FAQ pills clipping at every
+    width, the FAQ answers still "New answer.", the Features copy still lorem,
+    section 3 empty, PRs #2/#4/#5, the `page.tsx` disagreement between
+    CLAUDE.md and COLLABORATION.md.
+
+### The message @snvzyn still needs
+
+> Pushed Pricing to `main` (`7178641`). Three files:
+>
+> - **`app/globals.css`** — shared file. Two new tokens,
+>   `--color-violet: #eac2ff` and `--color-grape: #3d065f`. Purely additive,
+>   no existing token changed value. They are the pair Faq and Testimonials
+>   already had hardcoded.
+> - **`sections/Pricing.tsx`** — inverted to that pair. All three cards now
+>   read identically; the middle-tier emphasis was dropped on purpose. Tier
+>   names moved to Megion uppercase.
+> - **`app/pricing-tuner/page.tsx`** — stage follows the section's new ground.
+>
+> Heads up if you touch the tuner: a native `<input type="color">` silently
+> shows black for a `var()` value and writes that black back into the config
+> when you touch a neighbouring dial. Resolved to hex now.
+
+Also still unsaid: **`Pricing.tsx`'s shared `PriceEl` type gained `in: "menu"`,
+`glide?` and `pop?` in session 14**, and `globals.css` has moved several times
+across the last twelve sessions.
+
+### Branch
+
+**On `making/how-it-works`, 5 commits ahead of `main`, UNPUSHED.**
+`main` is at `7178641`, pushed, in sync with `origin/main`.
+`tweak/pricing` is at `7178641` on both and is merged — safe to delete.
+⚠ `origin/tweak/hero-kez` is **stale**: it sits at `31115e7`
+(`feat/pricing-layout`'s tip) while local is at `9146c42`. The work is all on
+`main`, but that remote branch is misleading to look at.
+`stash@{0}` still holds session 14's entrance glide. Dev server on port 3000.
+
+---
+
 ## Session — 2026-10-10 (session 14)
 
 The nav became an osmo.supply-style dropdown, **the 3D phone came out of the
