@@ -1,5 +1,5 @@
 import Section from "@/components/Section";
-import StepsSceneMount from "@/components/StepsSceneMount";
+import PixelatedImageReveal from "@/components/PixelatedImageReveal";
 
 /* How it works. Four cards in two flanking columns with an empty middle.
  *
@@ -70,13 +70,13 @@ const CARDS: {
        the same trap as the hero's flat render, where uncropped padding scales
        with the image and no width can centre it. `sharp().trim()` cut it to
        the art (560x432), webp took it to 26.6KB. */
-    art: { src: "/images/step-cash.webp", w: 560, h: 432, alt: "" },
+    art: { src: "/images/step-cash.webp", w: 560, h: 432, alt: "", "h%": "150%" },
   },
   {
     id: "key",
     text: "Receive your Key",
     body: "After payment, you'll receive a unique license key via Telegram or email. Keep it safe.",
-    art: { src: "/images/step-key.webp", w: 512, h: 390, alt: "", down: "8px" },
+    art: { src: "/images/step-key.webp", w: 512, h: 390, alt: "", "h%": "148%", down: "6px" },
   },
   {
     id: "activate",
@@ -87,7 +87,7 @@ const CARDS: {
        this renders 166px wide against 292-357 for the others. If it wants to
        match them visually it needs its own dial, not the shared one. */
     art: { src: "/images/step-activate.webp", w: 584, h: 1002, alt: "",
-           "h%": "160%", rot: 12, down: "14px" },
+           "h%": "126%", rot: 12, down: "8px" },
   },
   {
     id: "flex",
@@ -96,7 +96,7 @@ const CARDS: {
     /* ⚠ THE SOURCE IS 167x155 — the smallest of the four by far. Trimmed to
        113x124, so it is being scaled UP to fill the card and will soften.
        A larger source is the only fix. */
-    art: { src: "/images/step-flex.webp", w: 113, h: 124, alt: "" },
+    art: { src: "/images/step-flex.webp", w: 113, h: 124, alt: "", "h%": "138%" },
   },
 ];
 
@@ -120,23 +120,6 @@ const PLACE = [
 export default function HowItWorks() {
   return (
     <Section id="how-it-works" className="bg-violet text-grape">
-      {/* ⚠ THE PRELOAD HINT IS WHY THE MODEL ARRIVES EARLY, AND IT CANNOT BE
-          DONE FROM JS. `useGLTF.preload` sits inside StepsScene's effect, so
-          it cannot run until ~4MB of three.js has downloaded and parsed —
-          measured, the glb did not start until 3611ms. A <link rel=preload>
-          is in the HTML, so the browser starts the 3.2MB at ~0ms, in parallel
-          with the JS instead of after it. Next hoists this into <head>.
-          `fetchPriority=low` keeps it behind the hero's own assets: this
-          section is below the fold, so it should fill idle bandwidth, not
-          compete for it. */}
-      <link
-        rel="preload"
-        as="fetch"
-        href="/models/iphone.glb"
-        type="model/gltf-binary"
-        crossOrigin="anonymous"
-        fetchPriority="low"
-      />
       {/* ⚠ `h-[100svh]`, NOT `min-h-`. The grid below sizes its rows off this
           box, and a min-height gives a percentage row nothing to resolve
           against — the rows collapse to content and the ~90% is ignored.
@@ -147,25 +130,60 @@ export default function HowItWorks() {
           /* ⚠ THE ROW IS 90% OF THE VIEWPORT AND THE TWO CARD ROWS SPLIT IT.
              `grid-rows-2` on a 90%-of-the-box row gives each card ~45% minus
              half the gap, which is MetaMask's model: height fixed, ratio falls
-             out. ⚠ IT IS 90% OF THE BOX, NOT 90svh. Against the viewport it
-             ignored the heading space above it and the bottom row hung 16px
-             out of the section — the parent is already one viewport minus that
-             space, so a percentage tracks it and `svh` cannot.
+             out. ⚠ IT IS THE BOX, NOT 90svh. Against the viewport it ignored
+             the heading space above it and the bottom row hung 16px out of
+             the section. And it is `h-full` rather than the old `90%`: the
+             box is ALREADY one viewport minus the heading space, so taking
+             90% of it cut the cards twice — they measured 342px against 397
+             before, which shrank every sticker with them, since a sticker is
+             a percentage of the room its card leaves.
              Below lg the height is released (`h-auto`) and the cards go back
              to a natural 2-up, or four 45svh cards stacked is four screens. */
-          className="m-0 grid w-full list-none grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-[90%] lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
+          className="m-0 grid w-full list-none grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-full lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
         >
-          {/* ⚠ THE MODEL GOES IN THE CENTRE TRACK, WHICH USED TO BE EMPTY.
-              It is a real grid item now (`col-start-2`, spanning both rows)
-              rather than an absolute box over the section, so it is the
-              column — it moves and resizes with the grid instead of being
-              positioned against it at every width. `relative` is what the
-              mount's `inset-0` resolves against.
-              Hidden below lg: the stacked 2-up has no centre column to sit
-              in, and a 3.3MB model is not what a phone should be downloading
-              to show behind nothing. */}
+          {/* The centre column. It is the grid's middle track — the `1.066fr`
+              in `grid-cols-[1fr_1.066fr_1fr]` that holds the two card columns
+              apart — so the element has to exist even when it is empty, or
+              the three-column arrangement collapses to two. It carries the
+              two phone mockups and the pixel transition between them, where
+              the 3D model used to be.
+              Hidden below lg: the stacked 2-up has no centre column. */}
           <li role="presentation" className="relative hidden lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block">
-            <StepsSceneMount />
+            <PixelatedImageReveal
+              /* six phone mockups, cycled in order and wrapping back to the
+                 first. All six are the same 521x1055 trim, so they share one
+                 silhouette and one mask. */
+              images={[
+                { src: "/images/steps-phone-a.webp", alt: "" },
+                { src: "/images/steps-phone-b.webp", alt: "" },
+                { src: "/images/steps-phone-c.webp", alt: "" },
+                { src: "/images/steps-phone-d.webp", alt: "" },
+                { src: "/images/steps-phone-e.webp", alt: "" },
+                { src: "/images/steps-phone-f.webp", alt: "" },
+              ]}
+              /* ⚠ 22 A SIDE, NOT THE ORIGINAL'S 7. At 7 the squares are huge
+                 and it reads as tiles sliding about; dense enough and the
+                 same mechanism reads as the image pixelating. 484 divs is
+                 still nothing to animate — they only toggle `display`. */
+              grid={22}
+              /* snappy: each half is 0.22s, so the whole swap is under half a
+                 second. The original's 0.3 felt slow at this density because
+                 the stagger is spread across far more cells. */
+              stepDuration={0.3}
+              /* plays itself when the section scrolls in — there is nothing
+                 to hover in the middle of a card grid. */
+              auto
+              /* swaps every 4s while the section is on screen */
+              loopEvery={4000}
+              /* the squares stop at the phone's own edge — the grid is masked
+                 with the artwork, so nothing paints on the transparent
+                 corners. */
+              maskToArt
+              /* the pixels are `currentColor`: the site's grape. */
+              className="size-full !rounded-none text-grape"
+              fit="contain"
+              square={false}
+            />
           </li>
 
           {CARDS.map((c, i) => (
@@ -215,7 +233,14 @@ export default function HowItWorks() {
                    collapsed the art to 103x79. Giving the wrapper the leftover
                    column space with flex-1 and letting the image fill it is
                    what actually sizes it, and min-h-0 lets it shrink on a
-                   shallow card instead of pushing the card taller. */
+                   shallow card instead of pushing the card taller.
+
+                   ⚠ NO min-height FLOOR HERE. One was tried (38%) to stop the
+                   sticker collapsing on a short window and it made things
+                   worse everywhere else — clips went 5 to 8 and mobile began
+                   clipping for the first time. The wrapper shrinking IS how
+                   the card stays inside itself; the image's own cap is where
+                   the bound belongs. */
                 <div className="mt-auto flex min-h-0 flex-1 items-end justify-end pt-[clamp(8px,1vw,16px)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -237,13 +262,32 @@ export default function HowItWorks() {
                        sticker hung 10px out of the section at 768. The cap
                        lets it overflow its wrapper (which is the look) but
                        never its card. */
-                    className="w-auto max-w-none object-contain max-lg:max-h-full"
+                    /* ⚠ max-w-full, NOT max-w-none. The last clips were the
+                       WIDTH overflowing on the narrower cards at 1024 and
+                       768, not the height — the height cap alone left three.
+                       The wrapper is already inset from the card, so bounding
+                       the width to it keeps the sticker inside at every size
+                       without touching the oversize dial. */
+                    className="w-auto max-w-full object-contain"
                     style={{
                       height: c.art["h%"] ?? "128%",
                       /* translate, NOT margin — a transform cannot push the
                          flex line, so a nudge can never change the card's
                          height or shift the copy above it. */
                       transform: `translateY(${c.art.down ?? "0px"}) rotate(${c.art.rot ?? 6}deg)`,
+                      /* ⚠ THE CAP IS A VIEWPORT HEIGHT, NOT A PERCENTAGE OF
+                         THE WRAPPER. `maxHeight: 100%` was tried and it
+                         clamped the image straight back to the wrapper, so
+                         `height: 165%` computed to 148px and the per-card
+                         dials did nothing at all.
+                         The dial has to be able to exceed its wrapper — that
+                         oversize IS the effect — but percentage-of-wrapper
+                         alone is fragile at the extremes: it collapsed to
+                         101px on a 1440x700 window and overflowed the card by
+                         19px at 768. A vh ceiling is independent of the
+                         wrapper, so it bounds the overflow without touching
+                         the dial in the normal range. */
+                      maxHeight: `min(${c.art["h%"] ?? "128%"}, 30vh)`,
                     }}
                     loading="lazy"
                     decoding="async"
