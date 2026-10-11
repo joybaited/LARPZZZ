@@ -136,12 +136,40 @@ export function NavMenuWithPanel({
       const t = e.target as Element | null;
       if (!t?.closest("nav")) setOpen(false);
     };
+    /* ⚠ SCROLL IS LOCKED THROUGH LENIS, NOT `overflow: hidden`. Lenis drives
+       the page with its own transform, so hiding the body's overflow does not
+       stop it — the page still slides under an open menu. `stop()` is what
+       actually holds it. The optional chain covers the two cases where there
+       is no instance: reduced-motion (SmoothScroll returns early) and the
+       first paint before its effect has run. Then the native listeners below
+       are the fallback that still closes the menu.
+
+       ⚠ AND THE LOCK IS RELEASED IN ONE PLACE — the cleanup. Calling start()
+       inside each close path is how this goes wrong: a close by Escape, by
+       outside click and by scroll are three paths, and any one of them
+       forgotten leaves the page dead. The effect is keyed on `open`, so
+       every close runs this teardown exactly once. */
+    window.__lenis?.stop();
+
+    /* a scroll attempt closes the menu and hands the page back. `wheel` and
+       `touchmove` are the INTENT — they fire even while Lenis is stopped and
+       the page has not moved, which a `scroll` listener would not. Passive,
+       because this never calls preventDefault: the gesture is not cancelled,
+       it just means "close". Not { once: true } — the menu can also be closed
+       by Escape or a click, and a stale one-shot listener left armed would
+       swallow the next unrelated gesture. */
+    const onScrollIntent = () => setOpen(false);
+
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onDown, true);
+    window.addEventListener("wheel", onScrollIntent, { passive: true });
+    window.addEventListener("touchmove", onScrollIntent, { passive: true });
     return () => {
       document.removeEventListener("keydown", onKey);
-
       document.removeEventListener("pointerdown", onDown, true);
+      window.removeEventListener("wheel", onScrollIntent);
+      window.removeEventListener("touchmove", onScrollIntent);
+      window.__lenis?.start();
     };
   }, [open]);
 
