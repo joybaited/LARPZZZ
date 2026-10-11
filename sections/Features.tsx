@@ -1,34 +1,32 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useCallback, useEffect, useRef, useState } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import Section from "@/components/Section";
 import Card, { type CardData } from "@/components/Card";
 
-gsap.registerPlugin(ScrollTrigger);
-
-/* Section two. Six cards on a horizontal rail, carried over from LZ-2 and
- * rebuilt in React.
+/* Section two. Six cards in a carousel, rebuilt 1:1 against phantom.com's
+ * security section (the pink "Scam detection" / grey "Ledger" cards).
  *
- * THE PATTERN: pin the SECTION, and as the page scrolls vertically through
- * it, translate the TRACK inside it horizontally. The page never scrolls
- * sideways — the only thing moving is one transform on the track.
+ * ⚠ IT IS A CLICK CAROUSEL, NOT A SCROLL-PINNED RAIL — that is the whole
+ * change. The old version pinned the section and mapped vertical scroll onto
+ * a horizontal transform, which is why the section needed `extra={1}` and why
+ * its height was tangled up with the cards. Phantom does not do that: their
+ * section is a normal ~1.9vh block that scrolls past like any other, and the
+ * cards move only when you click an arrow or drag. Measured off their live
+ * page rather than recreated by eye.
  *
- * THE SECTION IS PINNED, THE TRACK IS ANIMATED, AND THEY ARE NOT THE SAME
- * ELEMENT. Animating the pinned element corrupts the measurements ScrollTrigger
- * took to pin it, which is the most common way this pattern breaks.
+ * Their numbers, read at 1440 and 1024:
+ *   card ratio   0.747 at BOTH widths (427x571 and 468x627)
+ *   radius       24px
+ *   gap          32px at 1440, 24px at 1024
+ *   gutter       48px at 1440, 32px at 1024
+ *   step         one card per click (459px = 427 + 32)
+ *   buttons      40x40, fully round, #E2DFFE, chevron M9 4L17 12L9 20,
+ *                prev disabled at the start
  *
- * Below 1024 the rail never mounts: the track is a real scroll-snap carriage
- * and the browser does the physics — momentum, rubber band and snap for free.
- */
-
-/* multiple of the track's travel that the pin lasts. 1 is one pixel of
-   scrolling per pixel of travel; higher holds the section longer and moves the
-   cards more slowly. LZ-2 uses 1.6, which needs a section below it to supply
-   the distance — see the `extra` note on the Section below. */
-const SCROLL_RATIO = 1;
-const SCRUB = 0.3;
+ * Embla is what they ship — found in their own bundle — and it brings the
+ * drag, the momentum and the bounds for free. */
 
 /* The media, back on after the restyle — it was parked for a few passes while
  * the cards were sized and the text moved to the foot. Five of the six carry
@@ -71,79 +69,51 @@ const CARDS: CardData[] = [
 
 export default function Features() {
   const section = useRef<HTMLElement>(null);
-  const track = useRef<HTMLUListElement>(null);
+  /* `align: "start"` + `containScroll: "trimSnaps"` is what makes the first
+     card sit on the gutter and the last one stop AT the right edge instead of
+     over-travelling — the exact failure the old rail had, where the last card
+     finished 227px past the viewport. Embla handles the bounds. */
+  const [emblaRef, embla] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    skipSnaps: false,
+  });
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const prev = useCallback(() => embla?.scrollPrev(), [embla]);
+  const next = useCallback(() => embla?.scrollNext(), [embla]);
+
+  useEffect(() => {
+    if (!embla) return;
+    /* the arrows' disabled state, Phantom's: prev is disabled at the start
+       and next at the end, rather than wrapping. */
+    const sync = () => {
+      setCanPrev(embla.canScrollPrev());
+      setCanNext(embla.canScrollNext());
+    };
+    sync();
+    embla.on("select", sync).on("reInit", sync);
+    /* ⚠ THE CARDS MEASURE BEFORE THE FONTS SWAP IN. Both faces are
+       `font-display: swap`, so the first paint uses a fallback and the real
+       metrics arrive later — the card's copy box is `3 * 1.35em`, so the swap
+       changes its height and the ratio derives the width from that. Embla
+       caches slide positions at init, so without this the snap points are
+       measured against a layout that no longer exists. Same trap the old
+       ScrollTrigger rail had, same fix. */
+    document.fonts?.ready.then(() => embla.reInit());
+    return () => { embla.off("select", sync).off("reInit", sync); };
+  }, [embla]);
 
   useEffect(() => {
     const sec = section.current;
-    const trk = track.current;
-    if (!sec || !trk) return;
-
-    const ctx = gsap.context(() => {
-      /* matchMedia reverts everything it created the moment neither condition
-         matches — so a resize across the breakpoint, or reduced motion being
-         turned on, tears the pin down rather than leaving the section stuck to
-         the viewport. 1024 is the stylesheet's boundary, stated twice. */
-      const mm = gsap.matchMedia();
-
-      mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
-        /* FUNCTION-BASED so it is re-read on every refresh. A bare number is
-           why this pattern breaks on resize and after fonts load — the
-           distance was measured against a layout that no longer exists.
-           Measured against innerWidth, not the section: a pinned element's
-           width is set explicitly by ScrollTrigger and is not the viewport's. */
-        const distance = () => Math.max(0, trk.scrollWidth - window.innerWidth);
-
-        gsap.to(trk, {
-          x: () => -distance(),
-          /* REQUIRED. Any other ease breaks the 1:1 mapping between scroll
-             position and horizontal position. */
-          ease: "none",
-          scrollTrigger: {
-            trigger: trk,
-            start: "center center",
-            end: () => `+=${distance() * SCROLL_RATIO}`,
-            pin: sec,
-            /* pins add scroll distance, so they must measure before anything
-               positioned below them. */
-            refreshPriority: 1,
-            scrub: SCRUB,
-            /* the pin engages one frame early. without it a fast scroll — a
-               trackpad fling or a jump to an anchor — paints one frame with
-               the section still in flow before the pin takes, which reads as
-               a flash. 1 is GSAP's own recommended value. */
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onToggle: (self) => {
-              trk.style.willChange = self.isActive ? "transform" : "auto";
-            },
-          },
-        });
-      });
-    }, section);
-
+    if (!sec) return;
     /* ⚠ THREE autoPlay loop VIDEOS DECODE FOREVER, ON OR OFF SCREEN.
-       measured at the page bottom with this section thousands of px away:
-       all three still playing, ~121 decoded frames each per 2.5s. the
-       browser does not stop them, and `preload` only governs the first
-       fetch, not playback.
-
-       native <video> play/pause on an IntersectionObserver — no state, no
-       re-render, and it stays out of Card.tsx, which is a server component
-       and a shared file. 300px rootMargin so a card is already running
-       before it is scrolled to. */
-    /* ⚠ THE RAIL MEASURES BEFORE THE FONTS SWAP IN. Both faces are
-       `font-display: swap`, so the first paint uses a fallback and the real
-       metrics arrive later. The card's copy box is `3 * 1.35em`, so the swap
-       changes the card's HEIGHT — and the width derives from the height via
-       --card-r, so the track's scrollWidth changes with it. Travel distance
-       was measured against a layout that no longer exists, and the last card
-       stops short or overshoots.
-
-       `invalidateOnRefresh` re-reads the distance, but nothing was CALLING
-       refresh — that is the half that was missing. Native promise, already
-       resolved on a warm cache, so this is a no-op on most loads. */
-    document.fonts?.ready.then(() => ScrollTrigger.refresh());
-
+       Measured at the page bottom with this section thousands of px away: all
+       three still playing, ~121 decoded frames each per 2.5s. The browser does
+       not stop them, and `preload` only governs the first fetch, not playback.
+       Native play/pause on an IntersectionObserver — no state, no re-render,
+       and it stays out of Card.tsx, which is a server component. */
     const vids = sec.querySelectorAll("video");
     const io = new IntersectionObserver(
       (entries) => {
@@ -156,11 +126,7 @@ export default function Features() {
       { rootMargin: "300px" },
     );
     vids.forEach((v) => io.observe(v));
-
-    return () => {
-      io.disconnect();
-      ctx.revert();
-    };
+    return () => io.disconnect();
   }, []);
 
   return (
@@ -168,38 +134,69 @@ export default function Features() {
       id="features"
       ref={section}
       bleed
-      /* the rail needs `distance` px of scroll AFTER the pin starts, and the
-         pin starts at the track's centre — so the scroll above that point is
-         distance the cards never travel through. without this the last card
-         stops ~100px short of the right edge, because the document simply runs
-         out. one extra viewport covers the track's travel at this card count. */
-      extra={1}
-      /* the rail positions its own content via pt — see the padding note
-         below. the standard heading space would double up on it. */
-      flush
+      /* ⚠ NO `extra` ANY MORE, AND THAT IS THE POINT. The old rail pinned the
+         section and needed a second viewport of scroll to travel through, so
+         the section's height was a function of the cards. Phantom's is a
+         normal block that scrolls past like any other — the carousel moves on
+         a click, not on scroll, so the section is one viewport and the card
+         height has no say in it. */
       className="overflow-hidden bg-[#3D065F]"
     >
-      {/* ⚠ THE PADDING IS THE ONLY THING SETTING THE CARDS' VERTICAL PLACE.
-          The track is `items-center` in a `min-h-svh` box, so the cards sit
-          at the centre of whatever room the padding leaves — pt pushes them
-          DOWN and the slack lands under them. Kez asked for less room below
-          the cards, so the top padding comes down and the cards ride higher,
-          which takes the gap at the foot with it. There is no pb to cut: the
-          space under the cards is centring slack, not padding. */}
-      <div className="min-h-svh pt-[clamp(100px,5rem+10vh,220px)] max-lg:pt-[clamp(80px,4rem+8vw,140px)]">
-        <ul
-          ref={track}
-          role="list"
-          /* w-max is what makes the row wider than the viewport — the rail
-             measures scrollWidth against it. Below 1024 it is a real scroller
-             instead, with snap. */
-          className="flex w-max list-none items-center gap-[clamp(28px,1.75rem+2.2vw,64px)] px-[clamp(32px,2rem+4vw,120px)] py-0 max-lg:w-auto max-lg:snap-x max-lg:snap-mandatory max-lg:gap-[clamp(16px,1rem+1vw,24px)] max-lg:overflow-x-auto max-lg:scroll-px-[clamp(20px,1rem+2vw,32px)] max-lg:px-[clamp(20px,1rem+2vw,32px)]"
-        >
-          {CARDS.map((c) => (
-            <Card key={c.heading.join(" ")} {...c} />
-          ))}
-        </ul>
+      <div className="flex min-h-[var(--section-fill)] flex-col justify-center">
+        {/* ⚠ THE VIEWPORT IS THE OVERFLOW BOX AND THE TRACK IS THE FLEX ROW.
+            Embla needs exactly this pair: it writes the transform on the
+            track and clips against the viewport. The gutter is PADDING on the
+            viewport, not a margin on the first card, so `align: "start"`
+            still snaps flush to it — 48px at 1440 and 32px below lg, which is
+            what Phantom measures. */}
+        <div ref={emblaRef} className="w-full overflow-hidden">
+          {/* ⚠ THE GUTTER IS PADDING ON THE TRACK, NOT ON THE VIEWPORT, and
+              that is what produces Phantom's peek. With it on the viewport the
+              first card sits neatly on the margin and nothing bleeds; on the
+              track it scrolls WITH the cards, so the row runs off both edges
+              and you always see a sliver of the neighbours — which is what
+              their page does. Embla still snaps the first card to the gutter
+              because `align: "start"` measures against the track's content
+              box. */}
+          <ul className="flex list-none touch-pan-y gap-[clamp(16px,1rem+1vw,32px)] px-[clamp(20px,1rem+2vw,48px)] py-0">
+            {CARDS.map((c) => (
+              <Card key={c.heading.join(" ")} {...c} />
+            ))}
+          </ul>
+        </div>
+
+        {/* the arrows. Phantom's: 40x40, fully round, #E2DFFE, a chevron at
+            24px, and DISABLED rather than wrapping at either end. */}
+        <div className="mt-[clamp(20px,1rem+1.5vh,40px)] flex justify-end gap-3 px-[clamp(20px,1rem+2vw,48px)]">
+          <Arrow dir="prev" onClick={prev} disabled={!canPrev} />
+          <Arrow dir="next" onClick={next} disabled={!canNext} />
+        </div>
       </div>
     </Section>
+  );
+}
+
+/* Phantom's arrow, to their measurements. `disabled:opacity-40` is their
+   disabled look; the chevron path is theirs verbatim. */
+function Arrow({ dir, onClick, disabled }: { dir: "prev" | "next"; onClick: () => void; disabled: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={dir === "prev" ? "Previous slide" : "Next slide"}
+      className="grid size-10 place-items-center rounded-full bg-[#E2DFFE] text-[#3D065F] transition-opacity disabled:cursor-default disabled:opacity-40"
+    >
+      <svg
+        aria-hidden="true"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        className={dir === "prev" ? "rotate-180" : undefined}
+      >
+        <path d="M9 4L17 12L9 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
   );
 }
