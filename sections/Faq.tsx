@@ -104,7 +104,7 @@ export default function Faq() {
     /* bleed: the pills are placed against the full section, not the centred
        content column, so the percentages mean what the tuner showed. */
     <Section id="faq" bleed className="bg-[#EAC2FF] text-[#3D065F]">
-      <div ref={wrap} className="relative min-h-[100svh] overflow-hidden">
+      <div ref={wrap} className="relative min-h-[var(--section-fill)] overflow-hidden">
         {/* the wordmark, centred. pointer-events-none so it never blocks a
             pill that overlaps it. */}
         <h2 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[clamp(4.5rem,1.6rem+7.4vw,12.5rem)] leading-[0.9] uppercase select-none">

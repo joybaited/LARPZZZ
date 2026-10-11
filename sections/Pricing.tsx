@@ -180,7 +180,7 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
 export default function Pricing() {
   return (
     <Section id="pricing" className="bg-violet text-grape">
-      <div className="flex min-h-[100svh] items-center justify-center py-(--space-3xl)">
+      <div className="flex min-h-[var(--section-fill)] items-center justify-center">
         <ul
           role="list"
           className="m-0 flex w-full max-w-[1200px] list-none flex-col items-stretch gap-(--space-m) p-0 sm:flex-row sm:gap-[clamp(1rem,4.2vw,60px)]"

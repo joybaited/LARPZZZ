@@ -174,6 +174,9 @@ export default function Features() {
          stops ~100px short of the right edge, because the document simply runs
          out. one extra viewport covers the track's travel at this card count. */
       extra={1}
+      /* the rail positions its own content via pt — see the padding note
+         below. the standard heading space would double up on it. */
+      flush
       className="overflow-hidden bg-[#3D065F]"
     >
       {/* ⚠ THE PADDING IS THE ONLY THING SETTING THE CARDS' VERTICAL PLACE.

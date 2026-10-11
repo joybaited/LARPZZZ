@@ -296,7 +296,8 @@ export default function Hero() {
   const { nav, headline: h } = HERO;
 
   return (
-    <Section id="hero" bleed>
+    <Section
+      flush id="hero" bleed>
       {/* ⚠ THE GROUND IS AN INLINE STYLE, NOT A TAILWIND CLASS. `bg-[${...}]`
           with an interpolated value generates NOTHING — Tailwind scans source
           text and never evaluates it, so the class silently does not exist.

@@ -141,15 +141,19 @@ export default function HowItWorks() {
           box, and a min-height gives a percentage row nothing to resolve
           against — the rows collapse to content and the ~90% is ignored.
           A fixed height is what makes the column fill the screen. */}
-      <div className="flex h-[100svh] items-center justify-center">
+      <div className="flex h-[var(--section-fill)] items-center justify-center">
         <ul
           role="list"
           /* ⚠ THE ROW IS 90% OF THE VIEWPORT AND THE TWO CARD ROWS SPLIT IT.
-             `grid-rows-2` on a 90svh box gives each card ~45svh minus half the
-             gap, which is MetaMask's model: height fixed, ratio falls out.
+             `grid-rows-2` on a 90%-of-the-box row gives each card ~45% minus
+             half the gap, which is MetaMask's model: height fixed, ratio falls
+             out. ⚠ IT IS 90% OF THE BOX, NOT 90svh. Against the viewport it
+             ignored the heading space above it and the bottom row hung 16px
+             out of the section — the parent is already one viewport minus that
+             space, so a percentage tracks it and `svh` cannot.
              Below lg the height is released (`h-auto`) and the cards go back
              to a natural 2-up, or four 45svh cards stacked is four screens. */
-          className="m-0 grid w-full list-none grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-[90svh] lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
+          className="m-0 grid w-full list-none grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-[90%] lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
         >
           {/* ⚠ THE MODEL GOES IN THE CENTRE TRACK, WHICH USED TO BE EMPTY.
               It is a real grid item now (`col-start-2`, spanning both rows)
@@ -227,7 +231,13 @@ export default function HowItWorks() {
                        never generated a rule — it is the only arbitrary rotate
                        in the project and computed to `transform: none`. Inline
                        style sidesteps the JIT scan entirely. */
-                    className="w-auto max-w-none object-contain"
+                    /* ⚠ max-h CAPS THE OVERSIZE. `height: 128%` is bigger
+                       than the wrapper by design, and below lg the grid is
+                       h-auto so there is no fixed row to stop it — the
+                       sticker hung 10px out of the section at 768. The cap
+                       lets it overflow its wrapper (which is the look) but
+                       never its card. */
+                    className="w-auto max-w-none object-contain max-lg:max-h-full"
                     style={{
                       height: c.art["h%"] ?? "128%",
                       /* translate, NOT margin — a transform cannot push the

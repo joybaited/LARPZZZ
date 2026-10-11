@@ -152,7 +152,7 @@ export default function Testimonials() {
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
     <Section id="testimonials" bleed className="bg-[#EAC2FF] text-[#3D065F]">
-      <div className="flex min-h-[100svh] flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
+      <div className="flex min-h-[var(--section-fill)] flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
         <Row />
         <Row reverse />
       </div>
