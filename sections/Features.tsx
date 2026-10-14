@@ -132,6 +132,7 @@ export default function Features() {
   return (
     <Section
       id="features"
+      heading="Features"
       ref={section}
       bleed
       /* ⚠ NO `extra` ANY MORE, AND THAT IS THE POINT. The old rail pinned the
@@ -140,9 +141,19 @@ export default function Features() {
          normal block that scrolls past like any other — the carousel moves on
          a click, not on scroll, so the section is one viewport and the card
          height has no say in it. */
-      className="overflow-hidden bg-[#3D065F]"
+      /* `text-violet` is for the section HEADING, which inherits it — the
+         cards set their own ink. Black on this ground is unreadable. */
+      className="overflow-hidden bg-[#3D065F] text-violet"
     >
       <div className="flex min-h-[var(--section-fill)] flex-col justify-center">
+        {/* The arrows sit ABOVE the rail, not under it — they are the
+            control for what follows, so they read before the thing they
+            drive. Phantom's shape, scaled up from their 40px. */}
+        <div className="mb-[clamp(20px,1rem+1.5vh,40px)] flex justify-end gap-(--space-xs) px-[clamp(20px,1rem+2vw,48px)]">
+          <Arrow dir="prev" onClick={prev} disabled={!canPrev} />
+          <Arrow dir="next" onClick={next} disabled={!canNext} />
+        </div>
+
         {/* ⚠ THE VIEWPORT IS THE OVERFLOW BOX AND THE TRACK IS THE FLEX ROW.
             Embla needs exactly this pair: it writes the transform on the
             track and clips against the viewport. The gutter is PADDING on the
@@ -165,12 +176,6 @@ export default function Features() {
           </ul>
         </div>
 
-        {/* the arrows. Phantom's: 40x40, fully round, #E2DFFE, a chevron at
-            24px, and DISABLED rather than wrapping at either end. */}
-        <div className="mt-[clamp(20px,1rem+1.5vh,40px)] flex justify-end gap-3 px-[clamp(20px,1rem+2vw,48px)]">
-          <Arrow dir="prev" onClick={prev} disabled={!canPrev} />
-          <Arrow dir="next" onClick={next} disabled={!canNext} />
-        </div>
       </div>
     </Section>
   );
@@ -185,12 +190,12 @@ function Arrow({ dir, onClick, disabled }: { dir: "prev" | "next"; onClick: () =
       onClick={onClick}
       disabled={disabled}
       aria-label={dir === "prev" ? "Previous slide" : "Next slide"}
-      className="grid size-10 place-items-center rounded-full bg-[#E2DFFE] text-[#3D065F] transition-opacity disabled:cursor-default disabled:opacity-40"
+      className="grid size-[clamp(52px,3rem+1.2vw,64px)] place-items-center rounded-full bg-[#E2DFFE] text-[#3D065F] transition-opacity disabled:cursor-default disabled:opacity-40"
     >
       <svg
         aria-hidden="true"
-        width="24"
-        height="24"
+        width="32"
+        height="32"
         viewBox="0 0 24 24"
         fill="none"
         className={dir === "prev" ? "rotate-180" : undefined}

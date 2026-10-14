@@ -1,4 +1,5 @@
 import type { PriceEl as El } from "@/sections/Pricing";
+import { PILL_HOVER_FILL, PILL_HOVER_TEXT } from "@/components/pillHover";
 
 /* One element on a pricing card. SHARED BY THE SECTION AND THE TUNER.
  *
@@ -42,13 +43,34 @@ export default function PriceEl({ el }: { el: El }) {
       />
     );
 
-  if (el.kind === "box" || el.kind === "ellipse")
+  if (el.kind === "box" || el.kind === "ellipse") {
+    const label = (
+      <>
+        {/* the filling layer, metamask's ::before. Under the label via -z-10. */}
+        <span aria-hidden="true" className="pill-btn__fill" style={{ background: PILL_HOVER_FILL }} />
+        <span className="pill-btn__holder">
+          <span className="pill-btn__main">{el.text}</span>
+          <span aria-hidden="true" className="pill-btn__hover" style={{ color: PILL_HOVER_TEXT }}>
+            {el.text}
+          </span>
+        </span>
+      </>
+    );
+
     return (
       <div
         style={{
           ...pos,
           width: `${el.w ?? 60}%`,
           height: `${el.h ?? 12}%`,
+          /* ⚠ A BUTTON NEEDS A FLOOR UNDER ITS HEIGHT. The height is a
+             percentage of the card and the box is `overflow: hidden`, so at a
+             narrow viewport — or the moment the type is enlarged — the label
+             is silently cropped inside a box that still looks fine. Measured
+             before this: a 56px pill holding 20px of text, with nothing to
+             stop the box shrinking under it. 2.4em of its own font size
+             clears the type plus the roll at every card size. */
+          minHeight: el.btn ? "2.4em" : undefined,
           background: el.fill ?? "#ffffff",
           /* ⚠ CAPPED IN px, NOT AT 50%. A percentage radius resolves PER-AXIS:
              50% on a 304x56 pill rounds the horizontal by 152px and the shape
@@ -67,11 +89,14 @@ export default function PriceEl({ el }: { el: El }) {
         }}
         /* min-w-0 so a long label cannot push the box wider than its own w,
            and overflow-hidden so shrinking clips instead of spilling. */
-        className="absolute flex min-w-0 items-center justify-center overflow-hidden text-center leading-tight whitespace-pre-wrap"
+        className={`absolute flex min-w-0 items-center justify-center overflow-hidden text-center leading-tight whitespace-pre-wrap${
+          el.btn ? " pill-btn isolate cursor-pointer" : ""
+        }`}
       >
-        {el.text}
+        {el.btn ? label : el.text}
       </div>
     );
+  }
 
   /* text */
   return (

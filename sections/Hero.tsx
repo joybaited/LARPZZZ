@@ -6,6 +6,8 @@ import SceneMount from "@/components/SceneMount";
 import PriceEl from "@/components/PriceEl";
 import HoverGhost from "@/components/HoverGhost";
 import { NavMenuWithPanel } from "@/components/NavMenu";
+import PillButton from "@/components/PillButton";
+import ImageTrail from "@/components/ImageTrail";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -66,8 +68,8 @@ export const HERO = {
        PriceEl about it, and PriceEl is a SHARED FILE that Pricing also uses.
        Its placement lives in `wordmark` on HERO instead. */
     { name: "text 2", kind: "text", text: "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.", x: 82, y: 50, w: 30, h: 0, size: 24, weight: 400, align: "center", color: "#3D065F" },
-    { name: "box 3", kind: "box", text: "Login", x: 89.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
-    { name: "box 4", kind: "box", text: "Buy", x: 74.5, y: 67, w: 13, h: 6.4, size: 16, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
+    { name: "box 3", kind: "box", text: "Login", btn: true, x: 89.5, y: 67, w: 13, h: 6.4, size: 19, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
+    { name: "box 4", kind: "box", text: "Buy", btn: true, x: 74.5, y: 67, w: 13, h: 6.4, size: 19, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
   ] as El[],
 
   /* ⚠ THE HAMBURGER REPLACED THREE `kind: "line"` ELEMENTS. They were
@@ -125,6 +127,22 @@ export const HERO = {
      the group shrinks with the bar instead of running off it, and the whole
      row is hidden below `lg` where the hamburger takes over — which is what
      the hamburger was always for. */
+  /* ⚠ THE CURSOR TRAIL. Codrops' Image Trail variant 3 (MIT) — the images
+     glide after the pointer, then fade AND fall a full viewport height.
+     `exclude` is the one dial that matters: any pointer over something
+     matching it suppresses the trail, so it never fires on the nav or on a
+     button. It is a selector rather than a box because the nav's dropdown
+     changes height and a rectangle would be wrong the moment it opens.
+     18 files, webp, ~212KB the lot. */
+  trail: {
+    images: Array.from({ length: 18 }, (_, i) => `/images/cursor/${String(i + 1).padStart(2, "0")}.webp`),
+    size: 190,
+    /* ⚠ `.pill-btn` IS IN HERE BECAUSE THE HERO'S BUTTONS ARE <div>s.
+       They are <PriceEl> boxes, not <a> or <button>, so the tag selectors
+       miss them entirely and the trail would fire right over them. */
+    exclude: "nav, a, button, [role='button'], .pill-btn",
+  },
+
   navLinks: {
     items: ["Features", "Pricing", "Buy", "Reviews"],
     cta: "Login",
@@ -297,13 +315,25 @@ export default function Hero() {
 
   return (
     <Section
-      flush id="hero" bleed>
+      flush id="hero" bleed
+      /* A little more ground below the hero before the next section starts.
+         `flush` means it takes none of the shared foot space, so it is set
+         here. Padding, not a spacer div: the ground is an absolute `inset-0`
+         layer, so it grows with the section and the extra space is the same
+         colour for free. */
+      className="pb-[clamp(48px,2rem+3vw,112px)]">
       {/* ⚠ THE GROUND IS AN INLINE STYLE, NOT A TAILWIND CLASS. `bg-[${...}]`
           with an interpolated value generates NOTHING — Tailwind scans source
           text and never evaluates it, so the class silently does not exist.
           It rides on an absolute div rather than a `style` prop on <Section>,
           which has none and already uses style for its own minBlockSize. */}
       <div className="absolute inset-0 -z-20" style={{ background: HERO.bg }} />
+
+      {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
+          ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so
+          images pass behind all three rather than over the type.
+          `exclude` is a selector, not a rectangle — see the component. */}
+      <ImageTrail images={HERO.trail.images} size={HERO.trail.size} exclude={HERO.trail.exclude} />
       {/* ⚠ THE 3D PHONE IS OUT OF THE HERO. NOTHING IS DELETED — the glb, the
           canvas, <Scene>, <Phone>, <SceneMount> and the whole `HERO.phone`
           block are all still here and still wired. Only the mount is gone, so
@@ -449,20 +479,17 @@ export default function Hero() {
                 {label}
               </a>
             ))}
-            <a
-              href="#"
-              /* the CTA. `leading-none` plus symmetric padding is what keeps
-                 the pill's height tied to its own type rather than to the
-                 line box, so it cannot grow taller than the bar. */
-              className="whitespace-nowrap rounded-full px-[clamp(16px,0.7rem+1vw,30px)] py-[clamp(8px,0.3rem+0.5vw,13px)] leading-none font-semibold no-underline transition-opacity duration-200 hover:opacity-90"
-              style={{
-                background: HERO.navLinks.ctaFill,
-                color: HERO.navLinks.ctaColor,
-                fontSize: "clamp(14px, 0.6rem + 0.5vw, 19px)",
-              }}
+            {/* the CTA. `leading-none` plus symmetric padding is what keeps
+                the pill's height tied to its own type rather than to the
+                line box, so it cannot grow taller than the bar. */}
+            <PillButton
+              fill={HERO.navLinks.ctaFill}
+              color={HERO.navLinks.ctaColor}
+              className="whitespace-nowrap px-[clamp(16px,0.7rem+1vw,30px)] py-[clamp(8px,0.3rem+0.5vw,13px)] leading-none font-semibold"
+              style={{ fontSize: "clamp(15px, 0.65rem + 0.55vw, 21px)" }}
             >
               {HERO.navLinks.cta}
-            </a>
+            </PillButton>
           </div>
 
           <NavMenuWithPanel
@@ -482,26 +509,71 @@ export default function Hero() {
                 Laid out as a list rather than placed with coordinates: the
                 panel is a container, not a canvas, and a stacked list
                 reflows at any width without a second set of numbers. */}
-            <ul className="m-0 flex list-none flex-col gap-[clamp(6px,0.3rem+0.6vw,16px)] p-[clamp(20px,1rem+2vw,48px)]">
-              {HERO.navLinks.items.map((label, i) => (
-                <li key={label}>
-                  <a
-                    href="#"
-                    className="panel-link inline-block no-underline"
-                    style={{
-                      color: HERO.navLinks.color,
-                      fontFamily: "var(--font-display)",
-                      textTransform: "uppercase",
-                      fontSize: "clamp(28px, 1.2rem + 2.6vw, 56px)",
-                      lineHeight: 1.05,
-                      "--i": i,
-                    } as React.CSSProperties}
-                  >
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {/* ⚠ THE LIST KEEPS ITS OWN PADDING AND ITS OWN HEIGHT. It was
+                briefly wrapped in a padded row with the media box as a
+                sibling, which made the BOX the tallest thing in the panel —
+                and the surface behind the bar measures the panel and grows to
+                cover it, so the open nav turned into a dark slab. The links
+                decide the panel's height, exactly as before; the box is
+                overlaid on top of that box rather than added to it. */}
+            <div className="relative">
+              <ul className="m-0 flex list-none flex-col gap-[clamp(6px,0.3rem+0.6vw,16px)] p-[clamp(20px,1rem+2vw,48px)]">
+                {HERO.navLinks.items.map((label, i) => (
+                  <li key={label}>
+                    <a
+                      href="#"
+                      className="panel-link inline-block no-underline"
+                      style={{
+                        color: HERO.navLinks.color,
+                        fontFamily: "var(--font-display)",
+                        textTransform: "uppercase",
+                        fontSize: "clamp(28px, 1.2rem + 2.6vw, 56px)",
+                        lineHeight: 1.05,
+                        "--i": i,
+                      } as React.CSSProperties}
+                    >
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              {/* ── THE MEDIA BOX ────────────────────────────────────────
+                  Placeholder for a video player. Measured off osmo's open nav
+                  at 1440: their right column `is--ad` is 397x437 (0.909) with
+                  a 16px radius, holding a 238x149 (16:10) preview. Ours keeps
+                  the 0.909 card and the 16:10 well inside it.
+
+                  ⚠ ABSOLUTE, SO IT ADDS NO HEIGHT. In flow it is the tallest
+                  child and the panel — and the dark surface with it — grows
+                  to its 437px. Out of flow it sits inside the height the
+                  links already set, which is what keeps the open nav the size
+                  it has always been. `inset-y` + `aspect` means the links,
+                  not a number here, decide how big it is.
+
+                  Centred with left-1/2 + -translate-x-1/2 rather than a grid
+                  column: nothing else shares its line, so there is no track
+                  to balance against. Hidden below md — at 390 the panel is
+                  the link list and a card over it would cover them. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-[clamp(20px,1rem+2vw,48px)] left-1/2 hidden -translate-x-1/2 md:flex aspect-[397/437] items-center justify-center rounded-[16px] border-2 border-dashed p-[clamp(12px,1.5vw,28px)]"
+                style={{ borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 40%, transparent)` }}
+              >
+                <div
+                  className="flex aspect-[16/10] w-full items-center justify-center rounded-[8px] border border-dashed"
+                  style={{
+                    borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 30%, transparent)`,
+                    color: `color-mix(in srgb, ${HERO.navLinks.color} 55%, transparent)`,
+                    fontFamily: "var(--font-mono, monospace)",
+                    fontSize: "clamp(10px, 0.6vw, 12px)",
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  VIDEO
+                </div>
+              </div>
+            </div>
 
             {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} /> : null))}
           </NavMenuWithPanel>

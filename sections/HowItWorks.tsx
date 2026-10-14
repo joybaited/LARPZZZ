@@ -119,7 +119,7 @@ const PLACE = [
 
 export default function HowItWorks() {
   return (
-    <Section id="how-it-works" className="bg-violet text-grape">
+    <Section id="how-it-works" heading="How it works" className="bg-[#f3ddff] text-grape">
       {/* ⚠ `h-[100svh]`, NOT `min-h-`. The grid below sizes its rows off this
           box, and a min-height gives a percentage row nothing to resolve
           against — the rows collapse to content and the ~90% is ignored.

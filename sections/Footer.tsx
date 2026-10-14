@@ -5,6 +5,7 @@ import Section from "@/components/Section";
 import TicketStrip from "@/components/TicketStrip";
 import FooterCoins from "@/components/FooterCoins";
 
+
 /**
  * Section 7: Footer
  * Step 1: Cloud base (locked to 58.5vw desktop, meeting user's red guide line)
@@ -16,6 +17,10 @@ export default function Footer() {
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!cloudGroupRef.current) return;
+    /* ⚠ THE REDUCED-MOTION GUARD HAS TO BE HERE, IN JS. This writes
+       `style.transform` directly, so the `@media (prefers-reduced-motion)`
+       block that covers the cloud's CSS breathe cannot reach it. */
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const relX = (e.clientX - rect.left) / rect.width - 0.5;
     const relY = (e.clientY - rect.top) / rect.height - 0.5;
@@ -32,7 +37,8 @@ export default function Footer() {
     <Section
       id="footer"
       bleed={true}
-      className="relative overflow-hidden bg-haze select-none [--cloud-target-x:clamp(270px,76vw,420px)] md:[--cloud-target-x:58.5vw]"
+      flush={true}
+      className="relative overflow-hidden bg-[#e3b5fb] select-none [--cloud-target-x:clamp(270px,76vw,420px)] md:[--cloud-target-x:58.5vw]"
     >
       <div
         className="relative h-full w-full min-h-[100svh] overflow-hidden"
@@ -68,12 +74,12 @@ export default function Footer() {
             }}
           >
             {/* Solid haze extension rectangle extending infinitely left */}
-            <div className="absolute -top-[10%] -bottom-[10%] right-full w-[100vw] bg-haze -mr-px pointer-events-none" />
+            <div className="absolute -top-[10%] -bottom-[10%] right-full w-[100vw] bg-[#e3b5fb] -mr-px pointer-events-none" />
 
             {/* Cloud graphic with black comic outline */}
             <img
-              src="/images/footer/cloud.png"
-              alt="Cloud footer boundary"
+              src="/images/footer/cloud-violet.png"
+              alt=""
               className="h-full w-auto max-w-none object-contain select-none pointer-events-none"
               style={{
                 aspectRatio: "1920 / 1080",
@@ -81,25 +87,6 @@ export default function Footer() {
             />
           </div>
 
-          {/* Content Container inside the solid white area of the cloud: pointer-events-auto for interactive links */}
-          <div className="pointer-events-auto absolute inset-y-0 left-0 z-30 flex flex-col justify-between p-(--space-m) sm:p-(--space-xl) md:p-(--space-2xl) max-w-[min(46vw,600px)]">
-            {/* Header / Brand */}
-            <div>
-              <span className="font-display text-2 uppercase tracking-tight text-ink">
-                LARPZZZ
-              </span>
-              <p className="mt-(--space-s) text-base text-ink/70 max-w-[34ch]">
-                The new wave of digital assets. Fake it till you make it.
-              </p>
-            </div>
-
-            {/* Bottom links placeholder */}
-            <div className="flex flex-wrap items-center gap-(--space-m) text-base text-ink/50">
-              <span>© 2026 LARPZZZ</span>
-              <span>Privacy</span>
-              <span>Terms</span>
-            </div>
-          </div>
         </div>
 
         {/* 
@@ -108,39 +95,21 @@ export default function Footer() {
         */}
         <div className="pointer-events-none block md:hidden absolute inset-x-0 top-0 z-20 h-[48svh] overflow-hidden select-none">
           {/* Solid haze extension rectangle extending upwards */}
-          <div className="absolute -top-[50vh] inset-x-0 h-[50vh] bg-haze pointer-events-none" />
+          <div className="absolute -top-[50vh] inset-x-0 h-[50vh] bg-[#e3b5fb] pointer-events-none" />
 
           {/* Cloud graphic with right side facing downwards and subtle breathing micro-animation */}
           <div className="pointer-events-none relative h-full w-full animate-cloud-breathe-mob will-change-transform">
             <img
-              src="/images/footer/cloud-mobile.png"
-              alt="Cloud footer boundary"
+              src="/images/footer/cloud-mobile-violet.png"
+              alt=""
               className="h-full w-full object-fill select-none pointer-events-none"
             />
           </div>
 
-          {/* Content Container inside the solid white area of the mobile cloud */}
-          <div className="pointer-events-auto absolute inset-0 z-30 flex flex-col justify-between p-5 pb-7 max-h-[38svh]">
-            {/* Header / Brand */}
-            <div>
-              <span className="font-display text-[28px] uppercase tracking-tight text-ink leading-none">
-                LARPZZZ
-              </span>
-              <p className="mt-2 text-sm text-ink/70 max-w-[28ch] leading-snug">
-                The new wave of digital assets. Fake it till you make it.
-              </p>
-            </div>
-
-            {/* Bottom links placeholder */}
-            <div className="flex flex-wrap items-center gap-4 text-xs text-ink/50">
-              <span>© 2026 LARPZZZ</span>
-              <a href="#" className="hover:text-ink transition-colors">Privacy</a>
-              <a href="#" className="hover:text-ink transition-colors">Terms</a>
-            </div>
-          </div>
         </div>
 
-        {/* 
+
+        {/*
           2. Ticket Strip:
           Positioned along the right edge at ~78.5vw (meeting the user's white guide line)
           with perforated dashed left border.

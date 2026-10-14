@@ -16,6 +16,12 @@ type Props = {
    * content. everything else takes the default.
    */
   flush?: boolean;
+  /**
+   * the section's title, set large and centred in the heading space that is
+   * already reserved at the top. omit it for a section that has no title —
+   * the hero and the footer — and the space behaves exactly as before.
+   */
+  heading?: string;
   className?: string;
   children?: React.ReactNode;
   /** for scroll triggers that need to pin or measure the section element. */
@@ -38,11 +44,27 @@ type Props = {
    unrelated numbers, because each one hand-rolled its own top padding. A
    section that wants a different number now has to opt out with `flush`, which
    makes the exception visible instead of silent.
-   It is a clamp, not a fixed px: 72px on a 390 phone up to 140px at 1440, so
+   It is a clamp, not a fixed px: 120px on a 390 phone up to 240px at 1440, so
    the space grows with the type it is making room for.
+   The generous end of the published range on purpose — the guides cluster at
+   80-120px desktop for a content section, and the editorial/awwwards end runs
+   well past that. The owner asked for generous; this is roughly double the
+   first pass (was 72 -> 140).
    Kept local rather than a token in globals.css — that file is shared and
    CLAUDE.md says changes get agreed first; this needs nobody else. */
-const HEADING_SPACE = "clamp(72px, 4rem + 4vw, 140px)";
+const HEADING_SPACE = "clamp(120px, 6rem + 6.5vw, 240px)";
+
+/* ⚠ THE BREATHING ROOM AT THE FOOT OF EVERY SECTION, SET HERE, NOT PER
+   SECTION — the same argument as HEADING_SPACE above.
+   Why it exists: the inner wrappers are exactly `--section-fill` tall and
+   centre their content, which means a card row that is nearly as tall as the
+   box touches both edges and the section reads as crammed. The owner called
+   this on Features and How it works. Reserving space at the foot gives the
+   content somewhere to breathe without every section hand-rolling padding.
+   Smaller than the heading space on purpose: a title needs more room above it
+   than a card row needs below it, and matching the two makes a section look
+   bottom-heavy. */
+const FOOT_SPACE = "clamp(72px, 3rem + 4vw, 160px)";
 
 /* what an inner wrapper should use instead of `min-h-[100svh]`:
      className="min-h-[var(--section-fill)]"
@@ -55,6 +77,7 @@ export default function Section({
   extra = 0,
   bleed = false,
   flush = false,
+  heading,
   className = "",
   children,
   ref,
@@ -75,13 +98,46 @@ export default function Section({
            either; it governs `height`, not `min-block-size`.
            So the padding is published as a variable and the inner wrappers
            subtract it via `--section-fill` instead of re-asserting 100svh. */
-        minBlockSize: `calc(100svh + ${extra} * 100svh)`,
+        /* ⚠ THE SECTION GROWS BY THE FOOT SPACE — IT DOES NOT SQUEEZE THE
+           CONTENT INTO IT. `--section-fill` stays one viewport minus the
+           heading, so the card rows keep the height they were designed
+           against; the foot pad is added on top of the min-height instead of
+           taken out of it. Subtracting it from `--section-fill` would shrink
+           every card row and make the cramming worse, not better. */
+        minBlockSize: flush
+          ? `calc(100svh + ${extra} * 100svh)`
+          : `calc(100svh + ${FOOT_SPACE} + ${extra} * 100svh)`,
         paddingBlockStart: flush ? undefined : HEADING_SPACE,
+        paddingBlockEnd: flush ? undefined : FOOT_SPACE,
         ["--section-fill" as string]: flush
           ? "100svh"
           : `calc(100svh - ${HEADING_SPACE})`,
       }}
     >
+      {/* ⚠ THE HEADING LIVES IN THE SPACE THAT WAS ALREADY RESERVED, AND IT
+          IS ALWAYS FULL-BLEED-CENTRED EVEN IN A `bleed` SECTION. It sits
+          above the children, outside the content column, so a bleed section
+          (a carousel, a marquee) still gets a centred title without having
+          to opt back into the column.
+          It is `absolute`, pinned to the top padding band, for the reason the
+          media box in the nav panel had to be: in flow it ADDS its height to
+          a section whose inner wrapper is already `--section-fill` tall, so
+          every section would grow by the height of its own heading and the
+          content would be pushed off the viewport. Out of flow, the reserved
+          space absorbs it and nothing below moves. */}
+      {heading ? (
+        <h2
+          /* ⚠ FONT-SIZE IS SET IN `style`, NOT `text-(--text-1)`. That
+             shorthand is ambiguous in Tailwind v4 — it cannot tell a
+             font-size variable from a colour one, so it silently produced no
+             font-size at all and the heading rendered at the inherited 16px.
+             Measured before and after. */
+          className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-center px-(--gutter) text-center font-display uppercase leading-[0.9] tracking-[-0.02em] text-balance"
+          style={{ height: HEADING_SPACE, fontSize: "var(--text-1)" }}
+        >
+          {heading}
+        </h2>
+      ) : null}
       {bleed ? (
         children
       ) : (

@@ -11,6 +11,421 @@ session would get wrong without being told.
 
 ---
 
+## Session — 2026-10-12 (session 17)
+
+Pulled @snvzyn's Footer, then a pass of design work on top of it: the
+Pricing/Footer seam, the footer recoloured to the violet, metamask.io's button
+hover ported onto every pill, a media box in the nav panel, and Codrops' image
+trail on the hero. **Everything is UNCOMMITTED on `tweak/all`.**
+
+### ⚠ START HERE
+
+1. **The branch is `tweak/all`, 0 commits, EVERYTHING UNCOMMITTED.** Branched
+   off fresh `main` at `8fa0949`. Nothing has been committed or pushed all
+   session — `git status` is the only record of the work.
+2. **@snvzyn pushed the Footer** (`8fa0949`): `sections/Footer.tsx`,
+   `FooterCoins.tsx`, `TicketStrip.tsx`, footer/icon assets, **and they
+   touched `app/globals.css` (+37) and `app/page.tsx` (+2)** — both shared.
+   Their globals.css addition was never reviewed this session.
+3. **⚠ THEIR FOOTER WAS EDITED BY US — FOUR TIMES, AND THEY HAVE NOT BEEN
+   TOLD.** `flush`, the ground colour, the cloud pngs swapped for tinted
+   copies, and **all of its text deleted**. See below.
+4. **`app/layout.tsx` gained one line** (`<PillStyle />`). Shared file.
+5. **The dev server is running** on port 3000. `.dev-server.log` is untracked
+   junk from this session — delete it.
+
+### Done
+
+- **Pricing/Footer seam closed** — `items-center` -> `items-end`.
+- **Footer `flush`**, killing 125px of dead heading space.
+- **Footer recoloured** to `#e3b5fb`, cloud interior included.
+- **All footer text removed** at the owner's call.
+- **metamask.io's button hover ported 1:1** onto all four pills.
+- **A dashed video-player placeholder** centred in the nav panel.
+- **Codrops Image Trail variant 3** on the hero, 18 images.
+
+### ⚠ THE THING THIS SESSION GOT WRONG TWICE: MEASURING THE WRONG THING
+
+**A bounding-box comparison does not detect clipping.** The pill labels were
+checked with `labelHeight > boxHeight` across four viewports, all clear — and
+the owner then pointed at a visibly cut descender on "Login". Glyphs overflow
+their line box: the holder was 18.31px while the glyphs spanned 22px, so the
+**g** was cut 1.69px. **Use a `Range` over the text node
+(`range.selectNodeContents(el).getBoundingClientRect()`) — that is the only
+box that knows where the ink actually is.**
+
+And earlier: a 69px gap inside Pricing was measured, fixed, and reported as
+done while the owner's screenshot was showing a **125px** band from the
+Footer's own padding. **The number that was easy to measure got confirmed
+instead of the thing being pointed at.**
+
+### ⚠ REACT DOES NOT HYDRATE IN HEADLESS CHROMIUM HERE — HALF THIS SESSION'S
+### VERIFICATION WAS IMPOSSIBLE
+
+Proven: clicking the hamburger leaves `data-nav-open` null, and
+`Object.keys(root).filter(k => k.startsWith('__react'))` is **empty**. 17
+scripts load; none executes.
+
+**Consequences, all hit this session:**
+
+- A `<NavScroll>` component was written, mounted, and chased for six probes
+  because its effect "never ran". **It was never going to run.** A marker
+  attribute set on the first line of the effect confirmed it.
+- The image trail cannot be tested at all — it also gates on
+  `(hover: hover)`, which headless does not report.
+- **What IS testable: pure CSS.** Hover states, transitions and
+  `elementFromPoint` all work. The pill hover was fully verified this way.
+- **Test the LOGIC, not the behaviour.** The trail's exclusion was verified by
+  running its selector against `elementFromPoint` at each surface, which
+  needs no hydration and proved the thing that mattered.
+
+### ⚠ THE NAV WAS RESTORED FROM `dbe8f1e` — DO NOT RE-APPLY WHAT WAS REMOVED
+
+The owner reported the open nav showing "a dark purple thing". Two wrong
+fixes went in before the right one:
+
+1. **Blamed the dim overlay's z-index.** Changed the surface from `-z-10` to
+   `z-0`. **`git show dbe8f1e` proved the original used `-z-10` and `z-0` —
+   the exact values called the bug.** They were never wrong.
+2. **The actual cause was the media box.** Put in a padded flex row as a
+   sibling of the links, it was the tallest child at 437px. **The surface
+   MEASURES the panel and grows to cover it**, so the panel went 380 -> 527px
+   and the nav became a slab.
+
+**`components/NavMenu.tsx` is now byte-identical to `dbe8f1e`** (git reports
+it modified; that is CRLF only — `git diff --ignore-all-space` is empty).
+
+**The box is `absolute` now, so it adds NO height.** Panel is back to ~376px.
+Centred with `left-1/2 -translate-x-1/2`; a grid was tried first and worked,
+but absolute is what keeps the height out of the panel.
+
+**⚠ THE HIDE-ON-SCROLL NAV WENT WITH THAT REVERT AND WAS NOT RE-ADDED.** The
+owner asked for it (static in hero, hide on scroll down, show on scroll up,
+never over the footer). The research is below; the code is gone.
+
+### The directional nav, if it is rebuilt
+
+Standard practice, from the search: a **delta threshold** so a trackpad twitch
+does not hide it, **an attribute not React state** so there is no re-render
+per frame, CSS for the motion, and Lenis's own `scroll` event with a native
+fallback for reduced-motion (SmoothScroll returns early there, so
+`window.__lenis` is undefined).
+
+**⚠ AND IT MUST YIELD TO THE OPEN MENU.** The hidden state sets `opacity: 0`
+on the `<nav>`, and anything below opacity 1 forms a stacking context that
+takes its whole subtree — dim overlay and panel included. A menu opened on the
+frame the bar was hiding goes invisible AND unclickable.
+
+### metamask.io's button hover, measured off their live page
+
+A web search returns only generic "expanding circle" tutorials. **None is what
+they do.** These came from `getComputedStyle` on
+`.button_button__XszAu` / `.button_button-holder__kUpTr` at 1440, both states:
+
+| | |
+|---|---|
+| fill | a layer scaling `0 -> 1.03`, `border-radius: 100px` |
+| label | TWO copies in an `overflow:hidden` holder; one rolls out as the other rolls in |
+| easing | `cubic-bezier(0.4, 1.35, 0.5, 0.97)` |
+| durations | transform 0.5s (label) / 0.55s (fill); **opacity always HALF** |
+
+- **The 1.35 is the whole feel.** Above 1, so it overshoots and settles. A
+  plain ease-out kills it while every distance stays identical. The same curve
+  is on their bento cards and language switcher.
+- **⚠ DO NOT MAKE THE FILL `scaleY`.** Tried, because a uniform `scale(0)` on
+  a 304px button grows as a small pill inside a big one (measured: 147x27
+  inside 304x56 at 80ms). But `scaleY(0)` **collapses to a full-width
+  hairline on the way out** and the owner caught the line flicking away.
+  Uniform `scale` collapses to a point. Theirs is uniform for a reason.
+- **The exit is NOT the entrance reversed.** Reversed, the overshoot drives
+  the scale past zero and snaps. Exit is `0.4s cubic-bezier(0.33,0,0.67,1)`.
+- **⚠ THE HOLDER NEEDS `line-height: 1.5`.** It must clip for the roll, and a
+  button in `leading-none` gives it a line box exactly the font size. Padding
+  does not help — padding is inside the clip. The roll distance must then
+  match the line box (`1.5em`) or a sliver of the outgoing label survives.
+
+### Where the pill machinery lives
+
+- **`components/pillHover.tsx`** — the stylesheet and `PILL_HOVER_FILL`
+  (`#FFD84D`, the owner's pick) / `PILL_HOVER_TEXT`. One definition.
+- **`components/PillButton.tsx`** — the `<a>` version. Nav CTA uses it.
+- **`components/PriceEl.tsx`** — `btn: true` on a `box` turns it into one.
+- **`app/layout.tsx`** — mounts `<PillStyle />` **once**.
+
+**⚠ THE STYLESHEET MUST NOT RENDER INSIDE A BUTTON.** It did at first, which
+put the entire CSS string into each button's `textContent` — a probe reading a
+label got the stylesheet's own comment back.
+
+**⚠ THE PRICING BUTTONS WERE AN EMPTY BOX WITH A LABEL FLOATING ON TOP.** Two
+unrelated `PriceEl`s at matching x/y. Merged into one element, so the label
+can no longer drift from its pill. `Pricing.tsx`'s shared `PriceEl` type
+gained `btn?: boolean` — **`/pricing-tuner` reads that type.**
+
+### The hero image trail — Codrops variant 3
+
+`components/ImageTrail.tsx`, from `codrops/ImageTrailEffects` `js/demo3.js`
+(MIT), ported from TweenMax to GSAP 3.
+
+- **What makes it variant 3:** at 0.4s the image fades AND **falls a full
+  viewport height** on `quint.inOut` while still gliding toward the cursor on
+  `expo.out` over 1.6s. Three overlapping tweens. Without the fall it is
+  variant 1.
+- **⚠ GSAP 3 CHANGED THE SIGNATURE.** TweenMax's `.to(el, 1.6, {...})` puts
+  duration second; GSAP 3 wants it in the vars object. Port the shape without
+  the signature and every tween silently runs at the default 0.5s.
+- **Position is relative to the hero**, not the page — the original reads
+  `pageX/pageY` against the document.
+- **⚠ THE EXCLUSION IS A SELECTOR, NOT A RECTANGLE.** `nav, a, button,
+  [role='button'], .pill-btn`, tested with `closest()` on the real pointer
+  target. **`.pill-btn` is in there because the hero's buttons are `<div>`s**
+  — `PriceEl` boxes, which every tag selector misses.
+- **18 images** in `public/images/cursor/`, ~212KB. PNG -> webp took 537KB to
+  156KB; four more from the owner added at positions 5, 10, 15, 18.
+
+### Footer gotchas
+
+- **⚠ `cloud.png` AND `cloud-mobile.png` ARE UNTOUCHED.** The tinted versions
+  are **new** `-violet.png` files. Reverting is two `src` lines.
+- **⚠ TINTING BY BRIGHTNESS LANDS DARKER THAN THE COLOUR PICKED.** Scaling the
+  target by `lum/255` gave `#dcb0f3` for a `#e3b5fb` pick, because the
+  interior was `#f5f2ff` not white. Normalise against the interior's own
+  brightness.
+- **The footer is now purely visual** — no text, no links at all.
+
+### Gotchas
+
+- **⚠ A BACKTICK INSIDE A TEMPLATE LITERAL ENDS THE STRING. THIS 500'd THE
+  PAGE TWICE THIS SESSION**, both times from writing `` `overflow: hidden` ``
+  in a CSS comment inside a `const CSS = \`...\`` block. Write CSS comments
+  without backticks.
+- **The machine has 7.6GB of RAM and was at 94%.** Discord's renderer was
+  leaking — 960MB and 7.5 hours of CPU since the previous day. Killing
+  Discord, 10 orphaned SnippingTool processes and 5 windowless msedge took it
+  to 72%. **13 Chrome processes for 2 tabs is normal** (4 renderers, the rest
+  browser/GPU/extension/utility).
+
+### Open
+
+1. **⚠ EVERYTHING IS UNCOMMITTED ON `tweak/all`.** Nothing is pushed.
+2. **⚠ @snvzyn HAS NOT BEEN TOLD** their Footer was edited four times, their
+   cloud pngs superseded, and all its text deleted. Fourteenth session of
+   this item in some form.
+3. **⚠ THE HIDE-ON-SCROLL NAV IS GONE** — asked for, built, lost in the
+   revert. Research above.
+4. **@snvzyn's `globals.css` +37 lines were never reviewed.**
+5. **The trail's image size and spacing are unreviewed.** The owner asked for
+   smaller images and a bit more gap (artemartemartem.com's feel) and then
+   said to carry on — **not done.** `HERO.trail.size` is 190; the gap is
+   `THRESHOLD = 50` in `ImageTrail.tsx`.
+6. **The TicketStrip still has placeholder text** (`№ 007`, `[ TBD ]`).
+7. Everything from sessions 4-16 that was not touched: `app/pixel-demo/`
+   still there, the hero's `IMG +6px` clip at 1440x700, Pricing 1.81vh at
+   390, `Scene.tsx:11` on gstatic, Faq/Testimonials hardcoding the pair, KTX2,
+   three lint errors at `app/pricing-tuner/page.tsx:581`, FAQ answers still
+   "New answer.", Features copy still lorem, section 3 empty, PRs #2/#4/#5.
+
+### Branch
+
+**On `tweak/all`, branched off `main` at `8fa0949`, 0 commits, working tree
+DIRTY.** `main` is at `8fa0949` and in sync with `origin/main`.
+`stash@{0}` still holds session 14's entrance glide. Dev server on port 3000.
+
+---
+
+## Session — 2026-10-11 (session 16)
+
+**The 3D came off the site entirely**, smooth scroll went on, the Features
+rail was rebuilt as a Phantom-style carousel, and the How it works centre now
+holds six phone mockups with a pixel-wave transition. **Eight commits, all on
+`main` and pushed** (`6bd0464` -> `79697c7`).
+
+### ⚠ START HERE
+
+1. **`main` is at `79697c7`, pushed, working tree clean.** Nothing is in
+   flight. Everything below is live on the deploy.
+2. **⚠ THERE IS NO 3D ON THE SITE.** No canvas, no three.js, no glb on the
+   wire — verified, zero 3D network requests on a full page scroll. The
+   owner's call: "remove the glb completely, preserve but remove".
+   **`public/models/iphone.glb` IS STILL IN THE REPO, untouched at
+   `62d1880`.** Preserve meant the code, not the file. The hero's
+   `Scene`/`Phone`/`SceneMount` and `public/hdri/` are also untouched.
+3. **Two new runtime dependencies: `lenis` and `embla-carousel-react`.**
+   `npm install` before running anything.
+4. **@snvzyn has now been told in the repo** — `SNV.md` was rewritten this
+   session. **The owner said they would tell them directly; that has not been
+   confirmed.** This is the thirteenth session of that item, but the docs are
+   no longer wrong, which is new.
+5. **Five per-merge waivers now** of "nothing goes directly on `main`"
+   (sessions 13, 14, 15, and twice this session). Still not a standing change.
+
+### Done
+
+- **Smooth scroll** — Lenis + GSAP ScrollTrigger, mounted in `app/layout.tsx`.
+- **Nav locks scroll when open**, closes and releases on a scroll attempt.
+- **3D removed**; `StepsScene`, `StepsSceneMount` and `public/draco/` deleted.
+- **Features rebuilt as an Embla carousel**, 1:1 with phantom.com's mechanics.
+- **Every section is one viewport** with a shared heading space.
+- **Six phone mockups + pixel-wave transition** in the How it works centre.
+- **Stickers on all four cards**, enlarged after the section heights changed.
+- **`SNV.md` rewritten**, `COLLABORATION.md` shared-file table updated.
+
+### ⚠ THE JANK WAS NOT WHAT FOURTEEN SESSIONS OF THIS LOG SAID IT WAS
+
+**Session 10's open item is closed: the canvas was measured on a real GPU and
+it is not the problem.** Same page, same scroll, headless Chromium:
+
+| | blocked | p95 frame |
+|---|---|---|
+| SwiftShader (default headless) | 28,722ms | 613ms |
+| **Real GPU (Intel UHD)** | **0ms** | **53ms** |
+
+**The 14,253ms and 33,309ms figures in sessions 14 and 15 are SwiftShader
+artefacts.** Launch Chromium with `--use-gl=angle --use-angle=gl --enable-gpu
+--ignore-gpu-blocklist` or every WebGL number is fiction. The canvas blocked
+the main thread **0ms during scroll** on real hardware.
+
+The one real stall was **923ms while the user was still looking at the hero** —
+`requestIdleCallback` fired ~600ms in and mounted the canvas far too early.
+Mounting on proximity instead took idle blocking from 1310ms to 153ms.
+
+**That fix is now moot — the 3D is gone — but the measurement lesson is not.**
+
+### ⚠ FOUR MEASUREMENT TRAPS, ALL OF WHICH PRODUCED A WRONG ANSWER FIRST
+
+1. **`toDataURL` via `Image.onload` races the render** and reported 0% model
+   coverage on a canvas that was drawing correctly. Screenshot the element and
+   diff against the same region with the canvas hidden: that gave 65.4%.
+2. **`div:last-child` does not mean what it looks like.** Three separate
+   probes read the wrong node and reported "1 pixel, no mask" on a grid that
+   had 1156 pixels and a working mask. **Twice this led to chasing a bug that
+   did not exist.** `[data-pixel-grid]` hooks were added for exactly this.
+3. **A rotated element's `getBoundingClientRect` is the rotated box**, wider
+   than the artwork. It reported three clipped stickers that were measurably
+   2px *inside* their cards.
+4. **A percentage `max-height` on a flex child resolves against nothing**, and
+   a `maxHeight: 100%` silently clamped every per-card sticker dial back to
+   the wrapper — the size values appeared to do nothing at all.
+
+### ⚠ SECTION HEIGHT: THE SECTION'S OWN min-height IS NOT WHAT MAKES IT TALL
+
+Four sections hard-code their own `min-h-[100svh]` wrapper *inside*
+`<Section>`. So:
+
+- **`box-sizing: border-box` does NOT help.** It governs `height`;
+  `min-block-size` takes padding on top regardless. Measured 900 -> 1022px
+  with border-box set.
+- **Subtracting the padding from the section's min-height does nothing
+  either** — the child is what is tall. Measured: min-height 778px, section
+  1022px, child 900px.
+- The fix is `--section-fill` (one viewport minus the heading space),
+  published on the section and consumed by those four wrappers.
+- **How it works' grid was `90svh`** — 90% of the VIEWPORT, inside a box
+  already reduced by the heading space, so it cut twice and the cards lost
+  55px. Every sticker shrank with them, because a sticker is a percentage of
+  the room its card leaves. It is `h-full` now.
+
+**Verified: every section exactly 1vh across 7 viewports, no clipping.**
+The hero clips `IMG +6px` at 1440x700 — **pre-existing, confirmed by
+stashing**, and the hero is `flush` so none of this touched it.
+
+### The carousel: Phantom's mechanics, our cards
+
+Measured off their live page at 1440 and 1024, not recreated by eye:
+
+| | theirs |
+|---|---|
+| ratio | 0.747 at both widths |
+| radius / gap / gutter | 24px / 32px / 48px |
+| step | one card per click (459 = 427 + 32) |
+| buttons | 40x40 round, `#E2DFFE`, chevron `M9 4L17 12L9 20` |
+| ends | prev disabled at start, next at end — no wrap |
+
+**Their section is ~1.9vh and NOT pinned.** Ours was a GSAP ScrollTrigger pin
+that needed `extra={1}` as travel distance — which is how the section height
+and the card height got tangled. Both are gone.
+
+- **The gutter is padding on the TRACK, not the viewport.** On the viewport
+  the first card sits on the margin and nothing bleeds; on the track it
+  scrolls with the cards and the row runs off both edges, which is the peek.
+- **`containScroll: "trimSnaps"` fixed a real bug**: the old rail's last card
+  finished 227px past the right edge, and it predates this session.
+
+### ⚠ THE PIXEL WAVE: TWO THINGS THAT MADE IT NOT READ AS PIXELS
+
+Ported from osmo.supply's pixelated image reveal (credited there to Dennis
+Snellenberg, from hartmanncapital.com; free, **no licence stated** — the
+attribution is in the component header and is worth a look before shipping).
+
+1. **A `clip-path` reveal is a straight CSS line and it does the revealing on
+   its own.** The owner saw a wipe because a wipe is what it was. The clip is
+   quantised to whole pixel rows with GSAP's `snap`, so the boundary only ever
+   lands on a row edge.
+2. **Timed purely by row, every cell in a row flips at once and they are
+   touching — the band renders as a solid bar.** Jittering each cell up to
+   ~1.4 rows off its row breaks both edges into squares. Measured: rows with
+   all 34 cells lit went from every row in the band to 1-2, with 4-6 partial.
+
+Other notes: the tile is drawn 1px past its cell (at a fine grid the
+percentage edges land on fractional device pixels and a hairline of the image
+shows through — it looks like mesh); the grid is masked with the artwork's own
+alpha so pixels never paint the transparent corners; **`stepDuration` means
+the whole climb for `wave` and half the dissolve for `dissolve`** — 0.3 was
+~13ms a row, about one frame.
+
+**Reverting the wave is one word: `pattern="dissolve"`.**
+
+### Gotchas
+
+- **⚠ `overflow: hidden` DOES NOT LOCK THE PAGE under Lenis.** It keeps
+  applying its own transform. `window.__lenis?.stop()` is the only thing that
+  holds it. Not `window.lenis` — Lenis declares that itself and the types
+  collide.
+- **Close-on-scroll must listen to `wheel`/`touchmove`, not `scroll`.** While
+  Lenis is stopped the page never moves, so `scroll` never fires.
+- **Lenis + ScrollTrigger needs explicit wiring** or every pin silently stops
+  tracking. It is in `SmoothScroll.tsx`; if that goes, pins break with no error.
+- **`rotate-[6deg]` generated no CSS rule** — the only arbitrary rotate in the
+  project, computed to `transform: none`. Inline style sidesteps the JIT scan.
+  Same class of bug as `bg-[${...}]`.
+- **drei's `<Environment scene={...}>` is where to APPLY the map, not what to
+  build it from.** With no `files`/`preset` it fell back to the default cube
+  map and threw `Could not load /px.png,...`. (Moot now, but it 500'd the page.)
+- **Lossless webp ballooned the mockups 6x** (34KB -> 213KB) for art already
+  webp. q95 + `alphaQuality: 100` is 64-77KB and visually identical.
+- **A JSX comment inserted inside an open block comment** breaks the parse and
+  500s the route.
+- **Node probe scripts must live in the project**, not the scratchpad, or
+  `require('playwright')` fails.
+
+### Open
+
+1. **⚠ TELL @snvzyn DIRECTLY.** `SNV.md` is correct now, but they only read it
+   if they know to look, and **`npm install` will break their dev server if
+   they miss it.** The owner said they would.
+2. **`app/pixel-demo/` is a throwaway route** for viewing the effect in
+   isolation. Delete it once the effect has settled.
+3. **The hero clips `IMG +6px` at 1440x700** — pre-existing, not investigated.
+4. **Pricing is 1.81vh at 390px** — three stacked cards genuinely do not fit
+   in 844px. Real content overflow, not a sizing bug.
+5. **`Scene.tsx:11` still points at gstatic** for Draco — moot while the hero
+   phone is out, live the moment it returns.
+6. **Faq and Testimonials still hardcode `#EAC2FF`/`#3D065F`** — two lines
+   each to convert to the tokens.
+7. **KTX2** — still the only real fix for the glb's 2.31MB of main-thread
+   texture upload, still @snvzyn's call. Moot while there is no 3D.
+8. **Three pre-existing lint errors** at `app/pricing-tuner/page.tsx:581`.
+9. Everything from sessions 4-15 that was not touched: the FAQ answers still
+   "New answer.", the Features copy still lorem, section 3 empty, PRs #2/#4/#5,
+   `/pricing-tuner`'s 0-height wrapper bug.
+
+### Branch
+
+**On `main`, at `79697c7`, pushed and in sync with `origin/main`.** Working
+tree clean. `stash@{0}` still holds session 14's entrance glide. Dev server on
+port 3000.
+
+---
+
 ## Start here
 
 **Project:** LARPZZZ — a design-led marketing-style site with a 3D element.

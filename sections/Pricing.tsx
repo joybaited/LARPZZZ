@@ -102,6 +102,10 @@ export type PriceEl = {
      is already laid out. "display" is Megion. */
   font?: "display" | "sans";
   show?: boolean;
+  /* a box that is a BUTTON: takes metamask.io's hover (the fill scales up
+     behind the label while the label rolls over). A box without it is just a
+     shape, so existing tuned elements are unaffected. */
+  btn?: boolean;
   /* HERO ONLY. `in: "nav"` means x/y are percentages OF THE NAV BAR, not of
      the section — the nav is the nearest positioned ancestor, so <PriceEl>
      resolves against it with no change to the renderer. `in: "menu"` is the
@@ -133,8 +137,7 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
       { name: "text 1", kind: "text", text: "Starter", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
       { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "7 days", x: 50, y: 23.5, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60, show: false },
-      { name: "box 5", kind: "box", x: 50, y: 33.1, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 6", kind: "text", text: "Get Started", x: 50, y: 33.1, size: 16, weight: 500, align: "center", color: "var(--color-grape)" },
+      { name: "box 5", kind: "box", text: "Get Started", btn: true, x: 50, y: 33.1, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
       { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
@@ -149,8 +152,7 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
       { name: "text 1", kind: "text", text: "Monthly", x: 50, y: 9.0, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
       { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "/month", x: 50, y: 23.6, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
-      { name: "box 5", kind: "box", x: 50, y: 33.5, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 6", kind: "text", text: "Try It Free", x: 50, y: 33.5, size: 16, weight: 500, align: "center", color: "var(--color-grape)" },
+      { name: "box 5", kind: "box", text: "Try It Free", btn: true, x: 50, y: 33.5, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
       { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
@@ -165,8 +167,7 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
       { name: "text 1", kind: "text", text: "Lifetime", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
       { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "once", x: 50, y: 22.2, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
-      { name: "box 5", kind: "box", x: 50, y: 33.2, w: 86, h: 8.8, size: 15, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 6", kind: "text", text: "Buy Lifetime", x: 50, y: 33.2, size: 16, weight: 500, align: "center", color: "var(--color-grape)" },
+      { name: "box 5", kind: "box", text: "Buy Lifetime", btn: true, x: 50, y: 33.2, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
       { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
@@ -179,8 +180,8 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
 
 export default function Pricing() {
   return (
-    <Section id="pricing" className="bg-violet text-grape">
-      <div className="flex min-h-[var(--section-fill)] items-center justify-center">
+    <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
+      <div className="flex min-h-[var(--section-fill)] items-end justify-center">
         <ul
           role="list"
           className="m-0 flex w-full max-w-[1200px] list-none flex-col items-stretch gap-(--space-m) p-0 sm:flex-row sm:gap-[clamp(1rem,4.2vw,60px)]"
