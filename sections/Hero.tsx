@@ -321,7 +321,7 @@ export default function Hero() {
          here. Padding, not a spacer div: the ground is an absolute `inset-0`
          layer, so it grows with the section and the extra space is the same
          colour for free. */
-      className="pb-[clamp(48px,2rem+3vw,112px)]">
+      className="pb-[clamp(48px,2rem+3vw,112px)] max-lg:[--phone-w:clamp(260px,65vw,420px)] lg:[--phone-w:33%] flex flex-col justify-between overflow-hidden">
       {/* ⚠ THE GROUND IS AN INLINE STYLE, NOT A TAILWIND CLASS. `bg-[${...}]`
           with an interpolated value generates NOTHING — Tailwind scans source
           text and never evaluates it, so the class silently does not exist.
@@ -385,7 +385,7 @@ export default function Hero() {
           style={{
             left: `${HERO.art.x}%`,
             top: `${HERO.art.y}%`,
-            width: `${HERO.art.w}%`,
+            width: "var(--phone-w, 33%)",
             transform: `translate(-50%, -50%) rotate(${HERO.art.rotate ?? 0}deg)`,
           }}
         />
@@ -633,8 +633,35 @@ export default function Hero() {
         </h1>
       )}
 
-      {/* stage-level elements. the nav's own are rendered inside it above. */}
-      {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
+      {/* stage-level elements. Desktop: rendered at measured coordinates; Mobile: in-flow stack */}
+      <div className="hidden lg:contents">
+        {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
+      </div>
+
+      {/* Mobile/Tablet reflow: Subtitle and action buttons in natural flow */}
+      <div className="relative z-20 mt-auto flex flex-col items-center px-6 pt-6 pb-2 text-center lg:hidden">
+        <p className="max-w-[34ch] font-sans text-[clamp(15px,0.9rem+0.5vw,18px)] leading-[1.4] text-[#3D065F]">
+          Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.
+        </p>
+        <div className="mt-5 flex items-center justify-center gap-[clamp(16px,2vw,30px)]">
+          <PillButton
+            href="#"
+            fill="#3D065F"
+            color="#EAC2FF"
+            className="flex h-[46px] min-w-[124px] items-center justify-center px-6 text-sm font-semibold"
+          >
+            Buy
+          </PillButton>
+          <PillButton
+            href="#"
+            fill="#3D065F"
+            color="#EAC2FF"
+            className="flex h-[46px] min-w-[124px] items-center justify-center px-6 text-sm font-semibold"
+          >
+            Login
+          </PillButton>
+        </div>
+      </div>
 
       {/* ⚠ THE STICKERS FLOAT, AND IT IS CSS, NOT GSAP. GSAP is on this page
           and section two uses it, but this is a constant-speed loop that reads

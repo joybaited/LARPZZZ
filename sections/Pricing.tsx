@@ -181,10 +181,10 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
 export default function Pricing() {
   return (
     <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
-      <div className="flex min-h-[var(--section-fill)] items-end justify-center">
+      <div className="flex min-h-[var(--section-fill)] items-center justify-center py-8 lg:items-end lg:py-0">
         <ul
           role="list"
-          className="m-0 flex w-full max-w-[1200px] list-none flex-col items-stretch gap-(--space-m) p-0 sm:flex-row sm:gap-[clamp(1rem,4.2vw,60px)]"
+          className="m-0 flex w-full max-w-[1200px] list-none flex-col items-center gap-6 p-0 lg:flex-row lg:items-stretch lg:justify-center lg:gap-[clamp(24px,4.2vw,60px)]"
         >
           {CARDS.map((card) => (
             <li
@@ -193,7 +193,7 @@ export default function Pricing() {
                  of empty black, so the height is only asserted once the row
                  is a row. */
               style={card.fill ? { background: card.fill } : undefined}
-              className="min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape max-sm:aspect-[360/480] sm:h-[640px]"
+              className="w-full max-w-[380px] min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape aspect-[360/500] sm:aspect-[360/480] lg:max-w-none lg:aspect-auto lg:h-[640px]"
             >
               {/* the inner <article>. `relative` is what the elements' x/y
                   percentages resolve against, so they are card-relative and

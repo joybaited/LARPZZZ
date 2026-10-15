@@ -52,19 +52,14 @@ type Props = {
    first pass (was 72 -> 140).
    Kept local rather than a token in globals.css — that file is shared and
    CLAUDE.md says changes get agreed first; this needs nobody else. */
-const HEADING_SPACE = "clamp(120px, 6rem + 6.5vw, 240px)";
+/* ⚠ ONE SPACE FOR EVERY SECTION HEADING, SET HERE, NOT PER SECTION.
+   Preserved at exactly 195.84px on the 1536x742 baseline, while scaling safely
+   on shorter screens via min(..., 26.5vh) so shallow viewports don't clip content. */
+const HEADING_SPACE = "clamp(80px, min(6rem + 6.5vw, 26.5vh), 240px)";
 
-/* ⚠ THE BREATHING ROOM AT THE FOOT OF EVERY SECTION, SET HERE, NOT PER
-   SECTION — the same argument as HEADING_SPACE above.
-   Why it exists: the inner wrappers are exactly `--section-fill` tall and
-   centre their content, which means a card row that is nearly as tall as the
-   box touches both edges and the section reads as crammed. The owner called
-   this on Features and How it works. Reserving space at the foot gives the
-   content somewhere to breathe without every section hand-rolling padding.
-   Smaller than the heading space on purpose: a title needs more room above it
-   than a card row needs below it, and matching the two makes a section look
-   bottom-heavy. */
-const FOOT_SPACE = "clamp(72px, 3rem + 4vw, 160px)";
+/* ⚠ THE BREATHING ROOM AT THE FOOT OF EVERY SECTION, SET HERE, NOT PER SECTION.
+   Preserved at exactly 109.44px on the 1536x742 baseline. */
+const FOOT_SPACE = "clamp(40px, min(3rem + 4vw, 15vh), 160px)";
 
 /* what an inner wrapper should use instead of `min-h-[100svh]`:
      className="min-h-[var(--section-fill)]"

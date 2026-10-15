@@ -131,12 +131,13 @@ export default function FaqItem({
          box and `overflow-hidden` there is what would clip it. */
       const edge = d.closest("section")?.getBoundingClientRect();
       const GUTTER = 24;
+      const maxW = edge ? Math.max(280, edge.width - GUTTER * 2) : 340;
       let slide = 0;
       /* ⚠ NEVER NARROWER THAN THE CLOSED PILL. A configured openW below the
          hugged width squeezes the QUESTION onto two lines as the pill opens and
          snaps it back to one as it closes — the text break. The closed width is
          the floor, so opening can only ever widen. */
-      let full = Math.max(openW ?? d.parentElement!.clientWidth, r0.width);
+      let full = Math.min(Math.max(openW ?? d.parentElement!.clientWidth, r0.width), maxW);
 
       if (edge) {
         const room = edge.right - r0.left - GUTTER;
@@ -216,7 +217,7 @@ export default function FaqItem({
             between one and two lines. The pill hugs this text when closed, so
             nowrap costs nothing — it just stops the width tween from being able
             to re-break it. */}
-        <span className="mr-auto whitespace-nowrap">{q}</span>
+        <span className="mr-auto text-balance max-sm:whitespace-normal whitespace-nowrap">{q}</span>
         {/* rotates to an x. CSS, not GSAP — one transition beats a tween. */}
         <span className="shrink-0 text-[1.4em] leading-none transition-transform duration-300 group-open:rotate-45">
           +

@@ -111,7 +111,7 @@ export default function Card({ heading, copy, media }: CardData) {
          the old 5/7 surviving on mobile. */
       /* `relative` is what the media anchors to — it is absolute and spans
          from the card's top to the media/text boundary. */
-      className="relative flex max-w-[82vw] shrink-0 snap-start flex-col overflow-hidden rounded-[1.25rem] bg-[#EAC2FF] text-[#3D065F] max-lg:!h-auto max-lg:!w-[min(82vw,21.5rem)] max-lg:aspect-[0.84]"
+      className="relative flex max-w-[82vw] shrink-0 snap-start flex-col overflow-hidden rounded-[1.25rem] bg-[#EAC2FF] text-[#3D065F] [container-type:inline-size] max-lg:!h-auto max-lg:!w-[min(82vw,21.5rem)] max-lg:aspect-[0.88]"
     >
       {/* ⚠ THE MEDIA FILLS THE REGION ABOVE THE TEXT — Kez's.
           It used to sit AFTER the copy and climb back up into it with a
@@ -144,18 +144,15 @@ export default function Card({ heading, copy, media }: CardData) {
           /* ⚠ THE HEIGHT IS 70% OF THE CARD'S WIDTH, NOT ITS HEIGHT, because
              that is what the spacer's `mt-[70%]` resolves against — a
              percentage margin uses the containing block's INLINE size in both
-             axes. An earlier pass set `bottom: 30%`, which resolves against
-             the HEIGHT instead, so the two met at different places and the
-             media ran past the boundary into the heading. Both are stated
-             against the width now and the bottom edges land together. */
+             axes. Using 100cqw matches both desktop and mobile inline size. */
           style={{
             insetInline: `calc(clamp(28px, 1.5rem + 1vw, 44px) - ${BLEED[media.kind]})`,
-            blockSize: "calc(var(--card-h) * var(--card-r) * var(--card-m))",
+            blockSize: "calc(var(--card-m) * 100cqw)",
           }}
           /* `isolate` gives it its own stacking context so nothing inside can
              paint over the text below, and `clip` crops the wheel's phones,
              which are deliberately taller than their box. */
-          className="absolute top-0 hidden isolate overflow-clip lg:block"
+          className="absolute top-0 isolate overflow-clip"
           aria-hidden="true"
         >
           {media.kind === "wheel" ? (

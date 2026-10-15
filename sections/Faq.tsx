@@ -104,7 +104,8 @@ export default function Faq() {
     /* bleed: the pills are placed against the full section, not the centred
        content column, so the percentages mean what the tuner showed. */
     <Section id="faq" bleed className="bg-violet text-[#3D065F]">
-      <div ref={wrap} className="relative min-h-[var(--section-fill)] overflow-hidden">
+      {/* Desktop scattered pill layout (>= 1024px) - preserves exact 1536x742 baseline geometry */}
+      <div ref={wrap} className="relative hidden min-h-[var(--section-fill)] overflow-hidden lg:block">
         {/* the wordmark, centred. pointer-events-none so it never blocks a
             pill that overlaps it. */}
         <h2 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[clamp(4.5rem,1.6rem+7.4vw,12.5rem)] leading-[0.9] uppercase select-none">
@@ -149,6 +150,25 @@ export default function Faq() {
             />
           </div>
         ))}
+      </div>
+
+      {/* Mobile & Tablet stacked accordion (< 1024px) */}
+      <div className="flex flex-col items-center px-4 py-8 lg:hidden">
+        <h2 className="mb-8 font-display text-[clamp(3.5rem,14vw,6rem)] leading-[0.9] uppercase select-none text-center">
+          FAQ
+        </h2>
+        <div className="flex w-full max-w-lg flex-col items-center gap-3">
+          {PILLS.map((p) => (
+            <div key={p.q} className="flex w-full justify-center">
+              <FaqItem
+                q={p.q}
+                a={p.a}
+                tilt={0}
+                size={16}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </Section>
   );

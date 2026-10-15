@@ -90,12 +90,12 @@ function Card({ t }: { t: Testimonial }) {
        treatment as the FAQ pills and the hero nav. It was `bg-paper text-ink`
        on a `bg-deep` section; the section is now the hero's `#EAC2FF` ground,
        so a white card would glare against it. */
-    <li className="flex h-[clamp(240px,12rem+6.5vw,360px)] w-[clamp(340px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(24px,1.2rem+1.4vw,36px)] text-[#EAC2FF]">
+    <li className="flex h-[clamp(200px,12rem+6.5vw,360px)] w-[clamp(280px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(20px,1.2rem+1.4vw,36px)] text-[#EAC2FF]">
       {/* scales with the card, so the quote fills it rather than floating in
           it. line-clamp keeps a long one from pushing the footer out. */}
       {/* 4, not 5: at this height a 5th line is half-cut by the card's floor —
           the clamp has to stop at what actually fits, not at what overflows. */}
-      <p className="line-clamp-4 text-[clamp(18px,0.95rem+0.7vw,24px)] leading-[1.35]">
+      <p className="line-clamp-4 text-[clamp(16px,0.95rem+0.7vw,24px)] leading-[1.35]">
         {t.quote}
       </p>
       {/* ⚠ THE NAME IS THE CARD'S HEADING, AND IT IS THE ONLY MEGION HERE.
@@ -154,7 +154,9 @@ export default function Testimonials() {
     <Section id="testimonials" bleed heading="Testimonials" className="bg-[#efcfff] text-[#3D065F]">
       <div className="flex min-h-[var(--section-fill)] flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
         <Row />
-        <Row reverse />
+        <div className="hidden sm:block">
+          <Row reverse />
+        </div>
       </div>
     </Section>
   );

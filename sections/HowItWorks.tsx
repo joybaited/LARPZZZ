@@ -120,26 +120,11 @@ const PLACE = [
 export default function HowItWorks() {
   return (
     <Section id="how-it-works" heading="How it works" className="bg-[#f3ddff] text-grape">
-      {/* ⚠ `h-[100svh]`, NOT `min-h-`. The grid below sizes its rows off this
-          box, and a min-height gives a percentage row nothing to resolve
-          against — the rows collapse to content and the ~90% is ignored.
-          A fixed height is what makes the column fill the screen. */}
-      <div className="flex h-[var(--section-fill)] items-center justify-center">
+      {/* ⚠ min-h-[var(--section-fill)] with lg:h-[var(--section-fill)] so desktop holds the exact measured ratio while mobile expands naturally without clipping. */}
+      <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center">
         <ul
           role="list"
-          /* ⚠ THE ROW IS 90% OF THE VIEWPORT AND THE TWO CARD ROWS SPLIT IT.
-             `grid-rows-2` on a 90%-of-the-box row gives each card ~45% minus
-             half the gap, which is MetaMask's model: height fixed, ratio falls
-             out. ⚠ IT IS THE BOX, NOT 90svh. Against the viewport it ignored
-             the heading space above it and the bottom row hung 16px out of
-             the section. And it is `h-full` rather than the old `90%`: the
-             box is ALREADY one viewport minus the heading space, so taking
-             90% of it cut the cards twice — they measured 342px against 397
-             before, which shrank every sticker with them, since a sticker is
-             a percentage of the room its card leaves.
-             Below lg the height is released (`h-auto`) and the cards go back
-             to a natural 2-up, or four 45svh cards stacked is four screens. */
-          className="m-0 grid w-full list-none grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-full lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
+          className="m-0 grid w-full list-none grid-cols-1 sm:grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-full lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
         >
           {/* The centre column. It is the grid's middle track — the `1.066fr`
               in `grid-cols-[1fr_1.066fr_1fr]` that holds the two card columns
@@ -207,7 +192,7 @@ export default function HowItWorks() {
               key={c.id}
               /* max-lg keeps a sane shape while stacked; at lg the row height
                  governs and the ratio is whatever the split gives. */
-              className={`${PLACE[i]} flex flex-col overflow-hidden rounded-[clamp(20px,2.778vw,56px)] bg-grape p-[clamp(18px,2.1vw,32px)] text-violet max-lg:aspect-[347/378]`}
+              className={`${PLACE[i]} flex flex-col overflow-hidden rounded-[clamp(20px,2.778vw,56px)] bg-grape p-[clamp(18px,2.1vw,32px)] text-violet max-sm:aspect-auto max-sm:min-h-[220px] sm:max-lg:aspect-[347/378]`}
             >
               {/* ⚠ THEIR TYPE AND RADIUS ARE PURE VIEWPORT FUNCTIONS, NO
                   CONSTANT. Fitted across four widths: font = w/60 (1.667vw,
