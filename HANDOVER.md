@@ -11,9 +11,9 @@ session would get wrong without being told.
 
 ---
 
-## Session — 2026-10-15 (session 18)
+## Session — 2026-10-15 (session 18) — Antigravity (AGY)
 
-Comprehensive responsive scaling pass preserving the user's laptop ground truth (1536×742 baseline) while adapting all sections for mobile, tablet, and shallow laptop displays.
+**Done by Antigravity (AGY)**: Comprehensive responsive scaling pass preserving the user's laptop ground truth (1536×742 baseline) while adapting all sections for mobile, tablet, and shallow laptop displays.
 
 ### Done
 - **Ground Truth Baseline Locked:** User laptop baseline (1536×742, DPR 1.25) geometry measured and documented in `RESPONSIVE-AUDIT.md`.
