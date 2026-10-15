@@ -11,6 +11,22 @@ session would get wrong without being told.
 
 ---
 
+## Session — 2026-10-15 (session 18)
+
+Comprehensive responsive scaling pass preserving the user's laptop ground truth (1536×742 baseline) while adapting all sections for mobile, tablet, and shallow laptop displays.
+
+### Done
+- **Ground Truth Baseline Locked:** User laptop baseline (1536×742, DPR 1.25) geometry measured and documented in `RESPONSIVE-AUDIT.md`.
+- **Section Padding Clamped:** `HEADING_SPACE` (195.84px baseline) and `FOOT_SPACE` (109.44px baseline) clamped with `min(..., 26.5vh)` so shallow screens never clip content.
+- **Hero Responsive Reflow:** Desktop coordinate positioning kept 1:1; below 1024px, subtitle copy and PillButton actions reflow in natural flex flow.
+- **How It Works Mobile:** Switched rigid 2-col to fluid 1-col on phones with `min-h-[220px]` cards; desktop 3-col split strictly preserved.
+- **Features Card Container Queries:** Added `[container-type:inline-size]` on `Card.tsx` so media `blockSize: calc(var(--card-m) * 100cqw)` tracks width on all devices without empty gaps.
+- **FAQ Desktop Scatter + Mobile Accordion:** Exact 6-pill scatter and GSAP neighbour push kept for desktop (>=1024px); mobile/tablet (<1024px) rendered as clean vertical accordion.
+- **Testimonials Responsive Marquee:** Streamlined to 1 marquee row on phones (<640px); 2 counter-rotating rows preserved on desktop and tablet.
+- **Pricing Stacking:** 1200px 3-card row preserved on desktop; below 1024px, cards stack with proportional 9:16 aspect ratio rather than squishing into 200px columns.
+
+---
+
 ## Session — 2026-10-12 (session 17)
 
 Pulled @snvzyn's Footer, then a pass of design work on top of it: the
