@@ -13,7 +13,7 @@ export default function TicketStrip({ className = "" }: Props) {
   return (
     <aside
       aria-label="Ticket strip"
-      className={`pointer-events-auto absolute inset-x-0 bottom-0 z-20 h-[14svh] w-full bg-[#e3b5fb] md:inset-y-0 md:right-0 md:left-auto md:h-full md:w-[21.5vw] ${className}`}
+      className={`pointer-events-auto absolute inset-x-0 bottom-0 z-20 h-[18svh] w-full bg-[#e3b5fb] md:inset-y-0 md:right-0 md:left-auto md:h-full md:w-[21.5vw] ${className}`}
     >
       {/* 1. Desktop: Chunky Ticket Perforation Line on LEFT (strictly preserved) */}
       <svg

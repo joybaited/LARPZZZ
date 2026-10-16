@@ -308,7 +308,7 @@ export default function FooterCoins() {
       const minX = isMobile ? -35 : w * 0.45;
       const maxX = isMobile ? w + 35 : w * 0.79;
       const minY = isMobile ? h * 0.41 : -120;
-      const maxY = isMobile ? h * 0.86 : h + 120;
+      const maxY = isMobile ? h * 0.82 : h + 120;
 
       for (let i = 0; i < n; i++) {
         const node = nodes[i];
