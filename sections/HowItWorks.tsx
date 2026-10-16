@@ -101,9 +101,9 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-cash",
     src: "/images/step-cash.webp",
     alt: "",
-    x: 32.1,
-    y: 47.1,
-    w: 11.5,
+    x: 28.0,
+    y: 38.3,
+    w: 14.2,
     rotate: "16deg",
     z: 25,
   },
@@ -111,9 +111,9 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-key",
     src: "/images/step-key.webp",
     alt: "",
-    x: 30.8,
-    y: 76.9,
-    w: 10.4,
+    x: 26.4,
+    y: 88.9,
+    w: 12.8,
     rotate: "6deg",
     z: 25,
   },
@@ -121,9 +121,9 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-activate",
     src: "/images/step-activate.webp",
     alt: "",
-    x: 86.3,
-    y: 46.2,
-    w: 6.6,
+    x: 94.7,
+    y: 36.8,
+    w: 8.1,
     rotate: "12deg",
     z: 25,
   },
@@ -131,9 +131,9 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-flex",
     src: "/images/step-flex.webp",
     alt: "",
-    x: 84.7,
-    y: 77.3,
-    w: 7.8,
+    x: 92.7,
+    y: 89.6,
+    w: 9.6,
     rotate: "6deg",
     z: 25,
   },
@@ -160,19 +160,24 @@ export default function HowItWorks({
   cards = HOW_IT_WORKS_CARDS,
   stickers = HOW_IT_WORKS_STICKERS,
   hideStickers = false,
+  children,
+  stageRef,
 }: {
   cards?: HowItWorksCard[];
   stickers?: HowItWorksSticker[];
   hideStickers?: boolean;
+  children?: React.ReactNode;
+  stageRef?: React.Ref<HTMLDivElement>;
 } = {}) {
   return (
     <Section id="how-it-works" bleed heading="How it works" className="bg-[#f3ddff] text-grape">
       {/* ⚠ min-h-[var(--section-fill)] with lg:h-[var(--section-fill)] so desktop holds the exact measured ratio while mobile expands naturally without clipping. */}
       <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center px-(--gutter)">
-        <ul
-          role="list"
-          className="m-0 grid w-full max-w-[1560px] list-none grid-cols-1 sm:grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,20px)] p-0 max-lg:h-auto lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
-        >
+        <div ref={stageRef} className="relative w-full max-w-[1560px]">
+          <ul
+            role="list"
+            className="m-0 grid w-full list-none grid-cols-1 sm:grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,20px)] p-0 max-lg:h-auto lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
+          >
           {/* The centre column. It is the grid's middle track — the `1.066fr`
               in `grid-cols-[1fr_1.066fr_1fr]` that holds the two card columns
               apart — so the element has to exist even when it is empty, or
@@ -268,30 +273,33 @@ export default function HowItWorks({
               </p>
             </li>
           ))}
-        </ul>
-      </div>
+          </ul>
 
-      {/* Floating Stickers Layer */}
-      {!hideStickers && stickers?.map((st) => (
-        <div
-          key={st.name}
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          style={{
-            left: `${st.x}%`,
-            top: `${st.y}%`,
-            width: `${st.w}%`,
-            zIndex: st.z ?? 20,
-            transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
-          }}
-        >
-          <img
-            src={st.src}
-            alt={st.alt ?? ""}
-            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-          />
+          {/* Floating Stickers Layer — locked directly to the cards stage container so window resize cannot cause sticker drift */}
+          {!hideStickers && stickers?.map((st) => (
+            <div
+              key={st.name}
+              aria-hidden="true"
+              className="pointer-events-none absolute"
+              style={{
+                left: `${st.x}%`,
+                top: `${st.y}%`,
+                width: `${st.w}%`,
+                zIndex: st.z ?? 20,
+                transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
+              }}
+            >
+              <img
+                src={st.src}
+                alt={st.alt ?? ""}
+                className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+              />
+            </div>
+          ))}
+
+          {children}
         </div>
-      ))}
+      </div>
     </Section>
   );
 }

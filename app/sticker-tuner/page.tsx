@@ -539,15 +539,16 @@ ${howList
       </div>
 
       {/* 2. HOW IT WORKS SECTION */}
-      <div
-        id="how-it-works"
-        ref={(el) => {
-          sectionRefs.current["how-it-works"] = el;
-        }}
-        className="relative"
-      >
-        <HowItWorks cards={HOW_IT_WORKS_CARDS} hideStickers />
-        {renderStickersOverlay("how-it-works")}
+      <div id="how-it-works" className="relative">
+        <HowItWorks
+          cards={HOW_IT_WORKS_CARDS}
+          hideStickers
+          stageRef={(el) => {
+            sectionRefs.current["how-it-works"] = el;
+          }}
+        >
+          {renderStickersOverlay("how-it-works")}
+        </HowItWorks>
       </div>
 
       {/* 3. FEATURES */}
