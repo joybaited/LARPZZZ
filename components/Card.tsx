@@ -29,8 +29,8 @@ import PhoneWheel from "./PhoneWheel";
  */
 
 type Media =
-  | { kind: "video"; src: string; eager?: boolean }
-  | { kind: "image"; src: string; w: number; h: number }
+  | { kind: "video"; src: string; eager?: boolean; down?: string }
+  | { kind: "image"; src: string; w: number; h: number; down?: string }
   | { kind: "wheel" };
 
 export type CardData = {
@@ -208,6 +208,11 @@ export default function Card({ heading, copy, media }: CardData) {
                  inside the source even at 2x DPR. Nothing is re-encoded and
                  the files are untouched; the enlargement is CSS layout, not
                  a resample. */
+              style={
+                media.down
+                  ? ({ translate: `-50% calc(-50% + ${media.down})` } as React.CSSProperties)
+                  : undefined
+              }
               className="absolute top-1/2 left-1/2 block aspect-square w-[88%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
             />
           ) : (

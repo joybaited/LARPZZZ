@@ -39,7 +39,7 @@ const CARDS: CardData[] = [
   {
     heading: ["Winter", "Blankets"],
     copy: "Get big warmth for cold heavy. Snow out freezing or stay cozy — this night.",
-    media: { kind: "video", src: "/video/settingcust.webm", eager: true },
+    media: { kind: "video", src: "/video/settingcust.webm", eager: true, down: "6cqw" },
   },
   {
     heading: ["Heavy-Weather", "Day"],
