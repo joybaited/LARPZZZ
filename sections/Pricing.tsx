@@ -138,12 +138,10 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
       { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "7 days", x: 50, y: 23.5, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60, show: false },
       { name: "box 5", kind: "box", text: "Get Started", btn: true, x: 50, y: 33.1, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 10", kind: "text", text: "Community support", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 11", kind: "text", text: "Access to core AI tools", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)", show: false },
-      { name: "text 12", kind: "text", text: "Access to core AI tools", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)", show: false },
+      { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 60.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 73.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Community support", x: 50, y: 85.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
     ],
   },
   {
@@ -153,12 +151,11 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
       { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "/month", x: 50, y: 23.6, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
       { name: "box 5", kind: "box", text: "Try It Free", btn: true, x: 50, y: 33.5, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 10", kind: "text", text: "Priority email support", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 11", kind: "text", text: "Custom export presets", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 12", kind: "text", text: "Access to core AI tools", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)", show: false },
+      { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 57.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 67.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Priority email support", x: 50, y: 76.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 11", kind: "text", text: "Custom export presets", x: 50, y: 86.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
     ],
   },
   {
@@ -168,17 +165,50 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
       { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "once", x: 50, y: 22.2, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
       { name: "box 5", kind: "box", text: "Buy Lifetime", btn: true, x: 50, y: 33.2, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 55.7, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 62.9, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 10", kind: "text", text: "Founder badge", x: 50, y: 70.1, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 11", kind: "text", text: "Direct line to the team", x: 50, y: 77.3, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 12", kind: "text", text: "No subscription, ever", x: 50, y: 84.5, w: 86, size: 17, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 56.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 64.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Founder badge", x: 50, y: 72.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 11", kind: "text", text: "Direct line to the team", x: 50, y: 80.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 12", kind: "text", text: "No subscription, ever", x: 50, y: 88.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
     ],
   },
 ];
 
-export default function Pricing() {
+export const PRICING_STICKERS = [
+  {
+    id: "sticker-1792129446612",
+    name: "screenshot-2026-10-15-131401",
+    src: "/images/sticker-screenshot-2026-10-15-131401.png",
+    x: 90.1,
+    y: 20.6,
+    w: 12.6,
+    rotate: -14,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129480539",
+    name: "screenshot-2026-10-15-131411",
+    src: "/images/sticker-screenshot-2026-10-15-131411.png",
+    x: 9.2,
+    y: 20.2,
+    w: 9.2,
+    rotate: -27,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129500616",
+    name: "screenshot-2026-10-15-131354",
+    src: "/images/sticker-screenshot-2026-10-15-131354.png",
+    x: 61.1,
+    y: 22.1,
+    w: 11,
+    rotate: 23,
+    z: 25,
+  },
+];
+
+export default function Pricing({ hideStickers = false }: { hideStickers?: boolean } = {}) {
   return (
     <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
       <div className="flex min-h-[var(--section-fill)] items-center justify-center py-8 lg:items-end lg:py-0">
@@ -207,6 +237,28 @@ export default function Pricing() {
           ))}
         </ul>
       </div>
+
+      {/* Floating Stickers Layer */}
+      {!hideStickers && PRICING_STICKERS.map((st) => (
+        <div
+          key={st.id}
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{
+            left: `${st.x}%`,
+            top: `${st.y}%`,
+            width: `${st.w}%`,
+            zIndex: st.z ?? 25,
+            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+          }}
+        >
+          <img
+            src={st.src}
+            alt={st.name}
+            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+          />
+        </div>
+      ))}
     </Section>
   );
 }

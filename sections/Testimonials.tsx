@@ -147,7 +147,20 @@ function Row({ reverse }: { reverse?: boolean }) {
   );
 }
 
-export default function Testimonials() {
+export const TESTIMONIALS_STICKERS = [
+  {
+    id: "sticker-1792129229376",
+    name: "screenshot-2026-10-15-135800",
+    src: "/images/sticker-screenshot-2026-10-15-135800.png",
+    x: 27.1,
+    y: 9.1,
+    w: 13.8,
+    rotate: 0,
+    z: 25,
+  },
+];
+
+export default function Testimonials({ hideStickers = false }: { hideStickers?: boolean } = {}) {
   return (
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
@@ -158,6 +171,28 @@ export default function Testimonials() {
           <Row reverse />
         </div>
       </div>
+
+      {/* Floating Stickers Layer */}
+      {!hideStickers && TESTIMONIALS_STICKERS.map((st) => (
+        <div
+          key={st.id}
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{
+            left: `${st.x}%`,
+            top: `${st.y}%`,
+            width: `${st.w}%`,
+            zIndex: st.z ?? 25,
+            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+          }}
+        >
+          <img
+            src={st.src}
+            alt={st.name}
+            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+          />
+        </div>
+      ))}
     </Section>
   );
 }

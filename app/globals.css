@@ -93,6 +93,12 @@
    there is nothing to stabilise. A workbench route that does NOT scroll (/faq,
    /hero) now matches the real page instead of differing from it by 15px. */
 
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-ink);

@@ -67,7 +67,40 @@ const CARDS: CardData[] = [
   },
 ];
 
-export default function Features() {
+export const FEATURES_STICKERS = [
+  {
+    id: "sticker-1792129027530",
+    name: "screenshot-2026-10-15-132307",
+    src: "/images/sticker-screenshot-2026-10-15-132307.png",
+    x: 31.3,
+    y: 12.7,
+    w: 11.4,
+    rotate: -67,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129116255",
+    name: "screenshot-2026-10-15-132307",
+    src: "/images/sticker-screenshot-2026-10-15-132307.png",
+    x: 67.4,
+    y: 10.3,
+    w: 10.6,
+    rotate: 90,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129166984",
+    name: "screenshot-2026-10-15-124604",
+    src: "/images/sticker-screenshot-2026-10-15-124604.png",
+    x: 73.9,
+    y: 110.9,
+    w: 9.8,
+    rotate: 16,
+    z: 25,
+  },
+];
+
+export default function Features({ hideStickers = false }: { hideStickers?: boolean } = {}) {
   const section = useRef<HTMLElement>(null);
   /* `align: "start"` + `containScroll: "trimSnaps"` is what makes the first
      card sit on the gutter and the last one stop AT the right edge instead of
@@ -177,6 +210,28 @@ export default function Features() {
         </div>
 
       </div>
+
+      {/* Floating Stickers Layer */}
+      {!hideStickers && FEATURES_STICKERS.map((st) => (
+        <div
+          key={st.id}
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{
+            left: `${st.x}%`,
+            top: `${st.y}%`,
+            width: `${st.w}%`,
+            zIndex: st.z ?? 25,
+            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+          }}
+        >
+          <img
+            src={st.src}
+            alt={st.name}
+            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+          />
+        </div>
+      ))}
     </Section>
   );
 }

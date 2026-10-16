@@ -1,3 +1,5 @@
+"use client";
+
 import Section from "@/components/Section";
 import PixelatedImageReveal from "@/components/PixelatedImageReveal";
 
@@ -54,49 +56,86 @@ import PixelatedImageReveal from "@/components/PixelatedImageReveal";
  * instead: 0.58 of the heading, which is the ratio Testimonials already uses
  * between its quote and its footer, and the same clamp shape so the two
  * scale together. */
-const CARDS: {
-  id: string; text: string; body: string;
-  /* `h%` is an optional override for the shared height dial below — the
-     portrait sticker needs it, the other three sit on the default. */
-  art?: { src: string; w: number; h: number; alt: string;
-          "h%"?: string; rot?: number; down?: string };
-}[] = [
+export type HowItWorksCard = {
+  id: string;
+  text: string;
+  body: string;
+};
+
+export const HOW_IT_WORKS_CARDS: HowItWorksCard[] = [
   {
     id: "purchase",
     text: "Purchase a License",
     body: 'Grab Larpz Wallet in the "Buy" page. Choose the plan that works for you, no hidden fees.',
-    /* ⚠ TRIMMED AND CONVERTED, NOT DROPPED IN AS EXPORTED. The source was a
-       736x736 png at 353KB with the artwork floating in transparent padding —
-       the same trap as the hero's flat render, where uncropped padding scales
-       with the image and no width can centre it. `sharp().trim()` cut it to
-       the art (560x432), webp took it to 26.6KB. */
-    art: { src: "/images/step-cash.webp", w: 560, h: 432, alt: "", "h%": "150%" },
   },
   {
     id: "key",
     text: "Receive your Key",
     body: "After payment, you'll receive a unique license key via Telegram or email. Keep it safe.",
-    art: { src: "/images/step-key.webp", w: 512, h: 390, alt: "", "h%": "148%", down: "6px" },
   },
   {
     id: "activate",
     text: "Activate your Wallet",
     body: "Enter your license key, and download the app",
-    /* ⚠ PORTRAIT, UNLIKE THE OTHER THREE (584x1002, ratio 0.58). The shared
-       `height: 128%` dial sizes on HEIGHT, so a tall sticker ends up NARROW:
-       this renders 166px wide against 292-357 for the others. If it wants to
-       match them visually it needs its own dial, not the shared one. */
-    art: { src: "/images/step-activate.webp", w: 584, h: 1002, alt: "",
-           "h%": "126%", rot: 12, down: "8px" },
   },
   {
     id: "flex",
     text: "Flex to your hearts content",
     body: "Customize Your Portfolio to your hearts content.",
-    /* ⚠ THE SOURCE IS 167x155 — the smallest of the four by far. Trimmed to
-       113x124, so it is being scaled UP to fill the card and will soften.
-       A larger source is the only fix. */
-    art: { src: "/images/step-flex.webp", w: 113, h: 124, alt: "", "h%": "138%" },
+  },
+];
+
+export type HowItWorksSticker = {
+  name: string;
+  src: string;
+  alt?: string;
+  x: number;
+  y: number;
+  w: number;
+  rotate?: string;
+  z?: number;
+};
+
+export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
+  {
+    name: "step-cash",
+    src: "/images/step-cash.webp",
+    alt: "",
+    x: 30.3,
+    y: 50.1,
+    w: 10.7,
+    rotate: "16deg",
+    z: 25,
+  },
+  {
+    name: "step-key",
+    src: "/images/step-key.webp",
+    alt: "",
+    x: 30,
+    y: 81.7,
+    w: 10.5,
+    rotate: "6deg",
+    z: 25,
+  },
+  {
+    name: "step-activate",
+    src: "/images/step-activate.webp",
+    alt: "",
+    x: 89,
+    y: 45.3,
+    w: 7.6,
+    rotate: "12deg",
+    z: 25,
+  },
+  {
+    name: "step-flex",
+    src: "/images/step-flex.webp",
+    alt: "",
+    x: 87.9,
+    y: 83.4,
+    w: 8.6,
+    rotate: "6deg",
+    z: 25,
   },
 ];
 
@@ -117,7 +156,15 @@ const PLACE = [
   "lg:col-start-3 lg:row-start-2",
 ];
 
-export default function HowItWorks() {
+export default function HowItWorks({
+  cards = HOW_IT_WORKS_CARDS,
+  stickers = HOW_IT_WORKS_STICKERS,
+  hideStickers = false,
+}: {
+  cards?: HowItWorksCard[];
+  stickers?: HowItWorksSticker[];
+  hideStickers?: boolean;
+} = {}) {
   return (
     <Section id="how-it-works" heading="How it works" className="bg-[#f3ddff] text-grape">
       {/* ⚠ min-h-[var(--section-fill)] with lg:h-[var(--section-fill)] so desktop holds the exact measured ratio while mobile expands naturally without clipping. */}
@@ -146,22 +193,17 @@ export default function HowItWorks() {
                 { src: "/images/steps-phone-e.webp", alt: "" },
                 { src: "/images/steps-phone-f.webp", alt: "" },
               ]}
-              /* ⚠ 22 A SIDE, NOT THE ORIGINAL'S 7. At 7 the squares are huge
-                 and it reads as tiles sliding about; dense enough and the
-                 same mechanism reads as the image pixelating. 484 divs is
-                 still nothing to animate — they only toggle `display`. */
-              /* ⚠ 34, NOT 22. The cell is ~408px wide, so 22 across is an
-                 18px square — big enough that a 3-row band of them touching
-                 reads as a solid bar rather than as pixels. 34 is ~12px,
-                 and 1156 divs is still only a display toggle each. */
-              grid={34}
-              /* a thin band of pixels climbing from the bottom, carrying the
-                 next mockup up with it. */
+              /* Grid of 26 gives crisp, well-defined ~14-16px pixel blocks */
+              grid={26}
+              /* A defined band of pixels climbing from the bottom, carrying the next mockup up with it */
               pattern="wave"
-              waveRows={4}
-              /* scatters each cell off its row so the band's edges are
-                 ragged squares, not two straight lines. */
-              jitterRows={1.4}
+              waveRows={3}
+              /* Scatters cells off their row for defined, ragged pixel steps */
+              jitterRows={1.1}
+              /* Tiny 1.5px gap so pixel boxes are cleanly separated as floating square tiles */
+              gap={1.5}
+              /* Soft pink glow on each pixel */
+              glow="0 0 5px rgba(234, 194, 255, 0.8), 0 0 12px rgba(234, 194, 255, 0.35)"
               /* snappy: each half is 0.22s, so the whole swap is under half a
                  second. The original's 0.3 felt slow at this density because
                  the stagger is spread across far more cells. */
@@ -180,14 +222,14 @@ export default function HowItWorks() {
                  with the artwork, so nothing paints on the transparent
                  corners. */
               maskToArt
-              /* the pixels are `currentColor`: the site's grape. */
-              className="size-full !rounded-none text-grape"
+              /* the pixels take the site's signature pink/violet (#eac2ff) */
+              className="size-full !rounded-none text-violet"
               fit="contain"
               square={false}
             />
           </li>
 
-          {CARDS.map((c, i) => (
+          {cards.map((c, i) => (
             <li
               key={c.id}
               /* max-lg keeps a sane shape while stacked; at lg the row height
@@ -224,81 +266,32 @@ export default function HowItWorks() {
               <p className="mt-[clamp(8px,1vw,18px)] max-w-[38ch] text-[clamp(13px,1.3vw,23px)] leading-[1.35] opacity-80">
                 {c.body}
               </p>
-              {/* the art, where a card has it. `mt-auto` pushes it to the
-                  bottom of the card, which is where MetaMask's renders sit,
-                  and `min-h-0` lets it shrink rather than forcing the card
-                  taller on a shallow window. Decorative, so alt="". */}
-              {c.art && (
-                /* ⚠ `flex-1 min-h-0`, NOT A PERCENTAGE MAX-HEIGHT. A
-                   `max-h-[42%]` on a flex child resolved against nothing and
-                   collapsed the art to 103x79. Giving the wrapper the leftover
-                   column space with flex-1 and letting the image fill it is
-                   what actually sizes it, and min-h-0 lets it shrink on a
-                   shallow card instead of pushing the card taller.
-
-                   ⚠ NO min-height FLOOR HERE. One was tried (38%) to stop the
-                   sticker collapsing on a short window and it made things
-                   worse everywhere else — clips went 5 to 8 and mobile began
-                   clipping for the first time. The wrapper shrinking IS how
-                   the card stays inside itself; the image's own cap is where
-                   the bound belongs. */
-                <div className="mt-auto flex min-h-0 flex-1 items-end justify-end pt-[clamp(8px,1vw,16px)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={c.art.src}
-                    alt={c.art.alt}
-                    width={c.art.w}
-                    height={c.art.h}
-                    /* ⚠ HEIGHT IS THE BINDING CONSTRAINT, NOT WIDTH, and the
-                       rotation is inline on purpose. Raising max-w from 72% to
-                       100% changed nothing: the art hit `max-h-full` (204px of
-                       wrapper) long before the width cap, so the size dial is
-                       the height, not the width. And `rotate-[6deg]` as a class
-                       never generated a rule — it is the only arbitrary rotate
-                       in the project and computed to `transform: none`. Inline
-                       style sidesteps the JIT scan entirely. */
-                    /* ⚠ max-h CAPS THE OVERSIZE. `height: 128%` is bigger
-                       than the wrapper by design, and below lg the grid is
-                       h-auto so there is no fixed row to stop it — the
-                       sticker hung 10px out of the section at 768. The cap
-                       lets it overflow its wrapper (which is the look) but
-                       never its card. */
-                    /* ⚠ max-w-full, NOT max-w-none. The last clips were the
-                       WIDTH overflowing on the narrower cards at 1024 and
-                       768, not the height — the height cap alone left three.
-                       The wrapper is already inset from the card, so bounding
-                       the width to it keeps the sticker inside at every size
-                       without touching the oversize dial. */
-                    className="w-auto max-w-full object-contain"
-                    style={{
-                      height: c.art["h%"] ?? "128%",
-                      /* translate, NOT margin — a transform cannot push the
-                         flex line, so a nudge can never change the card's
-                         height or shift the copy above it. */
-                      transform: `translateY(${c.art.down ?? "0px"}) rotate(${c.art.rot ?? 6}deg)`,
-                      /* ⚠ THE CAP IS A VIEWPORT HEIGHT, NOT A PERCENTAGE OF
-                         THE WRAPPER. `maxHeight: 100%` was tried and it
-                         clamped the image straight back to the wrapper, so
-                         `height: 165%` computed to 148px and the per-card
-                         dials did nothing at all.
-                         The dial has to be able to exceed its wrapper — that
-                         oversize IS the effect — but percentage-of-wrapper
-                         alone is fragile at the extremes: it collapsed to
-                         101px on a 1440x700 window and overflowed the card by
-                         19px at 768. A vh ceiling is independent of the
-                         wrapper, so it bounds the overflow without touching
-                         the dial in the normal range. */
-                      maxHeight: `min(${c.art["h%"] ?? "128%"}, 30vh)`,
-                    }}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-              )}
             </li>
           ))}
         </ul>
       </div>
+
+      {/* Floating Stickers Layer */}
+      {!hideStickers && stickers?.map((st) => (
+        <div
+          key={st.name}
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{
+            left: `${st.x}%`,
+            top: `${st.y}%`,
+            width: `${st.w}%`,
+            zIndex: st.z ?? 20,
+            transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
+          }}
+        >
+          <img
+            src={st.src}
+            alt={st.alt ?? ""}
+            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+          />
+        </div>
+      ))}
     </Section>
   );
 }

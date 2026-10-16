@@ -40,7 +40,7 @@
    rather than a second violet. Grape on #FFD84D is ~11:1, well past AA.
    Kept here, not in globals.css: that file is shared and per CLAUDE.md its
    changes get agreed first, and this is only the buttons' business. */
-export const PILL_HOVER_FILL = "#FFD84D";
+export const PILL_HOVER_FILL = "#c9e264";
 export const PILL_HOVER_TEXT = "#3D065F";
 
 export const PILL_CSS = `

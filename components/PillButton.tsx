@@ -20,7 +20,7 @@ export default function PillButton({ children, href = "#", fill, color, classNam
   return (
     <a
       href={href}
-      className={`pill-btn relative isolate inline-block overflow-hidden rounded-full no-underline ${className}`}
+      className={`pill-btn relative isolate inline-block overflow-hidden rounded-full no-underline shrink-0 ${className}`}
       style={{ background: fill, color, ...style }}
     >
       <span aria-hidden="true" className="pill-btn__fill" style={{ background: PILL_HOVER_FILL }} />

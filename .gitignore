@@ -39,3 +39,9 @@ _ref/
 /probe*.mjs
 /debug*.mjs
 /tmp-*.mjs
+
+# agent skills and local tool caches
+.agents/
+.impeccable/
+skills-lock.json
+

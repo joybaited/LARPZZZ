@@ -27,12 +27,65 @@ export const PILLS = [
   { q: "Is my payment anonymous", a: "New answer.", x: 78.8, y: 59.8, tilt: -17, openW: 520, size: 20 },
 ];
 
+export const FAQ_STICKERS = [
+  {
+    id: "sticker-1792129292826",
+    name: "screenshot-2026-10-15-124544",
+    src: "/images/sticker-screenshot-2026-10-15-124544.png",
+    x: 12.2,
+    y: 21.4,
+    w: 10.3,
+    rotate: -22,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129312368",
+    name: "screenshot-2026-10-15-124511",
+    src: "/images/sticker-screenshot-2026-10-15-124511.png",
+    x: 75.7,
+    y: 84.2,
+    w: 10.7,
+    rotate: 18,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129318538",
+    name: "screenshot-2026-10-15-124624",
+    src: "/images/sticker-screenshot-2026-10-15-124624.png",
+    x: 50.6,
+    y: 17.9,
+    w: 10.4,
+    rotate: 16,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129322389",
+    name: "screenshot-2026-10-15-124718",
+    src: "/images/sticker-screenshot-2026-10-15-124718.png",
+    x: 81.5,
+    y: 24.2,
+    w: 18,
+    rotate: 30,
+    z: 25,
+  },
+  {
+    id: "sticker-1792129381412",
+    name: "screenshot-2026-10-15-124734",
+    src: "/images/sticker-screenshot-2026-10-15-124734.png",
+    x: 22.6,
+    y: 84.4,
+    w: 10.5,
+    rotate: -19,
+    z: 25,
+  },
+];
+
 /* how far the nearest neighbour is pushed, in px, and how far the opening pill
    rises. Both subtle — this is room being made, not a scatter. */
 const PUSH = 54;
 const LIFT = 0.42;
 
-export default function Faq() {
+export default function Faq({ hideStickers = false }: { hideStickers?: boolean } = {}) {
   const wrap = useRef<HTMLDivElement>(null);
   /* which pill currently owns the layout — see the onToggle guard below. */
   const active = useRef<number | null>(null);
@@ -170,6 +223,28 @@ export default function Faq() {
           ))}
         </div>
       </div>
+
+      {/* Floating Stickers Layer */}
+      {!hideStickers && FAQ_STICKERS.map((st) => (
+        <div
+          key={st.id}
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{
+            left: `${st.x}%`,
+            top: `${st.y}%`,
+            width: `${st.w}%`,
+            zIndex: st.z ?? 25,
+            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+          }}
+        >
+          <img
+            src={st.src}
+            alt={st.name}
+            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+          />
+        </div>
+      ))}
     </Section>
   );
 }

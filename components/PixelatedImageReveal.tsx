@@ -55,6 +55,10 @@ type Props = {
   /** `wave` only: how far each cell's timing is scattered from its row, in
       rows. 0 is a hard-edged bar; around 1 reads as pixels. */
   jitterRows?: number;
+  /** gap between pixel squares in px so pixels read as discrete floating tiles */
+  gap?: number;
+  /** box-shadow glow applied to each pixel */
+  glow?: string | boolean;
   className?: string;
 };
 
@@ -70,6 +74,8 @@ export default function PixelatedImageReveal({
   pattern = "dissolve",
   waveRows = 3,
   jitterRows = 1.2,
+  gap = 0,
+  glow = false,
   className = "",
 }: Props) {
   const card = useRef<HTMLDivElement>(null);
@@ -86,17 +92,21 @@ export default function PixelatedImageReveal({
        would mean 49 elements diffed on every parent render for no reason.
        Rebuilt if `grid` changes, which the cleanup handles. */
     const size = 100 / grid;
+    const halfGap = gap / 2;
+    const glowStyle = typeof glow === "string"
+      ? `box-shadow:${glow};`
+      : glow
+        ? "box-shadow:0 0 5px currentColor, 0 0 10px currentColor;"
+        : "";
+
     const frag = document.createDocumentFragment();
     for (let row = 0; row < grid; row++) {
       for (let col = 0; col < grid; col++) {
         const pixel = document.createElement("div");
-        /* ⚠ THE OVERLAP IS WHAT MAKES IT READ AS SOLID. At a fine grid the
-           percentage edges land on fractional device pixels and a hairline of
-           the image shows between neighbours — the cover looks like a mesh,
-           not a surface. Each tile is drawn a touch past its cell so the
-           seams are buried; they are opaque and identically coloured, so the
-           overlap is invisible. */
-        pixel.style.cssText = `position:absolute;display:none;background-color:currentColor;width:calc(${size}% + 1px);height:calc(${size}% + 1px);left:${col * size}%;top:${row * size}%`;
+        const sizeStyle = gap > 0
+          ? `width:calc(${size}% - ${gap}px);height:calc(${size}% - ${gap}px);left:calc(${col * size}% + ${halfGap}px);top:calc(${row * size}% + ${halfGap}px);`
+          : `width:calc(${size}% + 1px);height:calc(${size}% + 1px);left:${col * size}%;top:${row * size}%;`;
+        pixel.style.cssText = `position:absolute;display:none;background-color:currentColor;border-radius:1px;${sizeStyle}${glowStyle}`;
         frag.appendChild(pixel);
       }
     }
@@ -269,7 +279,7 @@ export default function PixelatedImageReveal({
       pixelGrid.replaceChildren();
       show(0);
     };
-  }, [grid, stepDuration, auto, loopEvery, images.length, pattern, waveRows, jitterRows]);
+  }, [grid, stepDuration, auto, loopEvery, images.length, pattern, waveRows, jitterRows, gap, glow]);
 
   const objectFit = fit === "contain" ? "object-contain" : "object-cover";
 

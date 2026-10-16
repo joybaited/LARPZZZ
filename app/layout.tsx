@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import { PillStyle } from "@/components/pillHover";
+import ViewportHUD from "@/components/ViewportHUD";
 
 export const metadata: Metadata = {
   title: "LARPZZZ",
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             rules a child of a clipping, transformed box. Here it is one
             sheet for every pill on the site. */}
         <PillStyle />
+        <ViewportHUD />
         {children}
       </body>
     </html>

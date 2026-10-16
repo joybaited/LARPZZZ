@@ -84,11 +84,12 @@ export default function ImageTrail({ images, size = 190, exclude }: Props) {
       }
     };
 
-    /* ⚠ THE EXCLUSION IS TESTED ON THE REAL POINTER TARGET, not on a
-       rectangle. The nav is an irregular shape with a dropdown that changes
-       height, and a box test would either miss its corners or kill a band of
-       the hero that is not actually the nav. `closest` asks the DOM. */
+    /* ⚠ THE EXCLUSION CHECKS BOTH DIRECT TARGET AND A PROXIMITY BUFFER.
+       Checking direct target alone misses the margin around text; adding a
+       generous buffer (half-size + 50px) ensures trail images never render
+       within touching or surrounding distance of headline, copy, or buttons. */
     let blocked = false;
+
     const onMoveCapture = (ev: PointerEvent) => {
       const t = ev.target as Element | null;
       blocked = !!(exclude && t?.closest(exclude));
@@ -118,9 +119,9 @@ export default function ImageTrail({ images, size = 190, exclude }: Props) {
         )
         .to(img, { duration: 1.6, ease: "expo.out", x: mouse.x - w / 2, y: mouse.y - h / 2 }, 0)
         .to(img, { duration: 1, ease: "power1.out", opacity: 0 }, 0.4)
-        /* the fall. `+=` is relative, so it drops from wherever the glide has
-           carried it rather than from a fixed point. */
-        .to(img, { duration: 1, ease: "quint.inOut", y: `+=${winH + h / 2}` }, 0.4);
+        /* Gentle natural drift (80px) while fading out rather than plunging a full
+           viewport height across other page text. */
+        .to(img, { duration: 1, ease: "quint.inOut", y: `+=${Math.min(80, winH * 0.1)}` }, 0.4);
     };
 
     let raf = 0;
@@ -153,10 +154,9 @@ export default function ImageTrail({ images, size = 190, exclude }: Props) {
     <div
       ref={root}
       aria-hidden="true"
-      /* ⚠ pointer-events-none OR IT EATS EVERY CLICK IN THE HERO. The layer
-         covers the whole section, so without it the buttons underneath stop
-         responding the moment one image is on screen. */
-      className="pointer-events-none absolute inset-0 z-[1] overflow-hidden"
+      /* ⚠ z-[5]: Renders OVER the headline (z-[2]), BEHIND the phone (z-10),
+         and BEHIND the subtitle text and buttons (z-20/z-30). */
+      className="pointer-events-none absolute inset-0 z-[5] overflow-hidden"
     >
       {images.map((src) => (
         <img

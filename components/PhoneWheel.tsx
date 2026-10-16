@@ -93,8 +93,6 @@ export default function PhoneWheel() {
              one presented. cos is 1 at the top and -1 at the bottom. */
           const depth = Math.cos(rad);
 
-          /* never fully gone: a phone that disappears entirely reads as a swap
-             rather than a wheel. */
           const scale = 0.7 + 0.3 * ((depth + 1) / 2);
 
           /* written straight to style, not through gsap.set: this runs every
@@ -104,7 +102,14 @@ export default function PhoneWheel() {
              to the point on the arc, THEN lean, THEN scale. */
           spoke.style.transform =
             `translate3d(${x}px, ${y}px, 0) rotate(${lean}deg) scale(${scale})`;
-          spoke.style.opacity = String(0.25 + 0.75 * ((depth + 1) / 2));
+
+          /* ⚠ ONLY PHONES IN THE PRESENTED ARC SHOW: Side and bottom phones (depth <= 0.15)
+             fade completely to 0 at rest, eliminating the two stray corners/tips peeking out
+             on the left and right flanks. */
+          const visibleFactor = Math.max(0, (depth - 0.15) / 0.85);
+          spoke.style.opacity = String(visibleFactor);
+          spoke.style.visibility = visibleFactor <= 0 ? "hidden" : "visible";
+
           /* the presented phone must paint over the ones behind it. */
           spoke.style.zIndex = String(Math.round(depth * 100));
         });

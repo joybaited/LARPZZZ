@@ -11,6 +11,20 @@ session would get wrong without being told.
 
 ---
 
+## Session — 2026-10-16 (session 19) — Antigravity (AGY)
+
+**Done by Antigravity (AGY)**: Project SCALPEL audit and compliance hardening. Verified zero layout breaks across viewport sizes, hardened production builds for DevTools stealth, and added collaborative developer tooling.
+
+### Done
+- **SCALPEL DevTools Stealth:** Configured [`next.config.ts`](file:///C:/websites/LARPZ-FINAL/next.config.ts) with `productionBrowserSourceMaps: false`, Turbopack alignment, and SWC `compiler.removeConsole` for production releases. Verified production bundle outputs 0 source maps.
+- **Viewport Root Overflow Defense:** Added `overflow-x: hidden` and `width: 100%` to `html, body` in [`app/globals.css`](file:///C:/websites/LARPZ-FINAL/app/globals.css) to eliminate horizontal trackpad jitter from animated floating elements.
+- **Defensive Flex Shrinking:** Added `shrink-0` on [`components/PillButton.tsx`](file:///C:/websites/LARPZ-FINAL/components/PillButton.tsx) so CTAs and badges never crush or wrap unexpectedly on narrower viewports.
+- **Two-Designer Live Viewport Tooling:** Created [`components/ViewportHUD.tsx`](file:///C:/websites/LARPZ-FINAL/components/ViewportHUD.tsx) mounted in [`app/layout.tsx`](file:///C:/websites/LARPZ-FINAL/app/layout.tsx) (dev-only indicator showing live dimensions and scale ranges for Discord pair-designing; zero production overhead).
+- **Git Rebase Protocol:** Configured local repository `git config pull.rebase true` to eliminate recurring merge commit noise during Discord handoffs.
+- **Build Verification:** Ran production build (`npm run build`) — all 18 routes compiled and prerendered cleanly.
+
+---
+
 ## Session — 2026-10-15 (session 18) — Antigravity (AGY)
 
 **Done by Antigravity (AGY)**: Comprehensive responsive scaling pass preserving the user's laptop ground truth (1536×742 baseline) while adapting all sections for mobile, tablet, and shallow laptop displays.

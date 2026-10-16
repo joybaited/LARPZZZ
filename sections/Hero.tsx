@@ -136,11 +136,9 @@ export const HERO = {
      18 files, webp, ~212KB the lot. */
   trail: {
     images: Array.from({ length: 18 }, (_, i) => `/images/cursor/${String(i + 1).padStart(2, "0")}.webp`),
-    size: 190,
-    /* ⚠ `.pill-btn` IS IN HERE BECAUSE THE HERO'S BUTTONS ARE <div>s.
-       They are <PriceEl> boxes, not <a> or <button>, so the tag selectors
-       miss them entirely and the trail would fire right over them. */
-    exclude: "nav, a, button, [role='button'], .pill-btn",
+    size: 110,
+    /* Exclude nav, buttons, and subtitle text (headline is allowed to be rendered over) */
+    exclude: "nav, .hero-stage-container > *, a, button, [role='button'], .pill-btn, .hero-mobile-content > p",
   },
 
   navLinks: {
@@ -216,11 +214,11 @@ export const HERO = {
       x: 35.5,
       y: 88.5,
       w: 13.5,
-      rise: 16,
-      drift: 9,
-      tilt: "2.2deg",
       rotate: "-7deg",
-      dur: "11s",
+      rise: 14,
+      drift: 8,
+      tilt: "2deg",
+      dur: "10s",
       delay: "-3s",
       z: 20,
     },
@@ -229,32 +227,45 @@ export const HERO = {
       src: "/images/sticker-lock.webp",
       alt: "",
       x: 71,
-      /* ⚠ IT SITS BEHIND THE PHONE, so only what clears the top bezel reads.
-         Lowering it hides more of it — that is the intent here, a deeper
-         tuck, but it is also why y and w have to be judged together rather
-         than one at a time. */
       y: 24,
       w: 14,
-      rise: 13,
-      drift: 7,
-      tilt: "1.8deg",
-      /* ⚠ A DIFFERENT PERIOD FROM THE BALLOONS, not a rounder number. At
-         11s and 9s the two would meet every 99s; the odd value keeps them
-         from ever syncing up into one shared beat, which is the thing that
-         makes a pair of floats read as a single animation. The negative
-         delay also starts it mid-cycle, so they are not aligned on load. */
-      dur: "8.5s",
-      delay: "-5s",
       rotate: "9deg",
-      /* ⚠ BEHIND THE PHONE. `HERO.art` renders at z-10, so under that is
-         behind it and over it is in front — the same scale the 3D canvas
-         used, which is why this number did not change when the model came
-         out.
-
-         5, not 0: the ground is -z-20, so a 0 would still clear it, but
-         leaving a gap means another sticker can later be slipped between
-         the two without renumbering this one. */
+      rise: 14,
+      drift: 8,
+      tilt: "2deg",
+      dur: "10s",
+      delay: "-3s",
       z: 5,
+    },
+    {
+      name: "screenshot-2026-10-15-132320",
+      src: "/images/sticker-screenshot-2026-10-15-132320.png",
+      alt: "",
+      x: 25.8,
+      y: 110.3,
+      w: 10,
+      rotate: "0deg",
+      rise: 14,
+      drift: 8,
+      tilt: "2deg",
+      dur: "10s",
+      delay: "-3s",
+      z: 25,
+    },
+    {
+      name: "screenshot-2026-10-15-132331",
+      src: "/images/sticker-screenshot-2026-10-15-132331.png",
+      alt: "",
+      x: 75.9,
+      y: 112.9,
+      w: 12.3,
+      rotate: "127deg",
+      rise: 14,
+      drift: 8,
+      tilt: "2deg",
+      dur: "10s",
+      delay: "-3s",
+      z: 25,
     },
   ],
 };
@@ -310,7 +321,7 @@ const PHONE: PhoneTune = {
   ...HERO.phone.parallax,
 };
 
-export default function Hero() {
+export default function Hero({ hideStickers = false }: { hideStickers?: boolean } = {}) {
   const { nav, headline: h } = HERO;
 
   return (
@@ -485,8 +496,8 @@ export default function Hero() {
             <PillButton
               fill={HERO.navLinks.ctaFill}
               color={HERO.navLinks.ctaColor}
-              className="whitespace-nowrap px-[clamp(16px,0.7rem+1vw,30px)] py-[clamp(8px,0.3rem+0.5vw,13px)] leading-none font-semibold"
-              style={{ fontSize: "clamp(15px, 0.65rem + 0.55vw, 21px)" }}
+              className="whitespace-nowrap px-[clamp(14px,0.55rem+0.7vw,22px)] py-[clamp(6px,0.22rem+0.35vw,9px)] leading-none font-semibold"
+              style={{ fontSize: "clamp(13px, 0.55rem + 0.45vw, 17px)" }}
             >
               {HERO.navLinks.cta}
             </PillButton>
@@ -605,7 +616,7 @@ export default function Hero() {
       */}
       {h.show && (
         <h1
-          className="absolute z-20 m-0"
+          className="hero-headline absolute z-[2] m-0"
           /* ⚠ THE FACE, CASE AND WEIGHT ARE STYLES NOW, NOT CLASSES. They
              were `font-display uppercase`; as classes they could not be
              tuned, and a template-literal Tailwind class generates no css at
@@ -633,13 +644,13 @@ export default function Hero() {
         </h1>
       )}
 
-      {/* stage-level elements. Desktop: rendered at measured coordinates; Mobile: in-flow stack */}
-      <div className="hidden lg:contents">
+      {/* stage-level elements. Desktop: rendered at measured coordinates above trail; Mobile: in-flow stack */}
+      <div className="hero-stage-container pointer-events-none absolute inset-0 z-20 hidden lg:block [&>*]:pointer-events-auto">
         {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
       </div>
 
       {/* Mobile/Tablet reflow: Subtitle and action buttons in natural flow */}
-      <div className="relative z-20 mt-auto flex flex-col items-center px-6 pt-6 pb-2 text-center lg:hidden">
+      <div className="hero-mobile-content relative z-20 mt-auto flex flex-col items-center px-6 pt-6 pb-2 text-center lg:hidden">
         <p className="max-w-[34ch] font-sans text-[clamp(15px,0.9rem+0.5vw,18px)] leading-[1.4] text-[#3D065F]">
           Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.
         </p>
@@ -679,7 +690,7 @@ export default function Hero() {
 
           `pointer-events-none` so a sticker over the phone never eats a drag,
           and `aria-hidden` because they are decoration. */}
-      {HERO.stickers?.map((st) => (
+      {!hideStickers && HERO.stickers?.map((st) => (
         <div
           key={st.name}
           aria-hidden="true"
