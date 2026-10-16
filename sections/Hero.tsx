@@ -226,7 +226,7 @@ export const HERO = {
       name: "lock",
       src: "/images/sticker-lock.webp",
       alt: "",
-      x: 71,
+      x: 68.5,
       y: 24,
       w: 14,
       rotate: "9deg",
