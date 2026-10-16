@@ -53,7 +53,7 @@ const CARDS: CardData[] = [
   {
     heading: ["Bake Fresh", "Cakes"],
     copy: "Bake bread for local bakery shop guests and let them eat it warm in the morning — entirely.",
-    media: { kind: "video", src: "/video/idek.webm" },
+    media: { kind: "video", src: "/video/idek.webm", down: "6cqw" },
   },
   {
     heading: ["Yellow Banana", "Slices"],
