@@ -171,7 +171,7 @@ export default function HowItWorks({
       <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center">
         <ul
           role="list"
-          className="m-0 grid w-full list-none grid-cols-1 sm:grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:h-full lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
+          className="m-0 grid w-full list-none grid-cols-1 sm:grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
         >
           {/* The centre column. It is the grid's middle track — the `1.066fr`
               in `grid-cols-[1fr_1.066fr_1fr]` that holds the two card columns
@@ -234,7 +234,7 @@ export default function HowItWorks({
               key={c.id}
               /* max-lg keeps a sane shape while stacked; at lg the row height
                  governs and the ratio is whatever the split gives. */
-              className={`${PLACE[i]} flex flex-col overflow-hidden rounded-[clamp(20px,2.778vw,56px)] bg-grape p-[clamp(18px,2.1vw,32px)] text-violet max-sm:aspect-auto max-sm:min-h-[220px] sm:max-lg:aspect-[347/378]`}
+              className={`${PLACE[i]} flex flex-col overflow-hidden rounded-[clamp(20px,2.778vw,56px)] bg-grape p-[clamp(18px,2.1vw,32px)] text-violet max-sm:aspect-auto max-sm:min-h-[220px] sm:max-lg:aspect-[347/378] lg:aspect-[381/265]`}
             >
               {/* ⚠ THEIR TYPE AND RADIUS ARE PURE VIEWPORT FUNCTIONS, NO
                   CONSTANT. Fitted across four widths: font = w/60 (1.667vw,
