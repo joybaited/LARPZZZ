@@ -166,12 +166,12 @@ export default function HowItWorks({
   hideStickers?: boolean;
 } = {}) {
   return (
-    <Section id="how-it-works" heading="How it works" className="bg-[#f3ddff] text-grape">
+    <Section id="how-it-works" bleed heading="How it works" className="bg-[#f3ddff] text-grape">
       {/* ⚠ min-h-[var(--section-fill)] with lg:h-[var(--section-fill)] so desktop holds the exact measured ratio while mobile expands naturally without clipping. */}
-      <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center">
+      <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center px-(--gutter)">
         <ul
           role="list"
-          className="m-0 grid w-full list-none grid-cols-1 sm:grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,16px)] p-0 max-lg:h-auto lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
+          className="m-0 grid w-full max-w-[1560px] list-none grid-cols-1 sm:grid-cols-2 gap-[clamp(12px,0.5rem+0.6vw,20px)] p-0 max-lg:h-auto lg:grid-cols-[1fr_1.066fr_1fr] lg:grid-rows-2"
         >
           {/* The centre column. It is the grid's middle track — the `1.066fr`
               in `grid-cols-[1fr_1.066fr_1fr]` that holds the two card columns
