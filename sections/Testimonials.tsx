@@ -171,10 +171,29 @@ export default function Testimonials({
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
     <Section id="testimonials" bleed heading="Testimonials" className="bg-[#efcfff] text-[#3D065F]">
-      {/* 4K & Ultrawide Stage Containment: bounds stickers and layout padding to 120rem max-width while marquee tracks travel seamlessly full-bleed */}
+      {/* ⚠ RATIO-LOCKED STICKER STAGE. The sticker x/y are percentages, and a
+          percentage is only proportional while the box it measures is the same
+          SHAPE. On `inset-0` this box took the section's aspect ratio, which
+          changes with every window — so 12.5%/9.1% sat in negative space on the
+          1536x742 baseline and landed on the heading at 1366x640. Root-font
+          scaling cannot fix that; it scales sizes, not coordinates.
+          Locked to the baseline ratio (1536/742 = 2.07) and fitted inside the
+          section like a video: wider window letterboxes at the sides, narrower
+          one leaves space top and bottom. Every percentage inside is then
+          geometrically identical to the baseline at every viewport, and
+          /tuner output stays valid at any window size.
+          Centred both axes — `inset-0` is replaced by the inset-block-0 +
+          margin auto pair, so the stage sits in the middle of the section
+          rather than pinned to its top. */}
       <div
         ref={stageRef}
-        className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] px-(--gutter)"
+        className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 px-(--gutter)"
+        style={{
+          aspectRatio: "1536 / 742",
+          width: "min(var(--canvas-max-width, 120rem), 100vw, calc(var(--section-fill) * 2.0701))",
+          maxWidth: "100vw",
+          marginBlock: "auto",
+        }}
       >
         {/* Floating Stickers Layer — quarantined to desktop (hidden lg:block) with z-[5] behind cards and heading */}
         {!hideStickers && TESTIMONIALS_STICKERS.map((st) => (
