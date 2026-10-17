@@ -81,8 +81,8 @@ export type PriceEl = {
   /* box/line/ellipse only, % of card. text hugs its content. */
   w?: number;
   h?: number;
-  /* px */
-  size?: number;
+  /* px or fluid css clamp */
+  size?: number | string;
   radius?: number;
   /* 0-100 */
   opacity?: number;
@@ -135,9 +135,9 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
     name: "Card 1",
     els: [
       { name: "text 1", kind: "text", text: "Starter", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
-      { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "7 days", x: 50, y: 23.5, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60, show: false },
-      { name: "box 5", kind: "box", text: "Get Started", btn: true, x: 50, y: 33.1, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "box 5", kind: "box", text: "Get Started", btn: true, x: 50, y: 33.1, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
       { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 60.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 73.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
@@ -148,9 +148,9 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
     name: "Card 2",
     els: [
       { name: "text 1", kind: "text", text: "Monthly", x: 50, y: 9.0, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
-      { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "/month", x: 50, y: 23.6, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
-      { name: "box 5", kind: "box", text: "Try It Free", btn: true, x: 50, y: 33.5, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "box 5", kind: "box", text: "Try It Free", btn: true, x: 50, y: 33.5, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
       { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 57.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 67.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
@@ -162,9 +162,9 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
     name: "Card 3",
     els: [
       { name: "text 1", kind: "text", text: "Lifetime", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
-      { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: 62, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 3", kind: "text", text: "once", x: 50, y: 22.2, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
-      { name: "box 5", kind: "box", text: "Buy Lifetime", btn: true, x: 50, y: 33.2, w: 86, h: 8.8, size: 18, radius: 999, weight: 500, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "box 5", kind: "box", text: "Buy Lifetime", btn: true, x: 50, y: 33.2, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
       { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 56.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
       { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 64.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
@@ -184,7 +184,7 @@ export const PRICING_STICKERS = [
     y: 20.6,
     w: 12.6,
     rotate: -14,
-    z: 25,
+    z: 5,
   },
   {
     id: "sticker-1792129480539",
@@ -194,7 +194,7 @@ export const PRICING_STICKERS = [
     y: 20.2,
     w: 9.2,
     rotate: -27,
-    z: 25,
+    z: 5,
   },
   {
     id: "sticker-1792129500616",
@@ -204,26 +204,26 @@ export const PRICING_STICKERS = [
     y: 22.1,
     w: 11,
     rotate: 23,
-    z: 25,
+    z: 5,
   },
 ];
 
 export default function Pricing({ hideStickers = false }: { hideStickers?: boolean } = {}) {
   return (
     <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
-      <div className="flex min-h-[var(--section-fill)] items-center justify-center py-8 lg:items-end lg:py-0">
+      <div className="relative z-10 @container flex min-h-[var(--section-fill)] items-center justify-center py-8 lg:py-0">
         <ul
           role="list"
-          className="m-0 flex w-full max-w-[1200px] list-none flex-col items-center gap-6 p-0 lg:flex-row lg:items-stretch lg:justify-center lg:gap-[clamp(24px,4.2vw,60px)]"
+          className="@container [container-type:inline-size] m-0 flex w-full max-w-[min(120rem,calc(1200px*var(--scale-factor,1)))] list-none flex-col items-center gap-6 p-0 lg:flex-row lg:items-stretch lg:justify-center lg:gap-[clamp(24px,4.2vw,60px)]"
         >
           {CARDS.map((card) => (
             <li
               key={card.name}
-              /* 640 is the desktop card. Stacked, that is three full screens
-                 of empty black, so the height is only asserted once the row
-                 is a row. */
+              /* Desktop card height scaled proportionally via QDPA and bounded by
+                 --section-fill to eliminate laptop vertical overflow (e.g. 1536x742).
+                 Stacked on mobile via aspect ratio. */
               style={card.fill ? { background: card.fill } : undefined}
-              className="w-full max-w-[380px] min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape aspect-[360/500] sm:aspect-[360/480] lg:max-w-none lg:aspect-auto lg:h-[640px]"
+              className="relative z-10 w-full max-w-[380px] min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape aspect-[360/500] sm:aspect-[360/480] lg:max-w-none lg:aspect-auto lg:h-[min(calc(640px*var(--scale-factor,1)),calc(var(--section-fill)-2rem))]"
             >
               {/* the inner <article>. `relative` is what the elements' x/y
                   percentages resolve against, so they are card-relative and
@@ -238,27 +238,31 @@ export default function Pricing({ hideStickers = false }: { hideStickers?: boole
         </ul>
       </div>
 
-      {/* Floating Stickers Layer */}
-      {!hideStickers && PRICING_STICKERS.map((st) => (
-        <div
-          key={st.id}
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          style={{
-            left: `${st.x}%`,
-            top: `${st.y}%`,
-            width: `${st.w}%`,
-            zIndex: st.z ?? 25,
-            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-          }}
-        >
-          <img
-            src={st.src}
-            alt={st.name}
-            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-          />
+      {/* Floating Stickers Layer — Stage-isolated within 120rem canvas; quarantined to desktop (hidden lg:block) at z-[5] behind cards to prevent text/CTA obstruction */}
+      {!hideStickers && (
+        <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] hidden lg:block z-[5]">
+          {PRICING_STICKERS.map((st) => (
+            <div
+              key={st.id}
+              aria-hidden="true"
+              className="pointer-events-none absolute hidden lg:block z-[5]"
+              style={{
+                left: `${st.x}%`,
+                top: `${st.y}%`,
+                width: `${st.w}%`,
+                zIndex: st.z ?? 5,
+                transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+              }}
+            >
+              <img
+                src={st.src}
+                alt={st.name}
+                className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+              />
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </Section>
   );
 }

@@ -71,6 +71,13 @@ export const PILL_CSS = `
               opacity 0.275s cubic-bezier(0.4, 1.35, 0.5, 0.97);
 }
 
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 /* ⚠ THE HOLDER MUST CLIP, AND THAT IS WHAT EATS DESCENDERS. The roll needs
    overflow hidden, but a button set in leading-none gives the holder a line
    box exactly the font size - and glyphs do not fit in their font size.
@@ -79,14 +86,16 @@ export const PILL_CSS = `
    2px short at the top.
 
    A line-height of 1.5 is the floor that clears ascender and descender at any
-   size. Padding would not work, because padding is inside the clip too. The
-   button's own leading-none still governs the BUTTON's height, so this
-   changes the type's breathing room and not the pill's geometry. */
+   size. Stated in em so it tracks the type at every button size. */
 .pill-btn__holder {
   position: relative;
-  display: flex;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   overflow: hidden;
   line-height: 1.5;
+  height: 1.5em;
 }
 /* Same asymmetry as the fill: spring in, ease out. With the overshoot curve
    on the way back the two labels wobble past each other at the hand-off and
@@ -94,8 +103,14 @@ export const PILL_CSS = `
    the text has further to travel. */
 .pill-btn__main,
 .pill-btn__hover {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   white-space: nowrap;
+  width: 100%;
+  height: 1.5em;
+  line-height: 1.5;
   transition: transform 0.4s cubic-bezier(0.33, 0, 0.67, 1);
 }
 .pill-btn:hover .pill-btn__main,

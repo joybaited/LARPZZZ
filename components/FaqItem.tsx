@@ -122,22 +122,25 @@ export default function FaqItem({
          open width straight off the section. Two steps, in order:
 
          1. clamp the width to the room actually left of the edge, so it never
-            exceeds the section;
+            exceeds the section stage;
          2. if the clamp would squeeze it below a readable measure, slide the
             pill LEFT by the shortfall instead — it comes inside rather than
             getting narrow.
 
-         The section, not the viewport: the pill is placed against the section's
-         box and `overflow-hidden` there is what would clip it. */
-      const edge = d.closest("section")?.getBoundingClientRect();
+         The desktop stage, not the document: the pill is placed against the 120rem
+         stage and `overflow-hidden` there is what would clip it.
+         On mobile (< 1024px), the pill is centered in flex flow, so slide remains 0. */
+      const container = d.closest("[data-faq-wrap]");
+      const edge = container?.getBoundingClientRect();
       const GUTTER = 24;
-      const maxW = edge ? Math.max(280, edge.width - GUTTER * 2) : 340;
+      const viewportMaxW = typeof window !== "undefined" ? Math.min(520, window.innerWidth - 48) : 520;
+      const maxW = edge ? Math.max(280, Math.min(viewportMaxW, edge.width - GUTTER * 2)) : viewportMaxW;
       let slide = 0;
-      /* ⚠ NEVER NARROWER THAN THE CLOSED PILL. A configured openW below the
-         hugged width squeezes the QUESTION onto two lines as the pill opens and
-         snaps it back to one as it closes — the text break. The closed width is
-         the floor, so opening can only ever widen. */
-      let full = Math.min(Math.max(openW ?? d.parentElement!.clientWidth, r0.width), maxW);
+
+      /* ⚠ NEVER NARROWER THAN THE CLOSED PILL. Clamped to min(520px, 100vw - 48px)
+         so expanded pills never overflow on 1024px or compact screens. */
+      const baseOpenW = openW ? Math.min(openW, viewportMaxW) : (d.parentElement ? d.parentElement.clientWidth : viewportMaxW);
+      let full = Math.min(Math.max(baseOpenW, r0.width), maxW);
 
       if (edge) {
         const room = edge.right - r0.left - GUTTER;
@@ -152,6 +155,13 @@ export default function FaqItem({
             slide = -(full - room);
           }
         }
+
+        /* Protect against sliding past left gutter */
+        const minLeft = edge.left + GUTTER;
+        if (r0.left + slide < minLeft) {
+          slide = minLeft - r0.left;
+          full = Math.max(r0.width, edge.right - GUTTER - (r0.left + slide));
+        }
       }
 
       d.open = true;
@@ -164,10 +174,16 @@ export default function FaqItem({
       gsap.set(d, { width: full });
       const grown = b.scrollHeight;
 
+      /* Subpixel border-radius via QDPA --px bridge */
+      const pxVal = typeof window !== "undefined"
+        ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--px")) || 1
+        : 1;
+      const openRadius = Math.round(28 * (Number.isFinite(pxVal) && pxVal > 0 ? pxVal : 1));
+
       gsap
         .timeline({ defaults: { duration: 0.62, ease: "expo.out" } })
         .fromTo(b, { height: 0 }, { height: grown }, 0)
-        .fromTo(d, { width: closedW.current }, { rotate: 0, borderRadius: 28, width: full, x: slide }, 0);
+        .fromTo(d, { width: closedW.current }, { rotate: 0, borderRadius: openRadius, width: full, x: slide }, 0);
 
       onToggleRef.current?.(true, grown);
     }
@@ -193,24 +209,24 @@ export default function FaqItem({
          out to the container's full measure. `w-fit` is the resting state and
          GSAP writes an inline width over it during the tween — the inline
          value is cleared on close so this takes over again. */
-      style={{ fontSize: `${size}px` }}
+      style={{ fontSize: `calc(${size} * var(--px, 1px))` }}
       /* ⚠ THE PILL IS THE INVERSE OF THE GROUND, NOT A TINT OF IT. It was
          `bg-paper/60` with `border-ink/15` — alpha over white, which against
          the purple ground reads as washed lilac with no edge rather than as a
          pill. Solid `#3D065F` with `#EAC2FF` text is the hero nav's own
          treatment (purple bar, pink labels), so the two sections match.
          No border: at full opacity the fill is the edge. */
-      className="group w-fit max-w-full overflow-hidden rounded-[999px] bg-[#3D065F] text-[#EAC2FF] px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-[#4d0878] open:bg-[#4d0878]"
+      className="group w-fit max-w-[min(520px,calc(100vw-48px))] overflow-hidden rounded-[999px] bg-[#3D065F] text-[#EAC2FF] px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-[#4d0878] open:bg-[#4d0878]"
     >
       <summary
         onClick={toggle}
         /* tighter than a card's padding — a pill reads as a pill only if the
-           row is close to the text's own height. */
+           row is close to the text's own height. Touch-friendly min-h-[48px] */
         /* ⚠ THE + SITS BESIDE THE TEXT, NOT AT THE FAR EDGE. justify-between
            on a hugged pill is a no-op, but the moment the width tweens open it
            would fling the + to the right edge mid-animation. `mr-auto` on the
            question does the same job only once the pill is wide. */
-        className="flex cursor-pointer list-none items-center gap-[1.2em] py-[0.8em] [&::-webkit-details-marker]:hidden"
+        className="flex min-h-[48px] cursor-pointer list-none items-center gap-[1.2em] py-[0.8em] [&::-webkit-details-marker]:hidden"
       >
         {/* ⚠ ONE LINE, ALWAYS. The pill's width changes throughout the tween,
             so a wrappable question re-flows mid-animation and visibly jumps

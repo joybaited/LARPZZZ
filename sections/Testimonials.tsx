@@ -77,11 +77,9 @@ function Card({ t }: { t: Testimonial }) {
     /* ⚠ shrink-0 — a flex item defaults to shrinking to fit, which would
        compress the cards onto the screen, make the travel distance wrong and
        break the seam. The row depends on being wider than what holds it. */
-    /* ⚠ A FIXED HEIGHT, LZ-2 1:1. Sizing by content instead would make every
-       card a different height as soon as real quotes of different lengths
-       arrive — and with two rows travelling past each other, a ragged row
-       edge is the first thing the eye catches. The quote can then grow into
-       the room `justify-between` leaves. */
+    /* ⚠ A BOUNDED HEIGHT (SCALPEL QDPA): Sized to prevent vertical overflow on shallow
+       viewports (e.g. 1536x742) while preserving proportional growth on tall displays.
+       The height is bounded to fit two rows inside var(--section-fill) minus the gap. */
     /* ⚠ NOT justify-between. With a fixed height that pushes the quote to the
        top and the footer to the floor, leaving a hole in the middle on any
        quote shorter than the card. The quote sits at the top, the footer gets
@@ -90,12 +88,12 @@ function Card({ t }: { t: Testimonial }) {
        treatment as the FAQ pills and the hero nav. It was `bg-paper text-ink`
        on a `bg-deep` section; the section is now the hero's `#EAC2FF` ground,
        so a white card would glare against it. */
-    <li className="flex h-[clamp(200px,12rem+6.5vw,360px)] w-[clamp(280px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(20px,1.2rem+1.4vw,36px)] text-[#EAC2FF]">
+    <li className="flex h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)] w-[clamp(280px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(20px,1.2rem+1.4vw,36px)] text-[#EAC2FF]">
       {/* scales with the card, so the quote fills it rather than floating in
           it. line-clamp keeps a long one from pushing the footer out. */}
       {/* 4, not 5: at this height a 5th line is half-cut by the card's floor —
           the clamp has to stop at what actually fits, not at what overflows. */}
-      <p className="line-clamp-4 text-[clamp(16px,0.95rem+0.7vw,24px)] leading-[1.35]">
+      <p className="line-clamp-4 text-[clamp(15px,min(0.95rem+0.7vw,2.2vh),24px)] leading-[1.35]">
         {t.quote}
       </p>
       {/* ⚠ THE NAME IS THE CARD'S HEADING, AND IT IS THE ONLY MEGION HERE.
@@ -109,7 +107,7 @@ function Card({ t }: { t: Testimonial }) {
           The size is in `em`, so it scales off the footer's own clamp rather
           than needing a second clamp of its own. */}
       <footer className="mt-auto pt-[clamp(12px,0.6rem+0.6vw,20px)] text-[clamp(14px,0.8rem+0.3vw,17px)]">
-        <p className="font-display text-[1.15em] leading-[1.1] uppercase">{t.name}</p>
+        <p className="font-display text-[1.15em] leading-[1.1] uppercase tracking-[0.02em]">{t.name}</p>
         {t.detail && <p className="opacity-80">{t.detail}</p>}
       </footer>
     </li>
@@ -152,47 +150,63 @@ export const TESTIMONIALS_STICKERS = [
     id: "sticker-1792129229376",
     name: "screenshot-2026-10-15-135800",
     src: "/images/sticker-screenshot-2026-10-15-135800.png",
-    x: 27.1,
+    x: 12.5,
     y: 9.1,
-    w: 13.8,
+    w: 12.0,
     rotate: 0,
-    z: 25,
+    z: 5,
   },
 ];
 
-export default function Testimonials({ hideStickers = false }: { hideStickers?: boolean } = {}) {
+export default function Testimonials({
+  hideStickers = false,
+  stageRef,
+  children,
+}: {
+  hideStickers?: boolean;
+  stageRef?: React.Ref<HTMLDivElement>;
+  children?: React.ReactNode;
+} = {}) {
   return (
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
     <Section id="testimonials" bleed heading="Testimonials" className="bg-[#efcfff] text-[#3D065F]">
-      <div className="flex min-h-[var(--section-fill)] flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
+      {/* 4K & Ultrawide Stage Containment: bounds stickers and layout padding to 120rem max-width while marquee tracks travel seamlessly full-bleed */}
+      <div
+        ref={stageRef}
+        className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] px-(--gutter)"
+      >
+        {/* Floating Stickers Layer — quarantined to desktop (hidden lg:block) with z-[5] behind cards and heading */}
+        {!hideStickers && TESTIMONIALS_STICKERS.map((st) => (
+          <div
+            key={st.id}
+            aria-hidden="true"
+            className="pointer-events-none absolute hidden lg:block z-[5]"
+            style={{
+              left: `${st.x}%`,
+              top: `${st.y}%`,
+              width: `${st.w}%`,
+              zIndex: st.z ?? 5,
+              transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+            }}
+          >
+            <img
+              src={st.src}
+              alt={st.name}
+              className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+            />
+          </div>
+        ))}
+        {children}
+      </div>
+
+      <div className="relative z-10 w-full flex min-h-[var(--section-fill)] flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
         <Row />
         <div className="hidden sm:block">
           <Row reverse />
         </div>
       </div>
-
-      {/* Floating Stickers Layer */}
-      {!hideStickers && TESTIMONIALS_STICKERS.map((st) => (
-        <div
-          key={st.id}
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          style={{
-            left: `${st.x}%`,
-            top: `${st.y}%`,
-            width: `${st.w}%`,
-            zIndex: st.z ?? 25,
-            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-          }}
-        >
-          <img
-            src={st.src}
-            alt={st.name}
-            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-          />
-        </div>
-      ))}
     </Section>
   );
 }
+

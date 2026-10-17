@@ -80,23 +80,51 @@
   --text-1:    clamp(2.75rem, 1.08rem + 4.29vw, 7.5rem);
 }
 
-/* ⚠ NO `scrollbar-gutter: stable` HERE. It reserved 15px down the right of
-   every page whether or not a scrollbar was there, so a full-bleed section was
-   15px narrower than the viewport and everything centred in it sat 7.5px left
-   of true centre — session 6 recorded exactly that on /faq and it is what
-   threw the hero off. The gutter is gone; the layout is the real viewport
-   width now.
+/* ==========================================================================
+   SCALPEL QUANTUM DYNAMIC PROPORTIONAL ARCHITECTURE (QDPA) + BASEMENT CEILING
+   Standard: SCALPEL-FE-003 & SCALPEL-FE-004
+   ========================================================================== */
 
-   What it was for: stopping a layout shift when a page grows past one
-   screenful and the scrollbar appears. On this site every section is 100svh
-   and the page always scrolls, so the scrollbar is always there anyway and
-   there is nothing to stabilise. A workbench route that does NOT scroll (/faq,
-   /hero) now matches the real page instead of differing from it by 15px. */
+/* 1. Mobile Quarantine (< 1024px): 100% native 16px baseline */
+:root {
+  font-size: 100%;
+  --scale-factor: 1;
+  --px: 1px;
+  --canvas-max-width: 100%;
+}
+
+/* 2. Desktop Proportional Engine (>= 1024px) */
+@media (min-width: 1024px) {
+  :root {
+    /* Dual-Axis Dynamic Root Fluid Anchor (DRFA)
+       Ground truth baseline: 1536x742 / 1440x900
+       Width Divisor:  1536 / 16 = 96
+       Height Divisor: 742 / 16 = 46.375
+       Shortest-Side Safety: min(wFactor, hFactor) stops vertical clipping */
+    --dpa-w-factor: calc(100vw / 96);
+    --dpa-h-factor: calc(100vh / 46.375);
+    --dpa-dual-axis: min(var(--dpa-w-factor), var(--dpa-h-factor));
+
+    /* Bounded between 14px (0.875rem) and 22px (1.375rem) */
+    font-size: clamp(0.875rem, var(--dpa-dual-axis), 1.375rem);
+
+    /* Computed Scale Variables */
+    --root-font-size-px: clamp(14px, min(calc(100vw / 96), calc(100vh / 46.375)), 22px);
+    --scale-factor: calc(var(--root-font-size-px) / 16px);
+
+    /* Proportional Pixel Bridge */
+    --px: calc(1rem / 16);
+
+    /* Basement Studio 120rem (1920px) Canvas Ceiling */
+    --canvas-max-width: 120rem;
+    --content-max: min(120rem, 92vw);
+  }
+}
 
 html,
 body {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {

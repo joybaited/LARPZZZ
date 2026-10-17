@@ -236,7 +236,8 @@ export default function PricingTuner() {
            being measured with the push still applied. */
         const grow = (e.clientX - d.startX) * ux + (e.clientY - d.startY) * uy;
         const factor = Math.max(0.15, 1 + grow / d.diag);
-        set(d.c, d.i, { size: +Math.min(400, Math.max(4, (d.el.size ?? 16) * factor)).toFixed(1) });
+        const prevSize = typeof d.el.size === "number" ? d.el.size : parseFloat(String(d.el.size)) || 16;
+        set(d.c, d.i, { size: +Math.min(400, Math.max(4, prevSize * factor)).toFixed(1) });
         setGuides([]);
         return;
       }
@@ -419,7 +420,7 @@ ${c.els.map((e) => {
                           height: el.h ? `${el.h}%` : undefined,
                           transform: `translate(-50%, -50%) rotate(${el.rotate ?? 0}deg)`,
                           /* the frame must measure like the text it wraps */
-                          fontSize: `${el.size ?? 16}px`,
+                          fontSize: typeof el.size === "string" ? el.size : `${el.size ?? 16}px`,
                           fontWeight: el.weight ?? 400,
                           letterSpacing: `${el.tracking ?? 0}em`,
                           textTransform: el.caps ? "uppercase" : undefined,

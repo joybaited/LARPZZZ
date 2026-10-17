@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" data-approach="qdpa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCALPEL | Responsive Scaling Architecture Testbed</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Controller Bar (Always Screen-Space Fixed) -->
+  <header class="controller-bar unscaled-scope" data-unscaled-scope="true">
+    <div class="brand">
+      <span class="brand-badge">SCALPEL</span>
+      <span class="brand-title">Architecture Testbed (SCALPEL-FE-003)</span>
+    </div>
+
+    <!-- Approach Selector -->
+    <div class="control-group">
+      <span class="control-label">Scaling Mode:</span>
+      <div class="pill-group" id="approachPills">
+        <button class="pill" data-mode="lazy-zoom" title="Approach 1: CSS transform scale wrapper">
+          1. Lazy Zoom (scale)
+        </button>
+        <button class="pill" data-mode="css-zoom" title="Approach 1B: CSS zoom property">
+          1B. CSS zoom
+        </button>
+        <button class="pill" data-mode="fluid-tokens" title="Approach 2: Pure Fluid Tokens (clamp only)">
+          2. Fluid Tokens
+        </button>
+        <button class="pill active" data-mode="qdpa" title="Approach 3: SCALPEL Quantum Dynamic Proportional Architecture">
+          3. SCALPEL QDPA (Master)
+        </button>
+      </div>
+    </div>
+
+    <!-- Viewport Preset Selector -->
+    <div class="control-group">
+      <span class="control-label">Simulate Display:</span>
+      <select id="viewportPresetSelect" class="preset-select">
+        <option value="native">Native Window (Actual Screen)</option>
+        <option value="laptop-1440">Laptop Standard (1440 × 900)</option>
+        <option value="laptop-1366">Budget Laptop / Short Fold (1366 × 640)</option>
+        <option value="desktop-1080">Desktop 1080p (1920 × 1080)</option>
+        <option value="desktop-1440">Desktop 1440p QHD (2560 × 1440)</option>
+        <option value="desktop-4k">Desktop 4K UHD (3840 × 2160)</option>
+        <option value="ultrawide-21-9">Ultrawide 21:9 (3440 × 1440)</option>
+        <option value="mobile-iphone">Mobile iPhone (390 × 844)</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Viewport Simulation Frame Container -->
+  <div class="simulation-outer" id="simulationOuter">
+    
+    <!-- Scalable Root Stage -->
+    <div class="scalable-stage" id="scalableStage">
+      
+      <!-- DESKTOP MASTER LAYOUT (>= 1024px) -->
+      <div class="layout-desktop-only">
+        <div class="supreme-viewport">
+          <main class="supreme-canvas">
+
+            <!-- Hero & Diagnostic Header -->
+            <section class="hero-block">
+              <div class="hero-header-row flex-shield">
+                <div class="hero-text-col">
+                  <div class="badge-row no-shrink">
+                    <span class="badge badge-primary">SCALPEL Standard</span>
+                    <span class="badge badge-mode" id="activeModeBadge">Approach 3: QDPA</span>
+                    <span class="badge badge-axis" id="limitingAxisBadge">Axis: Dual Lock</span>
+                  </div>
+                  <h1 class="hero-title">Universal Proportional Scaling</h1>
+                  <p class="hero-subtitle">
+                    Preserving the laptop layout across 4K & Ultrawides without breaking portals, fixed overlays, or ClearType fonts.
+                  </p>
+                </div>
+
+                <div class="hero-metrics-pill no-shrink">
+                  <div class="metric-mini">
+                    <span class="metric-mini-label">Root Base</span>
+                    <strong class="metric-mini-val" id="heroRootFontSize">16.0px</strong>
+                  </div>
+                  <div class="metric-divider"></div>
+                  <div class="metric-mini">
+                    <span class="metric-mini-label">Scale Factor</span>
+                    <strong class="metric-mini-val text-accent" id="heroScaleFactor">1.000x</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Interactive Proof Testing Lab (The 4 Traps) -->
+            <section class="test-lab-grid">
+              
+              <!-- Card 1: Radix / Floating UI Portal Test -->
+              <article class="test-card">
+                <div class="card-head">
+                  <span class="card-tag">Trap 1: Broken Portals</span>
+                  <h3 class="card-title">Floating Coordinates & Dropdown Test</h3>
+                </div>
+                <p class="card-desc">
+                  Click the button below to open a floating dropdown. In <strong>Lazy Zoom</strong>, watch the menu drift 50px–150px away due to transformed coordinates. In <strong>QDPA</strong>, it aligns with subpixel precision.
+                </p>
+                
+                <div class="card-action-row">
+                  <button class="btn btn-primary" id="btnTestDropdown">
+                    <span>Open Floating Dropdown</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </button>
+                </div>
+
+                <div class="telemetry-box" id="portalTelemetry">
+                  <div class="telemetry-row">
+                    <span>Trigger Rect:</span>
+                    <span class="mono" id="triggerCoords">x: 0, y: 0</span>
+                  </div>
+                  <div class="telemetry-row">
+                    <span>Portal Rect:</span>
+                    <span class="mono" id="portalCoords">x: 0, y: 0</span>
+                  </div>
+                  <div class="telemetry-row font-bold">
+                    <span>Coordinate Drift:</span>
+                    <span class="mono text-success" id="portalDrift">ΔX: 0px, ΔY: 0px (Zero Drift)</span>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Card 2: Fixed Position Containment Trap -->
+              <article class="test-card">
+                <div class="card-head">
+                  <span class="card-tag">Trap 2: Fixed Overlays</span>
+                  <h3 class="card-title">Modal Backdrop & Containing Block</h3>
+                </div>
+                <p class="card-desc">
+                  Trigger a fullscreen modal. In <strong>Lazy Zoom</strong>, CSS Transforms Level 1 §3.1 traps <code>position: fixed</code> inside the container, failing to cover the viewport. In <strong>QDPA</strong>, it covers the true screen.
+                </p>
+                
+                <div class="card-action-row">
+                  <button class="btn btn-secondary" id="btnOpenModal">
+                    <span>Trigger Fullscreen Modal</span>
+                  </button>
+                </div>
+
+                <div class="telemetry-box">
+                  <div class="telemetry-row">
+                    <span>Backdrop Scope:</span>
+                    <span class="mono" id="backdropScopeLabel">Full Screen Viewport</span>
+                  </div>
+                  <div class="telemetry-row font-bold">
+                    <span>Containing Block:</span>
+                    <span class="mono text-success" id="containingBlockLabel">Initial Containing Block (Window)</span>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Card 3: Subpixel ClearType & Hairline Borders -->
+              <article class="test-card">
+                <div class="card-head">
+                  <span class="card-tag">Trap 3: Font Blur</span>
+                  <h3 class="card-title">DirectWrite / Subpixel Rendering</h3>
+                </div>
+                <p class="card-desc">
+                  Inspect font rasterization and 1px borders. Lazy Zoom triggers GPU texture bilinear filtering and strips ClearType. QDPA preserves native vector subpixel rasterization.
+                </p>
+
+                <div class="font-specimen-box">
+                  <div class="hairline-border-demo">
+                    <span>1px Hairline Border Box</span>
+                  </div>
+                  <div class="specimen-text-sm">Small 11px Micro-Label: ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789</div>
+                  <div class="specimen-text-base">Regular 14px Text: The quick brown fox jumps over the lazy dog.</div>
+                </div>
+
+                <div class="telemetry-box">
+                  <div class="telemetry-row">
+                    <span>Rasterizer Pipeline:</span>
+                    <span class="mono" id="rasterPipelineLabel">DirectWrite / CoreText Vector</span>
+                  </div>
+                  <div class="telemetry-row font-bold">
+                    <span>Subpixel Antialiasing:</span>
+                    <span class="mono text-success" id="subpixelAntialiasLabel">Enabled (RGB ClearType Active)</span>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Card 4: Ultrawide & Fold Cutoff Safety -->
+              <article class="test-card">
+                <div class="card-head">
+                  <span class="card-tag">Trap 4: Vertical Cutoff</span>
+                  <h3 class="card-title">Dual-Axis Fold Protection</h3>
+                </div>
+                <p class="card-desc">
+                  On 21:9 ultrawides or short laptop viewports (e.g. 1366x768 with browser toolbars), scaling solely by width pushes footer actions below the fold. QDPA's Dual-Axis Lock prevents fold blowout.
+                </p>
+
+                <div class="fold-status-indicator" id="foldStatusIndicator">
+                  <span class="fold-dot bg-success"></span>
+                  <span class="fold-text font-bold" id="foldStatusText">100% Above Screen Fold (Safe)</span>
+                </div>
+
+                <div class="telemetry-box">
+                  <div class="telemetry-row">
+                    <span>Width Factor:</span>
+                    <span class="mono" id="wFactorVal">16.0px (100vw / 90)</span>
+                  </div>
+                  <div class="telemetry-row">
+                    <span>Height Factor:</span>
+                    <span class="mono" id="hFactorVal">16.0px (100vh / 56.25)</span>
+                  </div>
+                  <div class="telemetry-row font-bold">
+                    <span>Active Safety Lock:</span>
+                    <span class="mono text-accent" id="activeLockVal">min(W, H) Protected</span>
+                  </div>
+                </div>
+              </article>
+
+            </section>
+
+            <!-- Production Sample: Live Scaled Bento Grid Dashboard -->
+            <section class="bento-section">
+              <div class="section-header">
+                <div>
+                  <span class="section-tag">Production Demo</span>
+                  <h2 class="section-title">Envy Studio Proportional Bento</h2>
+                </div>
+                <div class="live-pill-tag">Auto-Scaled via QDPA --px</div>
+              </div>
+
+              <div class="bento-grid">
+                <!-- KPI 1 -->
+                <div class="bento-card kpi-card">
+                  <span class="kpi-label">Gross Volume</span>
+                  <div class="kpi-val-row">
+                    <strong class="kpi-value">$248,920</strong>
+                    <span class="badge badge-success">+24.8%</span>
+                  </div>
+                  <p class="kpi-sub">Scales proportionally across monitors</p>
+                </div>
+
+                <!-- KPI 2 -->
+                <div class="bento-card kpi-card">
+                  <span class="kpi-label">Active Workspaces</span>
+                  <div class="kpi-val-row">
+                    <strong class="kpi-value">1,420</strong>
+                    <span class="badge badge-success">+12.4%</span>
+                  </div>
+                  <p class="kpi-sub">Target baseline: 1440 × 900</p>
+                </div>
+
+                <!-- KPI 3 -->
+                <div class="bento-card kpi-card">
+                  <span class="kpi-label">Layout Drift</span>
+                  <div class="kpi-val-row">
+                    <strong class="kpi-value text-success">0.00%</strong>
+                    <span class="badge badge-info">Zero Error</span>
+                  </div>
+                  <p class="kpi-sub">Guaranteed by SCALPEL Invariants</p>
+                </div>
+
+                <!-- Interactive Chart Module -->
+                <div class="bento-card chart-card">
+                  <div class="chart-header">
+                    <div>
+                      <h4 class="chart-title">Resolution Scaling Curve</h4>
+                      <p class="chart-sub">Comparison of Effective Typography Size across Screen Widths</p>
+                    </div>
+                    <div class="chart-legend">
+                      <span class="legend-item"><span class="dot dot-qdpa"></span> QDPA Dual-Axis</span>
+                      <span class="legend-item"><span class="dot dot-lazy"></span> Lazy Zoom</span>
+                      <span class="legend-item"><span class="dot dot-fluid"></span> Fluid Clamp</span>
+                    </div>
+                  </div>
+
+                  <!-- Canvas Graph Simulation -->
+                  <div class="chart-graphic-wrap">
+                    <svg class="chart-svg" viewBox="0 0 700 220" preserveAspectRatio="none">
+                      <!-- Grid Lines -->
+                      <line x1="50" y1="20" x2="680" y2="20" stroke="rgba(255,255,255,0.08)" />
+                      <line x1="50" y1="80" x2="680" y2="80" stroke="rgba(255,255,255,0.08)" />
+                      <line x1="50" y1="140" x2="680" y2="140" stroke="rgba(255,255,255,0.08)" />
+                      <line x1="50" y1="200" x2="680" y2="200" stroke="rgba(255,255,255,0.15)" />
+
+                      <!-- Axes Labels -->
+                      <text x="15" y="25" fill="#6b7280" font-size="10" font-family="monospace">24px</text>
+                      <text x="15" y="85" fill="#6b7280" font-size="10" font-family="monospace">20px</text>
+                      <text x="15" y="145" fill="#6b7280" font-size="10" font-family="monospace">16px</text>
+                      <text x="15" y="205" fill="#6b7280" font-size="10" font-family="monospace">12px</text>
+
+                      <text x="50" y="215" fill="#6b7280" font-size="10" font-family="monospace">1024px</text>
+                      <text x="260" y="215" fill="#6b7280" font-size="10" font-family="monospace">1440px</text>
+                      <text x="470" y="215" fill="#6b7280" font-size="10" font-family="monospace">1920px</text>
+                      <text x="650" y="215" fill="#6b7280" font-size="10" font-family="monospace">2560px+</text>
+
+                      <!-- Curve 1: Lazy Zoom (Steep unconstrained line, balloons on 4K) -->
+                      <path d="M 50 185 L 260 140 L 470 95 L 680 30" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
+
+                      <!-- Curve 2: Fluid Clamp (Snapped bounds) -->
+                      <path d="M 50 140 L 260 140 L 470 115 L 680 85" fill="none" stroke="#f59e0b" stroke-width="2" />
+
+                      <!-- Curve 3: QDPA (Smooth dual-axis clamped slope) -->
+                      <path d="M 50 155 Q 260 140, 470 108 T 680 75" fill="none" stroke="#10b981" stroke-width="3.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Action Panel -->
+                <div class="bento-card feed-card">
+                  <h4 class="card-title">AI Coding Safeguards</h4>
+                  <ul class="safe-list">
+                    <li><span class="safe-icon">✓</span> <code>--px: calc(1rem / 16)</code> bridge</li>
+                    <li><span class="safe-icon">✓</span> <code>flex-shield</code> with min-w-0</li>
+                    <li><span class="safe-icon">✓</span> <code>nowrap-shield</code> on badges</li>
+                    <li><span class="safe-icon">✓</span> <code>scrollbar-gutter: stable</code></li>
+                    <li><span class="safe-icon">✓</span> <code>overflow-x: clip</code> preservation</li>
+                  </ul>
+                  <div class="card-action-row mt-auto">
+                    <button class="btn btn-outline w-full" id="btnRunAudit">Run Architecture Audit</button>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+          </main>
+        </div>
+      </div>
+
+      <!-- MOBILE MASTER LAYOUT (< 1024px) -->
+      <div class="layout-mobile-only">
+        <div class="mobile-stack">
+          <div class="mobile-header">
+            <span class="badge badge-accent">Mobile Quarantine Active</span>
+            <h2 class="mobile-title">Mobile Decoupled Shell</h2>
+            <p class="mobile-desc">
+              Strictly decoupled layout (SCALPEL-FE-002). Root font locked to 16px. 44px tap targets. Horizontal swipe rails.
+            </p>
+          </div>
+
+          <!-- Horizontal Swipe Rail for KPIs on Mobile -->
+          <div class="mobile-swipe-rail">
+            <div class="mobile-swipe-track">
+              <div class="mobile-kpi-card">
+                <span class="kpi-label">Volume</span>
+                <strong class="kpi-value">$248.9k</strong>
+                <span class="badge badge-success">+24.8%</span>
+              </div>
+              <div class="mobile-kpi-card">
+                <span class="kpi-label">Workspaces</span>
+                <strong class="kpi-value">1,420</strong>
+                <span class="badge badge-success">+12.4%</span>
+              </div>
+              <div class="mobile-kpi-card">
+                <span class="kpi-label">Mobile Base</span>
+                <strong class="kpi-value">16.0px</strong>
+                <span class="badge badge-info">Locked</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vertical Feed on Mobile -->
+          <div class="mobile-feed">
+            <div class="mobile-card">
+              <h4 class="card-title">Shared Components Zero-Pollution</h4>
+              <p class="card-desc">No <code>isMobile</code> props inside atoms. Components cleanly slot into this single-column feed.</p>
+            </div>
+            <div class="mobile-card">
+              <h4 class="card-title">Zero Safari Auto-Zoom</h4>
+              <p class="card-desc">Because root font is locked to 16px, inputs never trigger iOS Safari focus auto-zoom.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FLOATING PORTAL DROPDOWN (Rendered at Body Level) -->
+  <div class="portal-dropdown" id="portalDropdown" style="display: none;">
+    <div class="portal-header">
+      <span class="portal-tag">Radix Portal Primitive</span>
+      <span class="portal-close" id="btnCloseDropdown">&times;</span>
+    </div>
+    <div class="portal-menu">
+      <a href="#" class="portal-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>Edit Proportional Canvas</span>
+      </a>
+      <a href="#" class="portal-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Export SCALPEL Token Tokens</span>
+      </a>
+      <div class="portal-divider"></div>
+      <a href="#" class="portal-item text-danger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <span>Reset to Default 1440px</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN MODAL DIALOG -->
+  <div class="modal-overlay" id="modalOverlay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Fixed Position Containment Test</h3>
+        <button class="modal-close-btn" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>
+          This modal uses <code>position: fixed; inset: 0;</code>.
+        </p>
+        <p class="mt-2 text-zinc-300">
+          In <strong>Approach 1 (Lazy Zoom with CSS Transform)</strong>, CSS Transforms Module Level 1 §3.1 mandates that transformed ancestors establish the containing block. The modal gets trapped inside the scaled canvas and clips.
+        </p>
+        <p class="mt-2 text-emerald-400 font-bold">
+          In <strong>Approach 3 (SCALPEL QDPA)</strong>, zero transforms exist on the DOM root. The modal anchors directly to the viewport initial containing block and covers 100% of the display!
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btnModalAcknowledge">I Understand</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERSISTENT REAL-TIME HUD (Unscaled Scope) -->
+  <aside class="floating-hud unscaled-scope" data-unscaled-scope="true" id="diagnosticHUD">
+    <div class="hud-header">
+      <span class="hud-indicator"></span>
+      <span class="hud-title">SCALPEL DPA TELEMETRY</span>
+      <span class="hud-mode-badge" id="hudActiveMode">QDPA Master</span>
+    </div>
+    <div class="hud-grid">
+      <span class="hud-label">Viewport:</span>
+      <span class="hud-val" id="hudViewportDim">1440 × 900 (1.60)</span>
+
+      <span class="hud-label">Root Base:</span>
+      <span class="hud-val font-bold" id="hudRootRem">16.00px</span>
+
+      <span class="hud-label">Scale Factor:</span>
+      <span class="hud-val text-accent font-bold" id="hudScaleFactor">1.000x</span>
+
+      <span class="hud-label">Limiting Axis:</span>
+      <span class="hud-val" id="hudLimitingAxis">Dual Lock (min)</span>
+
+      <span class="hud-label">WCAG 1.4.4:</span>
+      <span class="hud-val text-success" id="hudWcagStatus">100% PASS (2.5x safe)</span>
+
+      <span class="hud-label">Portal Drift:</span>
+      <span class="hud-val text-success" id="hudPortalDrift">0.0px (Crisp)</span>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>

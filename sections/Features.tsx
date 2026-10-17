@@ -76,7 +76,7 @@ export const FEATURES_STICKERS = [
     y: 12.7,
     w: 11.4,
     rotate: -67,
-    z: 25,
+    z: 5,
   },
   {
     id: "sticker-1792129116255",
@@ -86,7 +86,7 @@ export const FEATURES_STICKERS = [
     y: 10.3,
     w: 10.6,
     rotate: 90,
-    z: 25,
+    z: 5,
   },
   {
     id: "sticker-1792129166984",
@@ -96,11 +96,17 @@ export const FEATURES_STICKERS = [
     y: 110.9,
     w: 9.8,
     rotate: 16,
-    z: 25,
+    z: 5,
   },
 ];
 
-export default function Features({ hideStickers = false }: { hideStickers?: boolean } = {}) {
+export default function Features({
+  hideStickers = false,
+  children,
+}: {
+  hideStickers?: boolean;
+  children?: React.ReactNode;
+} = {}) {
   const section = useRef<HTMLElement>(null);
   /* `align: "start"` + `containScroll: "trimSnaps"` is what makes the first
      card sit on the gutter and the last one stop AT the right edge instead of
@@ -178,60 +184,71 @@ export default function Features({ hideStickers = false }: { hideStickers?: bool
          cards set their own ink. Black on this ground is unreadable. */
       className="overflow-hidden bg-[#3D065F] text-violet"
     >
-      <div className="flex min-h-[var(--section-fill)] flex-col justify-center">
-        {/* The arrows sit ABOVE the rail, not under it — they are the
-            control for what follows, so they read before the thing they
-            drive. Phantom's shape, scaled up from their 40px. */}
-        <div className="mb-[clamp(20px,1rem+1.5vh,40px)] flex justify-end gap-(--space-xs) px-[clamp(20px,1rem+2vw,48px)]">
-          <Arrow dir="prev" onClick={prev} disabled={!canPrev} />
-          <Arrow dir="next" onClick={next} disabled={!canNext} />
-        </div>
+      <div className="relative z-10 flex min-h-[var(--section-fill)] flex-col justify-center">
+        {/* Ultrawide Controls & Track Containment:
+            Bounded by --canvas-max-width (120rem / 1920px) so arrow controls
+            and track snap points do not drift off to the 3400px monitor edges on ultrawide displays. */}
+        <div className="mx-auto w-full max-w-[var(--canvas-max-width,120rem)]">
+          {/* The arrows sit ABOVE the rail, not under it — they are the
+              control for what follows, so they read before the thing they
+              drive. Phantom's shape, scaled up from their 40px. */}
+          <div className="mb-[clamp(20px,1rem+1.5vh,40px)] flex justify-end gap-(--space-xs) px-[clamp(20px,1rem+2vw,48px)]">
+            <Arrow dir="prev" onClick={prev} disabled={!canPrev} />
+            <Arrow dir="next" onClick={next} disabled={!canNext} />
+          </div>
 
-        {/* ⚠ THE VIEWPORT IS THE OVERFLOW BOX AND THE TRACK IS THE FLEX ROW.
-            Embla needs exactly this pair: it writes the transform on the
-            track and clips against the viewport. The gutter is PADDING on the
-            viewport, not a margin on the first card, so `align: "start"`
-            still snaps flush to it — 48px at 1440 and 32px below lg, which is
-            what Phantom measures. */}
-        <div ref={emblaRef} className="w-full overflow-hidden">
-          {/* ⚠ THE GUTTER IS PADDING ON THE TRACK, NOT ON THE VIEWPORT, and
-              that is what produces Phantom's peek. With it on the viewport the
-              first card sits neatly on the margin and nothing bleeds; on the
-              track it scrolls WITH the cards, so the row runs off both edges
-              and you always see a sliver of the neighbours — which is what
-              their page does. Embla still snaps the first card to the gutter
-              because `align: "start"` measures against the track's content
-              box. */}
-          <ul className="flex list-none touch-pan-y gap-[clamp(16px,1rem+1vw,32px)] px-[clamp(20px,1rem+2vw,48px)] py-0">
-            {CARDS.map((c) => (
-              <Card key={c.heading.join(" ")} {...c} />
-            ))}
-          </ul>
+          {/* ⚠ THE VIEWPORT IS THE OVERFLOW BOX AND THE TRACK IS THE FLEX ROW.
+              Embla needs exactly this pair: it writes the transform on the
+              track and clips against the viewport. The gutter is PADDING on the
+              viewport, not a margin on the first card, so `align: "start"`
+              still snaps flush to it — 48px at 1440 and 32px below lg, which is
+              what Phantom measures. */}
+          <div ref={emblaRef} className="w-full overflow-hidden">
+            {/* ⚠ THE GUTTER IS PADDING ON THE TRACK, NOT ON THE VIEWPORT, and
+                that is what produces Phantom's peek. With it on the viewport the
+                first card sits neatly on the margin and nothing bleeds; on the
+                track it scrolls WITH the cards, so the row runs off both edges
+                and you always see a sliver of the neighbours — which is what
+                their page does. Embla still snaps the first card to the gutter
+                because `align: "start"` measures against the track's content
+                box. */}
+            <ul className="flex list-none touch-pan-y gap-[clamp(16px,1rem+1vw,32px)] px-[clamp(20px,1rem+2vw,48px)] py-0">
+              {CARDS.map((c) => (
+                <Card key={c.heading.join(" ")} {...c} />
+              ))}
+            </ul>
+          </div>
+
+          {children}
         </div>
 
       </div>
 
-      {/* Floating Stickers Layer */}
-      {!hideStickers && FEATURES_STICKERS.map((st) => (
-        <div
-          key={st.id}
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          style={{
-            left: `${st.x}%`,
-            top: `${st.y}%`,
-            width: `${st.w}%`,
-            zIndex: st.z ?? 25,
-            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-          }}
-        >
-          <img
-            src={st.src}
-            alt={st.name}
-            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-          />
+      {/* Floating Stickers Layer — Stage-anchored within 120rem canvas ceiling, quarantined to desktop (hidden lg:block), z-[5] behind cards */}
+      {!hideStickers && (
+        <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] hidden lg:block">
+          {FEATURES_STICKERS.map((st) => (
+            <div
+              key={st.id}
+              aria-hidden="true"
+              className="pointer-events-none absolute z-[5]"
+              style={{
+                left: `${st.x}%`,
+                top: `${st.y}%`,
+                width: `${st.w}%`,
+                zIndex: st.z ?? 5,
+                transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+              }}
+            >
+              <img
+                src={st.src}
+                alt={st.name}
+                className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+              />
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </Section>
   );
 }

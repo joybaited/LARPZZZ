@@ -62,14 +62,9 @@ export const HERO = {
     parallax: { yaw: 9.7, pitch: 5, damp: 0.39 },
   },
   els: [
-    /* ⚠ THE WORDMARK IS NOT IN `els` ANY MORE — it is the roller below, and
-       it is rendered by Hero itself rather than by <PriceEl>. Putting a
-       three-cell animated track behind one `kind: "text"` would mean teaching
-       PriceEl about it, and PriceEl is a SHARED FILE that Pricing also uses.
-       Its placement lives in `wordmark` on HERO instead. */
     { name: "text 2", kind: "text", text: "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.", x: 82, y: 50, w: 30, h: 0, size: 24, weight: 400, align: "center", color: "#3D065F" },
-    { name: "box 3", kind: "box", text: "Login", btn: true, x: 89.5, y: 67, w: 13, h: 6.4, size: 19, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
     { name: "box 4", kind: "box", text: "Buy", btn: true, x: 74.5, y: 67, w: 13, h: 6.4, size: 19, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
+    { name: "box 3", kind: "box", text: "Login", btn: true, x: 89.5, y: 67, w: 13, h: 6.4, size: 19, radius: 999, weight: 600, fill: "#3D065F", color: "#EAC2FF" },
   ] as El[],
 
   /* ⚠ THE HAMBURGER REPLACED THREE `kind: "line"` ELEMENTS. They were
@@ -323,6 +318,7 @@ const PHONE: PhoneTune = {
 
 export default function Hero({ hideStickers = false }: { hideStickers?: boolean } = {}) {
   const { nav, headline: h } = HERO;
+  const subtitleEl = HERO.els.find((e) => e.name === "text 2");
 
   return (
     <Section
@@ -332,7 +328,7 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
          here. Padding, not a spacer div: the ground is an absolute `inset-0`
          layer, so it grows with the section and the extra space is the same
          colour for free. */
-      className="pb-[clamp(48px,2rem+3vw,112px)] max-lg:[--phone-w:clamp(260px,65vw,420px)] lg:[--phone-w:33%] flex flex-col justify-between overflow-hidden">
+      className="min-h-[100svh] pb-[clamp(32px,2rem+3vw,80px)] max-lg:[--phone-w:clamp(260px,65vw,420px)] lg:[--phone-w:33%] flex flex-col overflow-x-hidden max-lg:overflow-y-visible lg:overflow-hidden">
       {/* ⚠ THE GROUND IS AN INLINE STYLE, NOT A TAILWIND CLASS. `bg-[${...}]`
           with an interpolated value generates NOTHING — Tailwind scans source
           text and never evaluates it, so the class silently does not exist.
@@ -365,275 +361,322 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
           tunes the flat layout. The glb still loads there only if something
           asks for it, which nothing now does. */}
 
-      {/* ⚠ THE FLAT PHONE, STANDING IN FOR THE MODEL. A render at the same
-          pose, so the hero keeps its subject at a fraction of the cost: 79KB
-          of webp against 3.3MB of glb plus 2.3MB of textures decoded on the
-          main thread.
+      {/* ── 120REM CANVAS STAGE ──────────────────────────────────────────────────────────
+          Anchors nav, desktop stage, and mobile orchestrator within 120rem ceiling */}
+      <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)]">
 
-          ⚠ THE SOURCE WAS CROPPED BEFORE IT GOT HERE. The png was a
-          1080x2160 canvas with the phone sitting in the middle 999x1251 —
-          477px of empty space above it and 432px below. Placed uncropped it
-          would read as badly off-centre and far too small, and no amount of
-          tuning x/y/w here would fix that, because the padding scales with
-          the image. The committed webp is cropped to the phone itself, so
-          `w` means the width of the PHONE.
 
-          ⚠ z-10 PUTS IT WHERE THE CANVAS WAS, so the stickers' own z values
-          still read correctly against it: the balloons at 20 are in front,
-          the padlock at 5 is behind. That is the relationship the sticker
-          config documents, and it survives the swap. */}
-      {HERO.art?.show && (
-        <img
-          src={HERO.art.src}
-          alt=""
-          aria-hidden="true"
-          /* eager + high priority: it is the hero's subject and above the
-             fold, so lazy-loading it would just delay the LCP. */
-          loading="eager"
-          fetchPriority="high"
-          decoding="async"
-          className="pointer-events-none absolute z-10 h-auto max-w-none select-none"
-          style={{
-            left: `${HERO.art.x}%`,
-            top: `${HERO.art.y}%`,
-            width: "var(--phone-w, 33%)",
-            transform: `translate(-50%, -50%) rotate(${HERO.art.rotate ?? 0}deg)`,
-          }}
-        />
-      )}
-
-      {/*
-        nav. ⚠ ABSOLUTE, NOT IN FLOW. It was `pt-(--space-m)` with the bar in
-        flow; the tuned y is 4.8 -> 10.8px, well above --space-m's 24 -> 30, so
-        a flow margin cannot place it. `relative` is load-bearing: the `in:
-        "nav"` elements are absolute with % x/y and resolve against this bar.
-      */}
-      {nav.show && (
-        <nav
-          aria-label="Main"
-          /* ⚠ z-30, NOT z-20 — IT HAS TO BEAT THE HEADLINE. The headline is
-             also z-20 and comes later in source, so at equal z it painted
-             over the open panel and the hero's type showed through it. The
-             nav overlays the page when open, so it outranks the content. */
-          className="absolute z-30"
-          /* ⚠ NO BACKGROUND AND NO RADIUS HERE ANY MORE — <NavMenuWithPanel>
-             paints the surface on its own layer so it can grow to meet the
-             panel while this box stays exactly the size the `in: "nav"`
-             elements resolve their percentages against. Putting a fill back
-             here would draw a second, non-growing bar on top of it. */
-          style={{
-            left: fluid(nav.inset),
-            right: fluid(nav.inset),
-            top: fluid(nav.y),
-            height: fluid(nav.h),
-          }}
-        >
-          {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
-
-          {/* ⚠ A CLIENT COMPONENT, like <HoverGhost> and for the same reason:
-              this section is a server component and the button needs state
-              and handlers. The three lines it replaced needed neither, which
-              is exactly why they were not a menu. */}
-          {/* ⚠ THE ROW IS PINNED TO THE BAR'S RIGHT AND SIZES ITSELF. Right
-              inset matches the wordmark's own breathing room; `flex` does the
-              spacing so no label needs a coordinate and none can overlap
-              another however long it gets.
-
-              ⚠ HIDDEN BELOW lg, WHERE THE HAMBURGER TAKES OVER. Four links
-              plus a button do not fit a 358px bar at any type size that is
-              still readable, and squeezing them is what makes a nav break.
-              That is the whole reason the burger exists. */}
-          {/* ⚠ z-20 SO THE DIM OVERLAY DOES NOT PAINT OVER THE CTA. The
-              overlay is `fixed inset-0 z-0` INSIDE this nav; this row had
-              `z-index: auto`, so source order put the overlay on top and the
-              Login button visibly darkened as the panel opened. Measured: the
-              button's own opacity stayed 1 the whole time and
-              elementFromPoint at its centre returned the overlay — it was
-              never dimmed, it was covered.
-
-              The row has to beat the overlay's 0 but stay under the panel,
-              which is why this is 20 and not something larger. */}
-          <div className="absolute top-1/2 right-[2.5%] z-20 hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
-            {/* ⚠ THE LINKS LEAVE THE BAR WHEN THE PANEL OPENS, THE CTA DOES
-                NOT. They are the same four labels the panel lists, so with
-                the panel open the bar would show them twice — and the panel
-                is where they belong at that point. `nav-links` is matched
-                from globals.css off the same open/closed attribute the panel
-                uses, so the two cannot fall out of step.
-
-                ⚠ THEY FADE AND STOP TAKING CLICKS, BUT KEEP THEIR SPACE —
-                `visibility`, not `display`. Removing them from layout would
-                let the CTA slide left while the bar is mid-animation, which
-                reads as the nav collapsing rather than the panel opening.
-
-                Osmo does not need any of this: their top bar carries NO
-                links at all (checked their markup — hamburger, logo and
-                buttons only) and all eight live inside the panel. Ours shows
-                four in the bar, so ours has something to hide. */}
-            {HERO.navLinks.items.map((label, i) => (
-              <a
-                key={label}
-                href="#"
-                /* ⚠ THE CLASS GOES ON EACH LINK, NOT ON A WRAPPER. A wrapper
-                   would need `display: contents` to leave the flex row's
-                   spacing alone, and a contents box has nothing to fade —
-                   opacity on it does nothing at all. */
-                className="nav-link whitespace-nowrap no-underline transition-opacity hover:opacity-100"
-                style={{
-                  color: HERO.navLinks.color,
-                  fontSize: "clamp(14px, 0.6rem + 0.5vw, 20px)",
-                  /* a short stagger so they leave as a sweep rather than a
-                     block. Reversed on the way back in by the css. */
-                  "--i": i,
-                } as React.CSSProperties}
-              >
-                {label}
-              </a>
-            ))}
-            {/* the CTA. `leading-none` plus symmetric padding is what keeps
-                the pill's height tied to its own type rather than to the
-                line box, so it cannot grow taller than the bar. */}
-            <PillButton
-              fill={HERO.navLinks.ctaFill}
-              color={HERO.navLinks.ctaColor}
-              className="whitespace-nowrap px-[clamp(14px,0.55rem+0.7vw,22px)] py-[clamp(6px,0.22rem+0.35vw,9px)] leading-none font-semibold"
-              style={{ fontSize: "clamp(13px, 0.55rem + 0.45vw, 17px)" }}
-            >
-              {HERO.navLinks.cta}
-            </PillButton>
-          </div>
-
-          <NavMenuWithPanel
-            x={HERO.menu.x}
-            y={HERO.menu.y}
-            color={HERO.wordmark.color}
-            fill={HERO.nav.fill}
-            radius={HERO.nav.radius}
-            panelHeight={HERO.menu.panelHeight}
-            overlay={HERO.menu.overlay}
+        {/*
+          nav. ⚠ ABSOLUTE, NOT IN FLOW. It was `pt-(--space-m)` with the bar in
+          flow; the tuned y is 4.8 -> 10.8px, well above --space-m's 24 -> 30, so
+          a flow margin cannot place it. `relative` is load-bearing: the `in:
+          "nav"` elements are absolute with % x/y and resolve against this bar.
+        */}
+        {nav.show && (
+          <nav
+            aria-label="Main"
+            /* ⚠ z-30, NOT z-20 — IT HAS TO BEAT THE HEADLINE. The headline is
+               also z-20 and comes later in source, so at equal z it painted
+               over the open panel and the hero's type showed through it. The
+               nav overlays the page when open, so it outranks the content. */
+            className="pointer-events-auto absolute z-30"
+            /* ⚠ NO BACKGROUND AND NO RADIUS HERE ANY MORE — <NavMenuWithPanel>
+               paints the surface on its own layer so it can grow to meet the
+               panel while this box stays exactly the size the `in: "nav"`
+               elements resolve their percentages against. Putting a fill back
+               here would draw a second, non-growing bar on top of it. */
+            style={{
+              left: fluid(nav.inset),
+              right: fluid(nav.inset),
+              top: fluid(nav.y),
+              height: fluid(nav.h),
+            }}
           >
-            {/* ⚠ THE SAME FOUR LABELS THE BAR SHOWS, FROM THE SAME CONFIG.
-                One list, rendered in two places, so they cannot drift — the
-                failure the tuners in this repo keep hitting. The bar's copy
-                fades out as these fade in, so only one set is ever readable.
+            {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
 
-                Laid out as a list rather than placed with coordinates: the
-                panel is a container, not a canvas, and a stacked list
-                reflows at any width without a second set of numbers. */}
-            {/* ⚠ THE LIST KEEPS ITS OWN PADDING AND ITS OWN HEIGHT. It was
-                briefly wrapped in a padded row with the media box as a
-                sibling, which made the BOX the tallest thing in the panel —
-                and the surface behind the bar measures the panel and grows to
-                cover it, so the open nav turned into a dark slab. The links
-                decide the panel's height, exactly as before; the box is
-                overlaid on top of that box rather than added to it. */}
-            <div className="relative">
-              <ul className="m-0 flex list-none flex-col gap-[clamp(6px,0.3rem+0.6vw,16px)] p-[clamp(20px,1rem+2vw,48px)]">
-                {HERO.navLinks.items.map((label, i) => (
-                  <li key={label}>
-                    <a
-                      href="#"
-                      className="panel-link inline-block no-underline"
-                      style={{
-                        color: HERO.navLinks.color,
-                        fontFamily: "var(--font-display)",
-                        textTransform: "uppercase",
-                        fontSize: "clamp(28px, 1.2rem + 2.6vw, 56px)",
-                        lineHeight: 1.05,
-                        "--i": i,
-                      } as React.CSSProperties}
-                    >
-                      {label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            {/* ⚠ A CLIENT COMPONENT, like <HoverGhost> and for the same reason:
+                this section is a server component and the button needs state
+                and handlers. The three lines it replaced needed neither, which
+                is exactly why they were not a menu. */}
+            {/* ⚠ THE ROW IS PINNED TO THE BAR'S RIGHT AND SIZES ITSELF. Right
+                inset matches the wordmark's own breathing room; `flex` does the
+                spacing so no label needs a coordinate and none can overlap
+                another however long it gets.
 
-              {/* ── THE MEDIA BOX ────────────────────────────────────────
-                  Placeholder for a video player. Measured off osmo's open nav
-                  at 1440: their right column `is--ad` is 397x437 (0.909) with
-                  a 16px radius, holding a 238x149 (16:10) preview. Ours keeps
-                  the 0.909 card and the 16:10 well inside it.
+                ⚠ HIDDEN BELOW lg, WHERE THE HAMBURGER TAKES OVER. Four links
+                plus a button do not fit a 358px bar at any type size that is
+                still readable, and squeezing them is what makes a nav break.
+                That is the whole reason the burger exists. */}
+            {/* ⚠ z-20 SO THE DIM OVERLAY DOES NOT PAINT OVER THE CTA. The
+                overlay is `fixed inset-0 z-0` INSIDE this nav; this row had
+                `z-index: auto`, so source order put the overlay on top and the
+                Login button visibly darkened as the panel opened. Measured: the
+                button's own opacity stayed 1 the whole time and
+                elementFromPoint at its centre returned the overlay — it was
+                never dimmed, it was covered.
 
-                  ⚠ ABSOLUTE, SO IT ADDS NO HEIGHT. In flow it is the tallest
-                  child and the panel — and the dark surface with it — grows
-                  to its 437px. Out of flow it sits inside the height the
-                  links already set, which is what keeps the open nav the size
-                  it has always been. `inset-y` + `aspect` means the links,
-                  not a number here, decide how big it is.
+                The row has to beat the overlay's 0 but stay under the panel,
+                which is why this is 20 and not something larger. */}
+            <div className="absolute top-1/2 right-[2.5%] z-20 hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
+              {/* ⚠ THE LINKS LEAVE THE BAR WHEN THE PANEL OPENS, THE CTA DOES
+                  NOT. They are the same four labels the panel lists, so with
+                  the panel open the bar would show them twice — and the panel
+                  is where they belong at that point. `nav-links` is matched
+                  from globals.css off the same open/closed attribute the panel
+                  uses, so the two cannot fall out of step.
 
-                  Centred with left-1/2 + -translate-x-1/2 rather than a grid
-                  column: nothing else shares its line, so there is no track
-                  to balance against. Hidden below md — at 390 the panel is
-                  the link list and a card over it would cover them. */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-[clamp(20px,1rem+2vw,48px)] left-1/2 hidden -translate-x-1/2 md:flex aspect-[397/437] items-center justify-center rounded-[16px] border-2 border-dashed p-[clamp(12px,1.5vw,28px)]"
-                style={{ borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 40%, transparent)` }}
-              >
-                <div
-                  className="flex aspect-[16/10] w-full items-center justify-center rounded-[8px] border border-dashed"
+                  ⚠ THEY FADE AND STOP TAKING CLICKS, BUT KEEP THEIR SPACE —
+                  `visibility`, not `display`. Removing them from layout would
+                  let the CTA slide left while the bar is mid-animation, which
+                  reads as the nav collapsing rather than the panel opening.
+
+                  Osmo does not need any of this: their top bar carries NO
+                  links at all (checked their markup — hamburger, logo and
+                  buttons only) and all eight live inside the panel. Ours shows
+                  four in the bar, so ours has something to hide. */}
+              {HERO.navLinks.items.map((label, i) => (
+                <a
+                  key={label}
+                  href={label === "Features" ? "#features" : label === "Pricing" || label === "Buy" ? "#pricing" : label === "Reviews" ? "#testimonials" : "#"}
+                  /* ⚠ THE CLASS GOES ON EACH LINK, NOT ON A WRAPPER. A wrapper
+                     would need `display: contents` to leave the flex row's
+                     spacing alone, and a contents box has nothing to fade —
+                     opacity on it does nothing at all. */
+                  className="nav-link whitespace-nowrap no-underline transition-opacity hover:opacity-100"
                   style={{
-                    borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 30%, transparent)`,
-                    color: `color-mix(in srgb, ${HERO.navLinks.color} 55%, transparent)`,
-                    fontFamily: "var(--font-mono, monospace)",
-                    fontSize: "clamp(10px, 0.6vw, 12px)",
-                    letterSpacing: "0.12em",
-                  }}
+                    color: HERO.navLinks.color,
+                    fontSize: "clamp(14px, 0.6rem + 0.5vw, 20px)",
+                    /* a short stagger so they leave as a sweep rather than a
+                       block. Reversed on the way back in by the css. */
+                    "--i": i,
+                  } as React.CSSProperties}
                 >
-                  VIDEO
-                </div>
-              </div>
+                  {label}
+                </a>
+              ))}
+              {/* the CTA. `leading-none` plus symmetric padding is what keeps
+                  the pill's height tied to its own type rather than to the
+                  line box, so it cannot grow taller than the bar. */}
+              <PillButton
+                href="/login"
+                fill={HERO.navLinks.ctaFill}
+                color={HERO.navLinks.ctaColor}
+                className="whitespace-nowrap px-[clamp(16px,0.6rem+0.7vw,24px)] py-[clamp(7px,0.25rem+0.35vw,10px)] leading-none font-semibold"
+                style={{ fontSize: "clamp(13px, 0.55rem + 0.45vw, 17px)" }}
+              >
+                {HERO.navLinks.cta}
+              </PillButton>
             </div>
 
-            {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} /> : null))}
-          </NavMenuWithPanel>
+            <NavMenuWithPanel
+              x={HERO.menu.x}
+              y={HERO.menu.y}
+              color={HERO.wordmark.color}
+              fill={HERO.nav.fill}
+              radius={HERO.nav.radius}
+              panelHeight={HERO.menu.panelHeight}
+              overlay={HERO.menu.overlay}
+            >
+              {/* ⚠ THE SAME FOUR LABELS THE BAR SHOWS, FROM THE SAME CONFIG.
+                  One list, rendered in two places, so they cannot drift — the
+                  failure the tuners in this repo keep hitting. The bar's copy
+                  fades out as these fade in, so only one set is ever readable.
 
-          {/* ⚠ A CLIENT COMPONENT, AND ONLY BECAUSE OF TWO HANDLERS. This
-              section is a server component, so an onMouseEnter here is the
-              "Event handlers cannot be passed to Client Component props"
-              error. The fade itself is still pure CSS inside it — the
-              handlers exist only to start and stop playback, which no
-              `autoPlay` can do without decoding forever behind opacity:0. */}
-          <HoverGhost
-            text={HERO.wordmark.text}
-            src={HERO.wordmark.src}
-            size={HERO.wordmark.size}
-            color={HERO.wordmark.color}
-            ghost={HERO.wordmark.ghost}
-            ghostY={HERO.wordmark.ghostY}
-            x={HERO.wordmark.x}
-            y={HERO.wordmark.y}
-          />
+                  Laid out as a list rather than placed with coordinates: the
+                  panel is a container, not a canvas, and a stacked list
+                  reflows at any width without a second set of numbers. */}
+              {/* ⚠ THE LIST KEEPS ITS OWN PADDING AND ITS OWN HEIGHT. It was
+                  briefly wrapped in a padded row with the media box as a
+                  sibling, which made the BOX the tallest thing in the panel —
+                  and the surface behind the bar measures the panel and grows to
+                  cover it, so the open nav turned into a dark slab. The links
+                  decide the panel's height, exactly as before; the box is
+                  overlaid on top of that box rather than added to it. */}
+              <div className="relative">
+                <ul className="m-0 flex list-none flex-col gap-[clamp(6px,0.3rem+0.6vw,16px)] p-[clamp(20px,1rem+2vw,48px)]">
+                  {HERO.navLinks.items.map((label, i) => (
+                    <li key={label}>
+                      <a
+                        href={label === "Features" ? "#features" : label === "Pricing" || label === "Buy" ? "#pricing" : label === "Reviews" ? "#testimonials" : "#"}
+                        className="panel-link inline-block no-underline"
+                        style={{
+                          color: HERO.navLinks.color,
+                          fontFamily: "var(--font-display)",
+                          textTransform: "uppercase",
+                          fontSize: "clamp(28px, 1.2rem + 2.6vw, 56px)",
+                          lineHeight: 1.05,
+                          "--i": i,
+                        } as React.CSSProperties}
+                      >
+                        {label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
 
-        </nav>
-      )}
+                {/* ── THE MEDIA BOX ────────────────────────────────────────
+                    Placeholder for a video player. Measured off osmo's open nav
+                    at 1440: their right column `is--ad` is 397x437 (0.909) with
+                    a 16px radius, holding a 238x149 (16:10) preview. Ours keeps
+                    the 0.909 card and the 16:10 well inside it.
 
-      {/*
-        headline. Three stacked spans — the breaks are the design, not
-        wrapping. ⚠ TOP-LEFT ANCHORED, like the tuner: the tuned y IS the top
-        of the block, so no centring transform.
-      */}
-      {h.show && (
+                    ⚠ ABSOLUTE, SO IT ADDS NO HEIGHT. In flow it is the tallest
+                    child and the panel — and the dark surface with it — grows
+                    to its 437px. Out of flow it sits inside the height the
+                    links already set, which is what keeps the open nav the size
+                    it has always been. `inset-y` + `aspect` means the links,
+                    not a number here, decide how big it is.
+
+                    Centred with left-1/2 + -translate-x-1/2 rather than a grid
+                    column: nothing else shares its line, so there is no track
+                    to balance against. Hidden below md — at 390 the panel is
+                    the link list and a card over it would cover them. */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-y-[clamp(20px,1rem+2vw,48px)] left-1/2 hidden -translate-x-1/2 md:flex aspect-[397/437] items-center justify-center rounded-[16px] border-2 border-dashed p-[clamp(12px,1.5vw,28px)]"
+                  style={{ borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 40%, transparent)` }}
+                >
+                  <div
+                    className="flex aspect-[16/10] w-full items-center justify-center rounded-[8px] border border-dashed"
+                    style={{
+                      borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 30%, transparent)`,
+                      color: `color-mix(in srgb, ${HERO.navLinks.color} 55%, transparent)`,
+                      fontFamily: "var(--font-mono, monospace)",
+                      fontSize: "clamp(10px, 0.6vw, 12px)",
+                      letterSpacing: "0.12em",
+                    }}
+                  >
+                    VIDEO
+                  </div>
+                </div>
+              </div>
+
+              {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} /> : null))}
+            </NavMenuWithPanel>
+
+            {/* ⚠ A CLIENT COMPONENT, AND ONLY BECAUSE OF TWO HANDLERS. This
+                section is a server component, so an onMouseEnter here is the
+                "Event handlers cannot be passed to Client Component props"
+                error. The fade itself is still pure CSS inside it — the
+                handlers exist only to start and stop playback, which no
+                `autoPlay` can do without decoding forever behind opacity:0. */}
+            <HoverGhost
+              text={HERO.wordmark.text}
+              src={HERO.wordmark.src}
+              size={HERO.wordmark.size}
+              color={HERO.wordmark.color}
+              ghost={HERO.wordmark.ghost}
+              ghostY={HERO.wordmark.ghostY}
+              x={HERO.wordmark.x}
+              y={HERO.wordmark.y}
+            />
+
+          </nav>
+        )}
+
+        {/*
+          headline. Three stacked spans — the breaks are the design, not
+          wrapping. ⚠ TOP-LEFT ANCHORED, like the tuner: the tuned y IS the top
+          of the block, so no centring transform.
+        */}
+        {/* ── DESKTOP STAGE (>= 1024px) ────────────────────────────────────────────────
+            Desktop layout orchestrator: luxury 120rem canvas with floating centered phone,
+            left-aligned headline, right-anchored content column, and desktop sticker field. */}
+        <div className="pointer-events-none absolute inset-0 hidden lg:block">
+          {HERO.art?.show && (
+            <img
+              src={HERO.art.src}
+              alt=""
+              aria-hidden="true"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              className="pointer-events-none absolute z-10 h-auto max-w-none select-none"
+              style={{
+                left: `${HERO.art.x}%`,
+                top: `${HERO.art.y}%`,
+                width: "var(--phone-w, 33%)",
+                transform: `translate(-50%, -50%) rotate(${HERO.art.rotate ?? 0}deg)`,
+              }}
+            />
+          )}
+
+          {/* Headline */}
+          {h.show && (
+            <h1
+              className="hero-headline pointer-events-auto absolute z-[2] m-0"
+              style={{
+                left: fluid(h.x),
+                top: fluid(h.y),
+                color: h.color,
+                fontSize: headSize(h.min, h.max),
+                lineHeight: h.leading,
+                fontFamily: h.font === "display" ? "var(--font-display)" : undefined,
+                fontWeight: h.weight,
+                letterSpacing: h.tracking ? `${h.tracking}em` : undefined,
+                textAlign: h.align,
+                textTransform: h.caps ? "uppercase" : "none",
+                fontStyle: h.italic ? "italic" : undefined,
+              }}
+            >
+              {h.lines.map((l, i) => (
+                <span key={i} className="block">
+                  {l}
+                </span>
+              ))}
+            </h1>
+          )}
+
+          {/* stage-level elements. Desktop: rendered at tuned coordinates via PriceEl */}
+          <div className="hero-stage-container pointer-events-none absolute inset-0 z-20 [&>*]:pointer-events-auto">
+            {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
+          </div>
+
+          {/* Floating Stickers Layer (Desktop) */}
+          {!hideStickers && HERO.stickers?.map((st) => (
+            <div
+              key={st.name}
+              aria-hidden="true"
+              className="pointer-events-none absolute"
+              style={{
+                left: `${st.x}%`,
+                top: `${st.y}%`,
+                width: `${st.w}%`,
+                zIndex: st.z,
+                transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
+              }}
+            >
+              <img
+                src={st.src}
+                alt={st.alt}
+                decoding="async"
+                className="animate-sticker block h-auto w-full max-w-none select-none"
+                style={{
+                  "--rise": `${st.rise}px`,
+                  "--drift": `${st.drift}px`,
+                  "--tilt": st.tilt,
+                  "--dur": st.dur,
+                  "--delay": st.delay,
+                } as React.CSSProperties}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── MOBILE / TABLET ORCHESTRATOR (< 1024px) ─────────────────────────────────
+          Textbook decoupled sequential vertical layout per SCALPEL-FE-002 & FE-004.
+          Guarantees zero element collision across any aspect ratio or squished window. */}
+      <div className="relative z-20 mx-auto flex w-full max-w-xl flex-col items-center px-4 pt-[clamp(72px,12vh,96px)] pb-10 text-center lg:hidden">
+        {/* 1. Mobile Headline */}
         <h1
-          className="hero-headline absolute z-[2] m-0"
-          /* ⚠ THE FACE, CASE AND WEIGHT ARE STYLES NOW, NOT CLASSES. They
-             were `font-display uppercase`; as classes they could not be
-             tuned, and a template-literal Tailwind class generates no css at
-             all (session 11), so a dial had to become a style rather than an
-             interpolated class name. */
+          className="hero-headline m-0 text-center uppercase tracking-tight"
           style={{
-            left: fluid(h.x),
-            top: fluid(h.y),
             color: h.color,
-            fontSize: headSize(h.min, h.max),
-            lineHeight: h.leading,
+            fontSize: "clamp(34px, 8.5vw, 56px)",
+            lineHeight: 0.94,
             fontFamily: h.font === "display" ? "var(--font-display)" : undefined,
             fontWeight: h.weight,
-            letterSpacing: h.tracking ? `${h.tracking}em` : undefined,
-            textAlign: h.align,
-            textTransform: h.caps ? "uppercase" : "none",
-            fontStyle: h.italic ? "italic" : undefined,
           }}
         >
           {h.lines.map((l, i) => (
@@ -642,88 +685,87 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
             </span>
           ))}
         </h1>
-      )}
 
-      {/* stage-level elements. Desktop: rendered at measured coordinates above trail; Mobile: in-flow stack */}
-      <div className="hero-stage-container pointer-events-none absolute inset-0 z-20 hidden lg:block [&>*]:pointer-events-auto">
-        {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
-      </div>
+        {/* 2. Mobile Phone Artwork with Pinned Stickers */}
+        <div className="relative my-[clamp(14px,2.5vh,28px)] flex w-full max-w-[min(82vw,350px)] items-center justify-center">
+          <img
+            src={HERO.art.src}
+            alt="Larpz Wallet Preview"
+            className="pointer-events-none h-auto w-full max-h-[44vh] select-none object-contain drop-shadow-2xl"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
 
-      {/* Mobile/Tablet reflow: Subtitle and action buttons in natural flow */}
-      <div className="hero-mobile-content relative z-20 mt-auto flex flex-col items-center px-6 pt-6 pb-2 text-center lg:hidden">
-        <p className="max-w-[34ch] font-sans text-[clamp(15px,0.9rem+0.5vw,18px)] leading-[1.4] text-[#3D065F]">
-          Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment.
+          {/* Lock sticker - anchored to top right of phone */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-3 -right-2 w-[28%] z-[5]"
+            style={{ transform: "rotate(9deg)" }}
+          >
+            <img
+              src="/images/sticker-lock.webp"
+              alt=""
+              decoding="async"
+              className="animate-sticker block h-auto w-full select-none"
+              style={{
+                "--rise": "10px",
+                "--drift": "6px",
+                "--tilt": "2deg",
+                "--dur": "10s",
+                "--delay": "-3s",
+              } as React.CSSProperties}
+            />
+          </div>
+
+          {/* Balloons sticker - anchored to bottom left of phone */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-5 -left-3 w-[26%] z-[20]"
+            style={{ transform: "rotate(-7deg)" }}
+          >
+            <img
+              src="/images/sticker-balloons.webp"
+              alt=""
+              decoding="async"
+              className="animate-sticker block h-auto w-full select-none"
+              style={{
+                "--rise": "12px",
+                "--drift": "6px",
+                "--tilt": "2deg",
+                "--dur": "10s",
+                "--delay": "-2s",
+              } as React.CSSProperties}
+            />
+          </div>
+        </div>
+
+        {/* 3. Subtitle Copy */}
+        <p className="m-0 max-w-[34ch] font-sans text-[clamp(14px,3.6vw,17px)] leading-[1.4] text-[#3D065F]">
+          {subtitleEl?.text ??
+            "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment."}
         </p>
-        <div className="mt-5 flex items-center justify-center gap-[clamp(16px,2vw,30px)]">
+
+        {/* 4. Action Buttons (Buy & Login) */}
+        <div className="mt-5 flex items-center justify-center gap-[clamp(14px,3vw,24px)]">
           <PillButton
-            href="#"
+            href="#pricing"
             fill="#3D065F"
             color="#EAC2FF"
-            className="flex h-[46px] min-w-[124px] items-center justify-center px-6 text-sm font-semibold"
+            className="h-[48px] min-w-[130px] px-7 text-[16px] font-semibold leading-none shadow-sm"
           >
             Buy
           </PillButton>
           <PillButton
-            href="#"
+            href="/login"
             fill="#3D065F"
             color="#EAC2FF"
-            className="flex h-[46px] min-w-[124px] items-center justify-center px-6 text-sm font-semibold"
+            className="h-[48px] min-w-[130px] px-7 text-[16px] font-semibold leading-none shadow-sm"
           >
             Login
           </PillButton>
         </div>
       </div>
-
-      {/* ⚠ THE STICKERS FLOAT, AND IT IS CSS, NOT GSAP. GSAP is on this page
-          and section two uses it, but this is a constant-speed loop that reads
-          nothing and has no controls — the same reasoning the testimonial
-          marquee is written down with. A CSS animation runs on the compositor
-          with no mount, no teardown and no ScrollTrigger refresh, so it cannot
-          fall out of step with the 3D canvas sitting right behind it.
-
-          ⚠ THE WRAPPER IS POSITIONED, THE IMAGE IS ANIMATED. Two elements, so
-          the float's transform cannot clobber the centring one — putting both
-          on one element means the keyframe's `translate3d(0,0,0)` at 0% wipes
-          the `-50%, -50%` and the sticker jumps to its own corner on the first
-          frame. This is the same split the FAQ pills use for the shove and the
-          expand.
-
-          `pointer-events-none` so a sticker over the phone never eats a drag,
-          and `aria-hidden` because they are decoration. */}
-      {!hideStickers && HERO.stickers?.map((st) => (
-        <div
-          key={st.name}
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          /* ⚠ ONE transform, STATED IN ORDER. The centring was
-             `-translate-x-1/2 -translate-y-1/2` as classes; adding a rotation
-             as a third class leaves the order to Tailwind's, and a rotate
-             applied before the centring swings the sticker around the
-             section's origin instead of its own middle. Written out, it
-             translates first and then rotates about its own centre. */
-          style={{
-            left: `${st.x}%`,
-            top: `${st.y}%`,
-            width: `${st.w}%`,
-            zIndex: st.z,
-            transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
-          }}
-        >
-          <img
-            src={st.src}
-            alt={st.alt}
-            decoding="async"
-            className="animate-sticker block h-auto w-full max-w-none select-none"
-            style={{
-              "--rise": `${st.rise}px`,
-              "--drift": `${st.drift}px`,
-              "--tilt": st.tilt,
-              "--dur": st.dur,
-              "--delay": st.delay,
-            } as React.CSSProperties}
-          />
-        </div>
-      ))}
     </Section>
   );
 }

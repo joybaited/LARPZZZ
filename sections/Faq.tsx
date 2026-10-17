@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import Section from "@/components/Section";
 import FaqItem from "@/components/FaqItem";
@@ -27,16 +27,20 @@ export const PILLS = [
   { q: "Is my payment anonymous", a: "New answer.", x: 78.8, y: 59.8, tilt: -17, openW: 520, size: 20 },
 ];
 
+/* ⚠ STICKER ANTI-COLLISION LAW:
+ * Coordinates tuned to spacious negative space pockets around the pills.
+ * z-index locked to 5 (pills are z-10 closed and z-30 open) so pills ALWAYS
+ * paint above stickers and readable copy is never obscured. */
 export const FAQ_STICKERS = [
   {
     id: "sticker-1792129292826",
     name: "screenshot-2026-10-15-124544",
     src: "/images/sticker-screenshot-2026-10-15-124544.png",
-    x: 12.2,
-    y: 21.4,
+    x: 12.0,
+    y: 37.0,
     w: 10.3,
     rotate: -22,
-    z: 25,
+    z: 5,
   },
   {
     id: "sticker-1792129312368",
@@ -46,27 +50,27 @@ export const FAQ_STICKERS = [
     y: 84.2,
     w: 10.7,
     rotate: 18,
-    z: 25,
+    z: 5,
   },
   {
     id: "sticker-1792129318538",
     name: "screenshot-2026-10-15-124624",
     src: "/images/sticker-screenshot-2026-10-15-124624.png",
-    x: 50.6,
-    y: 17.9,
+    x: 51.5,
+    y: 9.5,
     w: 10.4,
     rotate: 16,
-    z: 25,
+    z: 5,
   },
   {
     id: "sticker-1792129322389",
     name: "screenshot-2026-10-15-124718",
     src: "/images/sticker-screenshot-2026-10-15-124718.png",
-    x: 81.5,
-    y: 24.2,
-    w: 18,
-    rotate: 30,
-    z: 25,
+    x: 88.5,
+    y: 36.0,
+    w: 16.0,
+    rotate: 24,
+    z: 5,
   },
   {
     id: "sticker-1792129381412",
@@ -76,7 +80,7 @@ export const FAQ_STICKERS = [
     y: 84.4,
     w: 10.5,
     rotate: -19,
-    z: 25,
+    z: 5,
   },
 ];
 
@@ -89,6 +93,18 @@ export default function Faq({ hideStickers = false }: { hideStickers?: boolean }
   const wrap = useRef<HTMLDivElement>(null);
   /* which pill currently owns the layout — see the onToggle guard below. */
   const active = useRef<number | null>(null);
+
+  /* Reset layout on resize below 1024px to prevent stale GSAP transforms */
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024 && active.current !== null) {
+        active.current = null;
+        move(null, 0);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   /* ⚠ THE SECTION MOVES THE PILLS, NOT THE PILL ITSELF. A pill knows nothing
      about its neighbours; the arrangement lives here.
@@ -127,11 +143,32 @@ export default function Faq({ hideStickers = false }: { hideStickers?: boolean }
       };
     };
 
+    const rootRect = root.getBoundingClientRect();
+    /* Safe boundary margin within the desktop stage: minimum 24px or 3% */
+    const marginX = Math.max(24, rootRect.width * 0.03);
+    const marginY = 16;
+
     const { cx: fx, cy: fy } = home(cards[i]);
 
     cards.forEach((c, j) => {
       if (j === i) {
-        gsap.to(c, { x: 0, y: -grown * LIFT, duration: 0.55, ease: "power3.out", overwrite: "auto" });
+        /* Lift the active card by a fraction of what it grew, with dual-bound top and bottom safety */
+        const currentY = Number(gsap.getProperty(c, "y")) || 0;
+        const restingTop = c.getBoundingClientRect().top - currentY - rootRect.top;
+        const targetLift = -grown * LIFT;
+        const maxUpwardLift = marginY - restingTop; // most negative allowed Y (cannot lift above marginY)
+
+        // Check bottom boundary on shallow laptop viewports (e.g. 1024x600):
+        const maxBottom = rootRect.height - marginY;
+        const projectedBottom = restingTop + c.offsetHeight + grown + targetLift;
+        let lift = targetLift;
+        if (projectedBottom > maxBottom) {
+          lift += maxBottom - projectedBottom;
+        }
+
+        const clampedY = Math.max(lift, maxUpwardLift);
+
+        gsap.to(c, { x: 0, y: Math.min(0, clampedY), duration: 0.55, ease: "power3.out", overwrite: "auto" });
         return;
       }
       const { cx, cy } = home(c);
@@ -143,9 +180,38 @@ export default function Faq({ hideStickers = false }: { hideStickers?: boolean }
       /* scaled by how much the pill actually grew, so a one-line answer
          nudges and a long one clears real space. */
       const amount = PUSH * force * Math.min(1.4, grown / 70);
+
+      const rawTargetX = (dx / d) * amount;
+      const rawTargetY = (dy / d) * amount;
+
+      /* Clamp X to prevent pushing beyond root boundaries on compact desktops */
+      const currentX = Number(gsap.getProperty(c, "x")) || 0;
+      const cardRect = c.getBoundingClientRect();
+      const restingLeft = cardRect.left - currentX - rootRect.left;
+      const restingRight = restingLeft + c.offsetWidth;
+
+      const minTargetX = marginX - restingLeft;
+      const maxTargetX = rootRect.width - marginX - restingRight;
+
+      const clampedX = minTargetX <= maxTargetX
+        ? Math.max(minTargetX, Math.min(maxTargetX, rawTargetX))
+        : rawTargetX;
+
+      /* Clamp Y to prevent pushing out of vertical bounds */
+      const currentY = Number(gsap.getProperty(c, "y")) || 0;
+      const restingTop = cardRect.top - currentY - rootRect.top;
+      const restingBottom = restingTop + c.offsetHeight;
+
+      const minTargetY = marginY - restingTop;
+      const maxTargetY = rootRect.height - marginY - restingBottom;
+
+      const clampedY = minTargetY <= maxTargetY
+        ? Math.max(minTargetY, Math.min(maxTargetY, rawTargetY))
+        : rawTargetY;
+
       gsap.to(c, {
-        x: (dx / d) * amount,
-        y: (dy / d) * amount,
+        x: clampedX,
+        y: clampedY,
         duration: 0.55,
         ease: "power3.out",
         overwrite: "auto",
@@ -157,11 +223,15 @@ export default function Faq({ hideStickers = false }: { hideStickers?: boolean }
     /* bleed: the pills are placed against the full section, not the centred
        content column, so the percentages mean what the tuner showed. */
     <Section id="faq" bleed className="bg-violet text-[#3D065F]">
-      {/* Desktop scattered pill layout (>= 1024px) - preserves exact 1536x742 baseline geometry */}
-      <div ref={wrap} className="relative hidden min-h-[var(--section-fill)] overflow-hidden lg:block">
+      {/* Desktop scattered pill layout (>= 1024px) - bounded within canvas ceiling */}
+      <div
+        ref={wrap}
+        data-faq-wrap
+        className="relative mx-auto hidden min-h-[var(--section-fill)] w-full max-w-[var(--canvas-max-width,120rem)] overflow-hidden lg:block"
+      >
         {/* the wordmark, centred. pointer-events-none so it never blocks a
-            pill that overlaps it. */}
-        <h2 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[clamp(4.5rem,1.6rem+7.4vw,12.5rem)] leading-[0.9] uppercase select-none">
+            pill that overlaps it. Tuned opacity on compact desktop (1024px-1280px) to preserve pill readability. */}
+        <h2 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[clamp(4.5rem,1.6rem+7.4vw,12.5rem)] leading-[0.9] uppercase select-none opacity-20 xl:opacity-100 transition-opacity duration-300">
           FAQ
         </h2>
 
@@ -170,15 +240,8 @@ export default function Faq({ hideStickers = false }: { hideStickers?: boolean }
             key={p.q}
             data-pill
             style={{ left: `${p.x}%`, top: `${p.y}%` }}
-            /* ⚠ THE OPEN PILL PAINTS ABOVE ITS NEIGHBOURS. They overlap once
-               tilted and expanded, and document order would otherwise let a
-               later pill cover the one being read. `has-[details[open]]` lifts
-               only the open one.
-
-               ⚠ GSAP WRITES x/y ON THIS WRAPPER, the pill writes its own
-               rotation and width on the <details> inside. Two elements, so the
-               shove and the expand cannot clobber each other's transform. */
-            className="absolute has-[details[open]]:z-10"
+            /* ⚠ THE OPEN PILL PAINTS ABOVE ITS NEIGHBOURS AND STICKERS. */
+            className="absolute z-10 has-[details[open]]:z-30"
           >
             <FaqItem
               q={p.q}
@@ -203,6 +266,28 @@ export default function Faq({ hideStickers = false }: { hideStickers?: boolean }
             />
           </div>
         ))}
+
+        {/* Floating Stickers Layer locked to desktop canvas stage - strictly z-[5] below pills (z-10 / z-30) */}
+        {!hideStickers && FAQ_STICKERS.map((st) => (
+          <div
+            key={st.id}
+            aria-hidden="true"
+            className="pointer-events-none absolute hidden lg:block z-[5]"
+            style={{
+              left: `${st.x}%`,
+              top: `${st.y}%`,
+              width: `${st.w}%`,
+              zIndex: st.z ?? 5,
+              transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
+            }}
+          >
+            <img
+              src={st.src}
+              alt={st.name}
+              className="block h-auto w-full max-w-none select-none drop-shadow-xl"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Mobile & Tablet stacked accordion (< 1024px) */}
@@ -223,28 +308,6 @@ export default function Faq({ hideStickers = false }: { hideStickers?: boolean }
           ))}
         </div>
       </div>
-
-      {/* Floating Stickers Layer */}
-      {!hideStickers && FAQ_STICKERS.map((st) => (
-        <div
-          key={st.id}
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          style={{
-            left: `${st.x}%`,
-            top: `${st.y}%`,
-            width: `${st.w}%`,
-            zIndex: st.z ?? 25,
-            transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-          }}
-        >
-          <img
-            src={st.src}
-            alt={st.name}
-            className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-          />
-        </div>
-      ))}
     </Section>
   );
 }

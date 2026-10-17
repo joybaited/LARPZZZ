@@ -501,7 +501,8 @@ export default function HeroTuner() {
       if (d.el.kind === "text" && ux && uy) {
         const grow = (e.clientX - d.startX) * ux + (e.clientY - d.startY) * uy;
         const factor = Math.max(0.15, 1 + grow / d.diag);
-        set(d.i, { size: +Math.min(400, Math.max(4, (d.el.size ?? 16) * factor)).toFixed(1) });
+        const prevSize = typeof d.el.size === "number" ? d.el.size : parseFloat(String(d.el.size)) || 16;
+        set(d.i, { size: +Math.min(400, Math.max(4, prevSize * factor)).toFixed(1) });
         setGuides([]);
         return;
       }
@@ -1388,8 +1389,8 @@ ${els.map((e) => {
               )}
             </div>
             <Row label="size px">
-              <input type="range" min={1} max={300} step={0.1} value={current.size ?? 16} onChange={(e) => set(sel, { size: +e.target.value })} className="w-full" />
-              <input type="number" value={num(current.size)} onChange={(e) => set(sel, { size: +e.target.value })} className="w-16 rounded border border-black/15 px-1.5 py-1" />
+              <input type="range" min={1} max={300} step={0.1} value={typeof current.size === "number" ? current.size : parseFloat(String(current.size)) || 16} onChange={(e) => set(sel, { size: +e.target.value })} className="w-full" />
+              <input type="number" value={num(typeof current.size === "number" ? current.size : parseFloat(String(current.size)) || undefined)} onChange={(e) => set(sel, { size: +e.target.value })} className="w-16 rounded border border-black/15 px-1.5 py-1" />
             </Row>
             {current.kind !== "text" && (
               <Row label="radius">

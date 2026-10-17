@@ -151,8 +151,9 @@ export default function Card({ heading, copy, media }: CardData) {
           }}
           /* `isolate` gives it its own stacking context so nothing inside can
              paint over the text below, and `clip` crops the wheel's phones,
-             which are deliberately taller than their box. */
-          className="absolute top-0 isolate overflow-clip"
+             which are deliberately taller than their box. Container query
+             supports precise proportional offsets (e.g. 6cqw for iPhone). */
+          className="absolute top-0 isolate overflow-clip [container-type:inline-size]"
           aria-hidden="true"
         >
           {media.kind === "wheel" ? (
@@ -208,11 +209,9 @@ export default function Card({ heading, copy, media }: CardData) {
                  inside the source even at 2x DPR. Nothing is re-encoded and
                  the files are untouched; the enlargement is CSS layout, not
                  a resample. */
-              style={
-                media.down
-                  ? ({ translate: `-50% calc(-50% + ${media.down})` } as React.CSSProperties)
-                  : undefined
-              }
+              style={{
+                translate: `-50% calc(-50% + ${media.down || "0px"})`,
+              } as React.CSSProperties}
               className="absolute top-1/2 left-1/2 block aspect-square w-[88%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
             />
           ) : (
@@ -222,10 +221,11 @@ export default function Card({ heading, copy, media }: CardData) {
               height={media.h}
               alt=""
               decoding="async"
-              /* ⚠ NEVER loading="lazy" in the rail: the track moves by
-                 transform, which does not update the geometry the lazy loader
-                 watches, so an off-screen card's image never fetches at all —
-                 paints nothing, no error. */
+              style={
+                media.down
+                  ? ({ translate: `0 ${media.down}` } as React.CSSProperties)
+                  : undefined
+              }
               className="block h-full w-full max-w-none rounded-[0.75rem] object-cover"
             />
           )}

@@ -57,44 +57,56 @@ export default function PriceEl({ el }: { el: El }) {
       </>
     );
 
+    const isBtn = Boolean(el.btn);
+    const href = isBtn
+      ? el.text?.toLowerCase() === "buy"
+        ? "#pricing"
+        : el.text?.toLowerCase() === "login"
+        ? "/login"
+        : el.text?.toLowerCase().includes("started") ||
+          el.text?.toLowerCase().includes("free") ||
+          el.text?.toLowerCase().includes("lifetime") ||
+          el.text?.toLowerCase().includes("buy")
+        ? "#pricing"
+        : undefined
+      : undefined;
+
+    const Comp = href ? "a" : "div";
+
     return (
-      <div
+      <Comp
+        {...(href ? { href } : isBtn ? { role: "button", tabIndex: 0 } : {})}
         style={{
           ...pos,
           width: `${el.w ?? 60}%`,
           height: `${el.h ?? 12}%`,
-          /* ⚠ A BUTTON NEEDS A FLOOR UNDER ITS HEIGHT. The height is a
-             percentage of the card and the box is `overflow: hidden`, so at a
-             narrow viewport — or the moment the type is enlarged — the label
-             is silently cropped inside a box that still looks fine. Measured
-             before this: a 56px pill holding 20px of text, with nothing to
-             stop the box shrinking under it. 2.4em of its own font size
-             clears the type plus the roll at every card size. */
-          minHeight: el.btn ? "2.4em" : undefined,
+          /* ⚠ A BUTTON NEEDS A SANE BOUNDED RANGE. Fluid clamp clears the
+             type plus the roll at every card and screen size, and prevents
+             ballooning on 4K or collapsing on shallow viewports. */
+          maxWidth: isBtn ? "210px" : undefined,
+          minWidth: isBtn ? "120px" : undefined,
+          minHeight: isBtn ? "46px" : undefined,
+          maxHeight: isBtn ? "56px" : undefined,
           background: el.fill ?? "#ffffff",
-          /* ⚠ CAPPED IN px, NOT AT 50%. A percentage radius resolves PER-AXIS:
-             50% on a 304x56 pill rounds the horizontal by 152px and the shape
-             reads as an ellipse, not a pill. A px radius is uniform on both
-             axes and the browser already clamps one that exceeds the box, so
-             `radius: 999` gives a true pill at any card size and a small
-             radius still reads as a small radius. */
-          borderRadius: `${el.radius ?? 0}px`,
-          border: el.border ? `${el.border}px solid ${el.borderColor ?? "#ffffff"}` : undefined,
+          /* ⚠ CAPPED IN px, NOT AT 50%. A percentage radius resolves PER-AXIS.
+             `radius: 999` or true pill ensures clean rounding at any scale. */
+          borderRadius: el.radius ? (el.radius >= 999 ? "999px" : `calc(${el.radius} * var(--px, 1px))`) : isBtn ? "9999px" : 0,
+          border: el.border ? `calc(${el.border} * var(--px, 1px)) solid ${el.borderColor ?? "#ffffff"}` : undefined,
           color: el.color ?? "#000000",
-          fontSize: `${el.size ?? 15}px`,
+          fontSize: typeof el.size === "string" ? el.size : `calc(${el.size ?? 15} * var(--px, 1px))`,
           fontWeight: el.weight ?? 600,
-          letterSpacing: `${el.tracking ?? 0}em`,
+          letterSpacing: el.tracking !== undefined ? `${el.tracking}em` : undefined,
           fontFamily: el.font === "display" ? "var(--font-display)" : undefined,
           textTransform: el.caps ? "uppercase" : undefined,
         }}
         /* min-w-0 so a long label cannot push the box wider than its own w,
            and overflow-hidden so shrinking clips instead of spilling. */
-        className={`absolute flex min-w-0 items-center justify-center overflow-hidden text-center leading-tight whitespace-pre-wrap${
-          el.btn ? " pill-btn isolate cursor-pointer" : ""
+        className={`absolute flex min-w-0 items-center justify-center overflow-hidden text-center leading-none whitespace-pre-wrap no-underline select-none${
+          isBtn ? " pill-btn isolate cursor-pointer" : " leading-tight"
         }`}
       >
-        {el.btn ? label : el.text}
-      </div>
+        {isBtn ? label : el.text}
+      </Comp>
     );
   }
 
@@ -110,7 +122,7 @@ export default function PriceEl({ el }: { el: El }) {
            element a real `w` (drag a side handle) to control where. */
         maxWidth: el.w ? undefined : "92%",
         color: el.color ?? "#ffffff",
-        fontSize: `${el.size ?? 16}px`,
+        fontSize: typeof el.size === "string" ? el.size : `${el.size ?? 16}px`,
         fontWeight: el.weight ?? 400,
         letterSpacing: `${el.tracking ?? 0}em`,
         /* ⚠ MEGION IS ONE WEIGHT (BOLD) AND DISPLAY ONLY. Picking it ignores
