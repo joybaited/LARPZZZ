@@ -11,6 +11,97 @@ session would get wrong without being told.
 
 ---
 
+## Session — 2026-10-18 (session 20) — Claude
+
+Responsive pass over every section, a Phantom-style page-colour system, iOS
+video fallbacks, and a touch fix for the buttons. All of it merged to `main`
+(#8 as `7572c18`, docs #9 as `7fca831`) and deployed:
+**https://larpz-final.vercel.app**
+
+### Done
+
+- **Stickers removed from five sections.** Hero, Features, Testimonials, Faq
+  and Pricing lost their config arrays, render layers and `hideStickers`
+  props — 16 stickers plus two hardcoded on the Hero's mobile phone art. How
+  it works keeps its four step badges and is the only section with any. The
+  image files stay in `public/`; they are design assets, not build output.
+- **`/sticker-tuner` rewritten** around the one section that still has
+  stickers. Seven real bugs fixed, including a resize that divided by
+  distance-at-pointerdown (a corner drag starts AT the handle, so the first
+  move blew the sticker up by a huge factor) and a drag handler reading state
+  from a stale closure.
+- **Hero fits the screen on mobile.** It did not fit any viewport: 770px tall
+  on a 730px screen, 1023x700 over by 48px, landscape over by 231px. Now
+  exactly the viewport at all nine sizes tested. The headline was also
+  rendering 133px wide on a 390 screen; it is 199px now.
+- **How it works badges stopped crossing card copy** — 11 overlaps to 0.
+- **The dead bands under headings are closed.** 252px to 52px at
+  Testimonials/390, 331px to 70px at Pricing/1024x1290; desktop unchanged.
+- **The page colour tweens between sections**, lifted 1:1 from phantom.com:
+  the colour lives on `<html>`, sections paint nothing, CSS interpolates over
+  0.4s. `components/PageTint.tsx` writes two variables and nothing else.
+- **iOS video fallbacks.** The card videos and nav ghost are VP9 WebM with
+  alpha, which Safari cannot decode — they were invisible on the owner's
+  phone. Each now has an H.264 `<source>` matted onto the flat colour it sits
+  on.
+- **The footer's blue seam line is gone** (mobile only overlay), the footer
+  coins are no longer 27% of the screen, and the nav wordmark scales.
+- **Touch buttons, FAQ pill wrapping, hamburger inset** — the last round, all
+  three documented in detail in `SNV.md`.
+- **`SNV.md` gained two handover sections** for @snvzyn covering the method,
+  the traps and what changed in his files.
+
+### Still open
+
+- **@snvzyn has not been told**, and this touched his files. `Footer.tsx`
+  gained one mobile-only overlay and `FooterCoins.tsx` had its mobile sizing
+  bounded — both at the owner's explicit request, desktop values untouched.
+  Shared files also changed: `globals.css` (two tokens + a transition),
+  `layout.tsx` (two mounts), `Section.tsx` (every section's height).
+- **The sweep sits at 6/20 viewports**, all Testimonials quote clipping on
+  shallow screens (843x546, 844x340) and tablet portrait. Pre-existing.
+- **Two eslint errors pre-date all of this**: `Faq.tsx:46` and
+  `hero-tuner:318`. Confirmed by stashing. Neither blocks the build.
+- **The owner was going to rearrange stickers on desktop** and have them
+  baked in as final positions. Not started.
+
+### What the next session would get wrong
+
+- **`FooterCoins` splits at 768 and that is CORRECT.** Everything else splits
+  at `lg` (1024) so it looks like a mistake. It is the footer's own
+  breakpoint — `Footer.tsx` swaps its cloud at `md` and `TicketStrip.tsx`
+  swaps the strip at the same `md`, and the coins sit in the gap those leave.
+  I "aligned" it to 1024 and had to revert: at 768 the horizontal strip does
+  not exist at all, so the mobile coin band would be placed against a strip
+  that is not there.
+- **Writing `<html>` inside a CSS comment crashes Turbopack.**
+  `TurbopackInternalError` / `0xc0000142` in the PostCSS worker, and the error
+  names neither the line nor the cause. Existing `<ul>`/`<nav>` comments are
+  fine, so it is specific to that tag. Bisect by reverting `globals.css`
+  alone.
+- **`ffprobe` reports `yuv420p` on a transparent VP9 file.** `Card.tsx`
+  already warned about this and it still caught me — I read "no alpha" and
+  encoded H.264 fallbacks that would have shown a black box over 52-68% of
+  each frame. Decode a frame to rgba and read the alpha values.
+- **Aspect ratio, not `lg`, is the right gate for portrait layout fixes.**
+  iPad Pro portrait is 1024 wide and passes a width breakpoint while behaving
+  like a tall screen.
+- **Deploys need the repo public.** Vercel refuses to build it while private,
+  and separately reported "Git author kez-james must have access to the
+  project". The workaround both times was flip public, deploy, flip back. The
+  GitHub account needs adding to the Vercel project.
+
+### Method worth keeping
+
+Every number above came off a Playwright probe against the running page.
+`scripts/responsive-check.mjs` is the one that stayed in the repo — 20
+viewports, reports collisions, escapes, horizontal scroll and clipped text,
+and never writes a section. **Four separate times a change that looked
+obviously right measured worse**, and only the re-measure caught it. Probes
+for one-off questions go in `scripts/.name.mjs` and get deleted.
+
+---
+
 ## Session — 2026-10-16 (session 19) — Antigravity (AGY)
 
 **Done by Antigravity (AGY)**: Project SCALPEL audit and compliance hardening. Verified zero layout breaks across viewport sizes, hardened production builds for DevTools stealth, and added collaborative developer tooling.

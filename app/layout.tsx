@@ -3,6 +3,7 @@ import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import PageTint from "@/components/PageTint";
 import { PillStyle } from "@/components/pillHover";
+import PillTouch from "@/components/PillTouch";
 import ViewportHUD from "@/components/ViewportHUD";
 
 export const metadata: Metadata = {
@@ -26,6 +27,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             rules a child of a clipping, transformed box. Here it is one
             sheet for every pill on the site. */}
         <PillStyle />
+        {/* the finger's trigger for that stylesheet's roll, delegated once for
+            every pill. Here for the same reason the sheet is: the markup is
+            built in two server components and neither should become client. */}
+        <PillTouch />
         <ViewportHUD />
         {children}
       </body>

@@ -243,9 +243,23 @@ export function NavMenuWithPanel({
           further corner-to-corner than a flat one, so without the shrink the
           X reads visibly larger than the closed burger. Theirs is exactly
           0.75. */}
+      {/* ⚠ A FLOOR UNDER THE LEFT INSET ON MOBILE. `x` is a percentage of the
+          SECTION, which is the right unit on a wide screen — but 4.6% of a
+          390px phone is 18px, and measured, the button's left edge sat 9-13px
+          from the screen edge at 360-430 against 92px on desktop. It read as
+          jammed into the corner.
+          `max(x%, 22px)` keeps the tuned percentage wherever it is already
+          bigger — every width from about 480 up, so desktop and /hero-tuner
+          are untouched — and only lifts it where the percentage has collapsed
+          to nothing. A media query would have been a second number to keep in
+          sync with `x`; max() reads the same value. */}
       <div
         className="absolute"
-        style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
+        style={{
+          left: `max(${x}%, 22px)`,
+          top: `${y}%`,
+          transform: "translate(-50%, -50%)",
+        }}
       >
         <button
           ref={btn}
