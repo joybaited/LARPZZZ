@@ -94,7 +94,7 @@ const COIN_DEFS: CoinDef[] = [
   { id: "c52-shiba-bottom", src: "/images/icons/13.webp", alt: "Shiba Bottom", pctX: 50.5, pctY: 102, size: 170, rotate: 10, zIndex: 16 },
 ];
 
-// Mobile gap coordinates (strictly for mobile < 768px in the gap between cloud and ticket strip)
+// Mobile gap coordinates (< 768px — the FOOTER's own `md` split, see note below — in the gap between cloud and ticket strip)
 type MobileCoord = { pctX: number; pctY: number; size: number };
 const MOBILE_COORDS: Record<number, MobileCoord> = {
   // Tier 1: Upper rim under cloud (y: 44-51vh)
@@ -161,6 +161,18 @@ export default function FooterCoins() {
       const rect = container.getBoundingClientRect();
       w = rect.width;
       h = rect.height;
+      /* ⚠ 768 IS CORRECT HERE AND MUST STAY — it is the FOOTER's breakpoint,
+         not the site's. Everything else in this codebase splits at `lg`
+         (1024), so 768 looks like a mistake; it is not. Footer.tsx swaps its
+         cloud at `md:block` / `md:hidden` and TicketStrip.tsx swaps the strip
+         from a vertical rail to a horizontal bar at the same `md`. The coins
+         are positioned in the gap those two leave, so they have to change
+         layout on the same line the gap does.
+         Verified by measurement: at 768 the horizontal ticket strip does not
+         exist (`flex md:hidden`), so the mobile coin band would be placed
+         against a strip that is not there. Moving this to 1024 desynced the
+         coins from their own section — do not "align" it again without
+         moving Footer.tsx and TicketStrip.tsx with it. */
       const isMobile = w < 768;
       const modeChanged = lastWasMobile !== null && lastWasMobile !== isMobile;
       lastWasMobile = isMobile;
@@ -183,7 +195,15 @@ export default function FooterCoins() {
         }
       } else {
         // MOBILE ONLY GAP LAYOUT (gap between cloud bottom ~48vh and ticket strip ~86vh)
-        const mobScale = Math.min(1.2, Math.max(0.75, w / 390));
+        /* ⚠ THE SIZE IS CAPPED AS A FRACTION OF THE VIEWPORT. Measured
+           before: the largest coin was 114px on a 430 screen and 95px on a
+           360 — 26-27% of the whole width for one decorative icon, which is
+           what reads as "oversized" on a phone. The sizes in MOBILE_COORDS
+           are tuned against a ~390 phone, so scaling them by w/390 keeps that
+           proportion; the 1.0 ceiling stops the collage inflating on a tablet
+           where the same band is far wider, and the extra min() holds any
+           single coin under ~19% of the screen. */
+        const mobScale = Math.min(1.0, Math.max(0.72, w / 390));
 
         for (let i = 0; i < n; i++) {
           const node = nodes[i];
@@ -193,7 +213,7 @@ export default function FooterCoins() {
           if (mCoord) {
             node.homeX = (mCoord.pctX / 100) * w;
             node.homeY = (mCoord.pctY / 100) * h;
-            node.radius = mCoord.size * mobScale * 0.44;
+            node.radius = Math.min(mCoord.size * mobScale, w * 0.19) * 0.44;
             if (el) el.style.display = "block";
           } else {
             // Extra icons safely hidden on mobile to avoid overcrowding the small gap
@@ -304,11 +324,24 @@ export default function FooterCoins() {
       // 3. Natural Friction & Inertia (Zero Spring Snap-Back)
       // Coins retain their new positions when nudged/pushed without returning to origin
       const damping = 0.78;
+      /* same 768 boundary as updateDimensions — if these two disagree, a
+         viewport gets mobile home positions with desktop containment bounds
+         (or the reverse) and the coins settle against the wrong walls. */
       const isMobile = w < 768;
       const minX = isMobile ? -35 : w * 0.45;
       const maxX = isMobile ? w + 35 : w * 0.79;
       const minY = isMobile ? h * 0.41 : -120;
-      const maxY = isMobile ? h * 0.82 : h + 120;
+      /* ⚠ 0.78, NOT 0.82. The ticket strip sits at the foot of the footer and
+         the clamp let coins settle into it — measured 3 coins overlapping the
+         strip at 768 once this component started using the mobile layout
+         there at all. The strip has to stay readable, so the physics ceiling
+         stops above it rather than relying on the home coordinates alone
+         (a nudge or a resize moves coins off home; the clamp is the only
+         thing that holds).
+         Measured: the strip's top edge is at 82% of the footer and the lowest
+         coin bottom reached 81.9% — touching, with nothing to spare. 0.74
+         leaves a real margin at every width instead of a rounding error. */
+      const maxY = isMobile ? h * 0.74 : h + 120;
 
       for (let i = 0; i < n; i++) {
         const node = nodes[i];

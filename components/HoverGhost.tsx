@@ -67,6 +67,21 @@ export default function HoverGhost({
            rather than wherever the pointer happened to leave it. */
         v.currentTime = 0;
       }}
+      /* ⚠ TOUCH HAS NO HOVER, so on a phone this component did nothing: the
+         ghost never played and `group-hover` never opened. A touch start
+         plays it and the end stops it, which gives a tap the same crossfade
+         a hover gives — and costs desktop nothing, since a mouse never fires
+         these. The css below pairs them with `group-active`. */
+      onTouchStart={(e) => {
+        const v = e.currentTarget.querySelector("video");
+        if (v) void v.play().catch(() => {});
+      }}
+      onTouchEnd={(e) => {
+        const v = e.currentTarget.querySelector("video");
+        if (!v) return;
+        v.pause();
+        v.currentTime = 0;
+      }}
     >
       {/* ⚠ FADES OUT SLOWLY, COMES BACK INSTANTLY — Kez's. The two durations
           are deliberately different: 420ms out so the swap reads as a
@@ -79,8 +94,13 @@ export default function HoverGhost({
            group-hover:duration-[420ms] means: fade out over 420ms, return
            instantly — which is exactly what Kez asked for. Putting a single
            duration on both would make the return as slow as the exit. */
-        className="font-display col-start-1 row-start-1 block whitespace-nowrap opacity-100 transition-opacity duration-0 [transition-timing-function:cubic-bezier(0.33,0,0.2,1)] group-hover:opacity-0 group-hover:duration-[420ms] motion-reduce:transition-none"
-        style={{ fontSize: `${size}px`, color }}
+        className="font-display col-start-1 row-start-1 block whitespace-nowrap opacity-100 transition-opacity duration-0 [transition-timing-function:cubic-bezier(0.33,0,0.2,1)] group-hover:opacity-0 group-hover:duration-[420ms] group-active:opacity-0 group-active:duration-[420ms] motion-reduce:transition-none"
+        /* ⚠ FLUID, NOT A PX LUMP. `size` is 28.7px tuned against the 1536
+           nav; on a 360 phone the nav bar itself is ~48px tall and a fixed
+           28.7px wordmark crowds it. The px value is kept as the CEILING and
+           a vw term carries it down — the desktop value is unchanged because
+           the clamp saturates at its max well before 1024. */
+        style={{ fontSize: `clamp(15px, 4.6vw, ${size}px)`, color }}
       >
         {text}
       </span>
@@ -92,16 +112,26 @@ export default function HoverGhost({
           It is allowed to be taller than the row: grid lets it overflow the
           cell, so `ghost` is not capped by the wordmark's height the way the
           old roller capped it by a cell. */}
+      {/* ⚠ TWO SOURCES, WEBM FIRST — same reason as the feature cards. The
+          webm is VP9 with alpha, which Safari cannot decode, so on the
+          owner's phone the ghost was simply never visible. The mp4 is the
+          same footage matted onto the nav's own fill (#3D065F), opaque and
+          H.264, so it plays everywhere and sits invisibly on that bar.
+          A browser takes the first source it can play: order is the fix. */}
       <video
-        src={src}
         muted
         loop
         playsInline
         preload="metadata"
         aria-hidden="true"
-        className="pointer-events-none col-start-1 row-start-1 block w-auto max-w-none opacity-0 transition-opacity duration-0 [transition-timing-function:cubic-bezier(0.33,0,0.2,1)] group-hover:opacity-100 group-hover:duration-[420ms] motion-reduce:transition-none"
-        style={{ height: `${ghost}px`, marginTop: `${ghostY}px` }}
-      />
+        className="pointer-events-none col-start-1 row-start-1 block w-auto max-w-none opacity-0 transition-opacity duration-0 [transition-timing-function:cubic-bezier(0.33,0,0.2,1)] group-hover:opacity-100 group-hover:duration-[420ms] group-active:opacity-100 group-active:duration-[420ms] motion-reduce:transition-none"
+        /* same treatment, and the offset scales with it or the ghost drifts
+           off the word as the type shrinks. */
+        style={{ height: `clamp(24px, 7.4vw, ${ghost}px)`, marginTop: `${ghostY}px` }}
+      >
+        <source src={src} type="video/webm" />
+        <source src={src.replace(/\.webm$/, ".mp4")} type="video/mp4" />
+      </video>
     </div>
   );
 }

@@ -175,43 +175,32 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
   },
 ];
 
-export const PRICING_STICKERS = [
-  {
-    id: "sticker-1792129446612",
-    name: "screenshot-2026-10-15-131401",
-    src: "/images/sticker-screenshot-2026-10-15-131401.png",
-    x: 90.1,
-    y: 20.6,
-    w: 12.6,
-    rotate: -14,
-    z: 5,
-  },
-  {
-    id: "sticker-1792129480539",
-    name: "screenshot-2026-10-15-131411",
-    src: "/images/sticker-screenshot-2026-10-15-131411.png",
-    x: 9.2,
-    y: 20.2,
-    w: 9.2,
-    rotate: -27,
-    z: 5,
-  },
-  {
-    id: "sticker-1792129500616",
-    name: "screenshot-2026-10-15-131354",
-    src: "/images/sticker-screenshot-2026-10-15-131354.png",
-    x: 61.1,
-    y: 22.1,
-    w: 11,
-    rotate: 23,
-    z: 5,
-  },
-];
 
-export default function Pricing({ hideStickers = false }: { hideStickers?: boolean } = {}) {
+export default function Pricing() {
   return (
-    <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
-      <div className="relative z-10 @container flex min-h-[var(--section-fill)] items-center justify-center py-8 lg:py-0">
+    <Section id="pricing" heading="Pricing" className="text-grape">
+      {/* ⚠ THE SEAM INTO THE FOOTER. Pricing's ground is the tweened root
+          colour and the footer paints its own #e3b5fb — two different
+          surfaces meeting on a hard line. This fades the second one UP over
+          the foot of this section so the join reads as a blend.
+          It is a gradient to the footer's exact colour, not to transparent:
+          fading to transparent would reveal the root colour underneath and
+          produce a lighter band in the middle of the fade, which is the
+          classic gradient-seam artefact.
+          Bottom-anchored and pointer-events-none, below the cards (z-0,
+          cards are z-10), so it changes nothing about the layout. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
+        style={{ background: "linear-gradient(to bottom, transparent, #e3b5fb)" }}
+      />
+      {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN — same reason as
+          Features and Testimonials: the three cards are a fixed height, so a
+          portrait viewport reserved far more than they need and centring put
+          half the surplus under the heading (measured 331px at 1024x1290).
+          Phones were already fine at ~4% because the cards stack and overflow
+          the fill anyway; this fixes the tablet case without touching them. */}
+      <div className="relative z-10 @container flex items-center justify-center py-8 [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0">
         <ul
           role="list"
           className="@container [container-type:inline-size] m-0 flex w-full max-w-[min(120rem,calc(1200px*var(--scale-factor,1)))] list-none flex-col items-center gap-6 p-0 lg:flex-row lg:items-stretch lg:justify-center lg:gap-[clamp(24px,4.2vw,60px)]"
@@ -238,31 +227,6 @@ export default function Pricing({ hideStickers = false }: { hideStickers?: boole
         </ul>
       </div>
 
-      {/* Floating Stickers Layer — Stage-isolated within 120rem canvas; quarantined to desktop (hidden lg:block) at z-[5] behind cards to prevent text/CTA obstruction */}
-      {!hideStickers && (
-        <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] hidden lg:block z-[5]">
-          {PRICING_STICKERS.map((st) => (
-            <div
-              key={st.id}
-              aria-hidden="true"
-              className="pointer-events-none absolute hidden lg:block z-[5]"
-              style={{
-                left: `${st.x}%`,
-                top: `${st.y}%`,
-                width: `${st.w}%`,
-                zIndex: st.z ?? 5,
-                transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-              }}
-            >
-              <img
-                src={st.src}
-                alt={st.name}
-                className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-              />
-            </div>
-          ))}
-        </div>
-      )}
     </Section>
   );
 }

@@ -170,99 +170,6 @@ export const HERO = {
     color: "#EAC2FF",
   },
 
-  /* ⚠ FLOATING STICKERS. x/y are PERCENTAGES OF THE SECTION, like els — a
-     placement tuned at one window size has to hold at every other, which is
-     the rule the tuners exist to keep.
-
-     x/y place the sticker's CENTRE, so a size change grows it about its own
-     middle rather than shifting it down and right.
-
-     w is a percentage of the section's WIDTH, so the sticker scales with the
-     page instead of staying a fixed pixel lump on a small screen.
-
-     rise/drift are the float's travel in px and tilt its rotation; dur and
-     delay set the period and stagger it so two stickers never move in
-     lockstep. The motion itself is one keyframe in globals.css.
-
-     ⚠ `rotate` IS THE RESTING ANGLE AND IT LIVES ON THE WRAPPER, not the
-     image. The float keyframe writes `rotate()` on the image every frame, so
-     a static angle set there is overwritten immediately — it has to sit on
-     the element the animation does not touch. `tilt` is the float's own
-     rocking about whatever angle this sets.
-
-     ⚠ z IS ABOUT THE PHONE ART. `HERO.art` renders at z-10 — the same layer
-     the 3D canvas used, so this scale did not change when the model came
-     out — and anything above that paints IN FRONT of the phone, anything
-     below it BEHIND. The balloons are 20 and sit in front at its foot; the
-     padlock is 5 and tucks behind at its top right.
-
-     ⚠ KEEP EVERY STICKER BELOW 30. The nav is z-30 so that the open dropdown
-     covers the hero — a sticker at 30 or above would punch through the panel
-     and float over it, which is the same bug the headline had at z-20 before
-     the nav was raised. Nothing enforces this, so it is a rule, not a
-     guarantee: 20 is the intended ceiling for "in front of the phone". */
-  stickers: [
-    {
-      name: "balloons",
-      src: "/images/sticker-balloons.webp",
-      alt: "",
-      x: 35.5,
-      y: 88.5,
-      w: 13.5,
-      rotate: "-7deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 20,
-    },
-    {
-      name: "lock",
-      src: "/images/sticker-lock.webp",
-      alt: "",
-      x: 68.5,
-      y: 24,
-      w: 14,
-      rotate: "9deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 5,
-    },
-    {
-      name: "screenshot-2026-10-15-132320",
-      src: "/images/sticker-screenshot-2026-10-15-132320.png",
-      alt: "",
-      x: 25.8,
-      y: 110.3,
-      w: 10,
-      rotate: "0deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 25,
-    },
-    {
-      name: "screenshot-2026-10-15-132331",
-      src: "/images/sticker-screenshot-2026-10-15-132331.png",
-      alt: "",
-      x: 75.9,
-      y: 112.9,
-      w: 12.3,
-      rotate: "127deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 25,
-    },
-  ],
 };
 
 /* ⚠ A PAIR IS A `clamp()`, NOT A LERP BETWEEN THE ENDS — and css already
@@ -316,7 +223,7 @@ const PHONE: PhoneTune = {
   ...HERO.phone.parallax,
 };
 
-export default function Hero({ hideStickers = false }: { hideStickers?: boolean } = {}) {
+export default function Hero() {
   const { nav, headline: h } = HERO;
   const subtitleEl = HERO.els.find((e) => e.name === "text 2");
 
@@ -328,13 +235,27 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
          here. Padding, not a spacer div: the ground is an absolute `inset-0`
          layer, so it grows with the section and the extra space is the same
          colour for free. */
-      className="min-h-[100svh] pb-[clamp(32px,2rem+3vw,80px)] max-lg:[--phone-w:clamp(260px,65vw,420px)] lg:[--phone-w:33%] flex flex-col overflow-x-hidden max-lg:overflow-y-visible lg:overflow-hidden">
+      /* ⚠ THE BOTTOM PADDING IS INSIDE THE VIEWPORT HEIGHT, NOT ADDED TO IT.
+         `min-h-[100svh]` with `pb-…` on the SAME element makes the box
+         100svh + the padding, so the hero was taller than the screen at every
+         mobile size — measured 770px on a 730px viewport, 796 on 770, and
+         1023x700 overflowed by 48px. `box-sizing: border-box` does not help:
+         it governs `height`, not `min-height`. Subtracting the pad from the
+         min-height is what makes the two agree.
+         Same trap Section.tsx documents for --section-fill. */
+      className="min-h-[calc(100svh-var(--hero-pb))] [--hero-pb:clamp(16px,4vh,80px)] pb-[var(--hero-pb)] max-lg:[--phone-w:clamp(260px,65vw,420px)] lg:[--phone-w:33%] flex flex-col overflow-x-hidden max-lg:overflow-y-visible lg:overflow-hidden">
       {/* ⚠ THE GROUND IS AN INLINE STYLE, NOT A TAILWIND CLASS. `bg-[${...}]`
           with an interpolated value generates NOTHING — Tailwind scans source
           text and never evaluates it, so the class silently does not exist.
           It rides on an absolute div rather than a `style` prop on <Section>,
           which has none and already uses style for its own minBlockSize. */}
-      <div className="absolute inset-0 -z-20" style={{ background: HERO.bg }} />
+      {/* ⚠ THE GROUND IS TRANSPARENT NOW — <html> PAINTS IT. The hero is the
+          first entry in PageTint's palette, so the root already carries
+          HERO.bg before a scroll happens; a second opaque layer here would
+          cover the tween and the hero would be the one section that never
+          changed colour. The div stays because the trail and the stickers are
+          positioned against it. */}
+      <div className="absolute inset-0 -z-20" />
 
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
           ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so
@@ -529,11 +450,16 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
 
                     Centred with left-1/2 + -translate-x-1/2 rather than a grid
                     column: nothing else shares its line, so there is no track
-                    to balance against. Hidden below md — at 390 the panel is
-                    the link list and a card over it would cover them. */}
+                    to balance against.
+
+                    ⚠ HIDDEN BELOW lg, NOT BELOW md. It was md, so it appeared
+                    at 768 — a tablet-portrait panel where the card sits over
+                    the link list and makes the labels unreadable, which is the
+                    exact thing the old comment said it was hidden to avoid. It
+                    is a desktop ornament; the mobile panel is the links. */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-[clamp(20px,1rem+2vw,48px)] left-1/2 hidden -translate-x-1/2 md:flex aspect-[397/437] items-center justify-center rounded-[16px] border-2 border-dashed p-[clamp(12px,1.5vw,28px)]"
+                  className="pointer-events-none absolute inset-y-[clamp(20px,1rem+2vw,48px)] left-1/2 hidden -translate-x-1/2 lg:flex aspect-[397/437] items-center justify-center rounded-[16px] border-2 border-dashed p-[clamp(12px,1.5vw,28px)]"
                   style={{ borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 40%, transparent)` }}
                 >
                   <div
@@ -632,49 +558,49 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
             {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
           </div>
 
-          {/* Floating Stickers Layer (Desktop) */}
-          {!hideStickers && HERO.stickers?.map((st) => (
-            <div
-              key={st.name}
-              aria-hidden="true"
-              className="pointer-events-none absolute"
-              style={{
-                left: `${st.x}%`,
-                top: `${st.y}%`,
-                width: `${st.w}%`,
-                zIndex: st.z,
-                transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
-              }}
-            >
-              <img
-                src={st.src}
-                alt={st.alt}
-                decoding="async"
-                className="animate-sticker block h-auto w-full max-w-none select-none"
-                style={{
-                  "--rise": `${st.rise}px`,
-                  "--drift": `${st.drift}px`,
-                  "--tilt": st.tilt,
-                  "--dur": st.dur,
-                  "--delay": st.delay,
-                } as React.CSSProperties}
-              />
-            </div>
-          ))}
         </div>
       </div>
 
       {/* ── MOBILE / TABLET ORCHESTRATOR (< 1024px) ─────────────────────────────────
           Textbook decoupled sequential vertical layout per SCALPEL-FE-002 & FE-004.
           Guarantees zero element collision across any aspect ratio or squished window. */}
-      <div className="relative z-20 mx-auto flex w-full max-w-xl flex-col items-center px-4 pt-[clamp(72px,12vh,96px)] pb-10 text-center lg:hidden">
-        {/* 1. Mobile Headline */}
+      {/* ⚠ ONE COLUMN THAT FITS THE SCREEN, AND THE ART ABSORBS WHAT IS LEFT.
+          Measured before this: the hero ran 770px tall on a 730px viewport and
+          1023x700 overflowed by 48px, because every child took its own slice
+          of vh independently (`pt-[12vh]`, art at `44vh`, `pb-10`) and
+          nothing reconciled the total against the screen.
+          Now the column is exactly the viewport minus the pad, the fixed-size
+          children (headline, copy, buttons) take their natural height, and the
+          art is the ONLY flexible one — `min-h-0 flex-1` lets it give up space
+          rather than push the buttons off. That is the one arrangement where
+          adding a line of copy cannot cause an overflow.
+
+          ⚠ `h-` AND `max-h-`, NOT `min-h-`. With a min-height the column has
+          no ceiling, so `flex-1` on the art has no deficit to distribute — it
+          kept its natural 437px and the column simply grew past the screen
+          (measured 823px on a 770 viewport, WORSE than before the change).
+          A definite height is what gives the flex layout something to divide.
+
+          ⚠ pt CLEARS THE NAV, which is fixed and ~48-53px tall (measured), so
+          the headline cannot slide under it the way it did in landscape. */}
+      <div className="relative z-20 mx-auto flex h-[calc(100svh-var(--hero-pb))] max-h-[calc(100svh-var(--hero-pb))] w-full max-w-xl flex-col items-center justify-center gap-[clamp(10px,2.2vh,22px)] px-4 pt-[clamp(64px,9vh,104px)] text-center lg:hidden">
+        {/* 1. Mobile Headline
+            ⚠ IT IS SIZED TO FILL THE COLUMN, NOT TO A CAUTIOUS clamp. The old
+            `clamp(34px, 8.5vw, 56px)` measured 133px WIDE on a 390 screen and
+            220px on a 768 one — a display headline using a third of the width
+            it was given, which reads as a mistake rather than restraint.
+            `min(13vw, …)` tracks the width the lines actually need; the vh term
+            keeps it from eating the art's budget on a short screen, and the
+            44px floor holds it readable at 360.
+            Basement's own scale does the same thing by switching tokens at the
+            breakpoint (f-h0 6.125rem -> f-h0-mobile 2.875rem) rather than
+            interpolating down to nothing. */}
         <h1
-          className="hero-headline m-0 text-center uppercase tracking-tight"
+          className="hero-headline m-0 shrink-0 text-center uppercase tracking-tight text-balance"
           style={{
             color: h.color,
-            fontSize: "clamp(34px, 8.5vw, 56px)",
-            lineHeight: 0.94,
+            fontSize: "clamp(44px, min(13vw, 7.5vh), 92px)",
+            lineHeight: 0.92,
             fontFamily: h.font === "display" ? "var(--font-display)" : undefined,
             fontWeight: h.weight,
           }}
@@ -686,68 +612,52 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
           ))}
         </h1>
 
-        {/* 2. Mobile Phone Artwork with Pinned Stickers */}
-        <div className="relative my-[clamp(14px,2.5vh,28px)] flex w-full max-w-[min(82vw,350px)] items-center justify-center">
+        {/* 2. Mobile Phone Artwork
+            ⚠ THIS IS THE ONLY CHILD THAT FLEXES, and that is deliberate: it is
+            the one element with no minimum legible size, so it is the one that
+            should shrink when the screen is short. `min-h-0` is what lets it —
+            a flex child defaults to `min-height: auto` and refuses to go below
+            its content, which is why the old `44vh` art pushed the buttons off
+            a 700px-tall window instead of giving up its own space.
+            `h-full w-auto` + object-contain means the image fits the box it is
+            given on BOTH axes and keeps its aspect ratio; it can never be the
+            thing that overflows. */}
+        {/* ⚠ THE ART IS DROPPED UNDER 420px OF HEIGHT. At 844x340 (phone in
+            landscape) it measured 0x0 — flex had already taken every pixel off
+            it and the headline was still forced under the fixed nav. An image
+            at zero height is a layout still in deficit, so the honest fix is
+            to stop asking for it: below 420px tall the hero is the headline,
+            the copy and the buttons, which is all that fits and all that the
+            section actually needs to do. The 3D/phone art returns the moment
+            there is room for it. */}
+        <div className="relative hidden min-h-0 w-full flex-1 items-center justify-center [@media(min-height:420px)]:flex">
           <img
             src={HERO.art.src}
             alt="Larpz Wallet Preview"
-            className="pointer-events-none h-auto w-full max-h-[44vh] select-none object-contain drop-shadow-2xl"
+            className="pointer-events-none h-full max-h-full w-auto max-w-[min(82vw,350px)] select-none object-contain drop-shadow-2xl"
             loading="eager"
             fetchPriority="high"
             decoding="async"
           />
-
-          {/* Lock sticker - anchored to top right of phone */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-3 -right-2 w-[28%] z-[5]"
-            style={{ transform: "rotate(9deg)" }}
-          >
-            <img
-              src="/images/sticker-lock.webp"
-              alt=""
-              decoding="async"
-              className="animate-sticker block h-auto w-full select-none"
-              style={{
-                "--rise": "10px",
-                "--drift": "6px",
-                "--tilt": "2deg",
-                "--dur": "10s",
-                "--delay": "-3s",
-              } as React.CSSProperties}
-            />
-          </div>
-
-          {/* Balloons sticker - anchored to bottom left of phone */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-5 -left-3 w-[26%] z-[20]"
-            style={{ transform: "rotate(-7deg)" }}
-          >
-            <img
-              src="/images/sticker-balloons.webp"
-              alt=""
-              decoding="async"
-              className="animate-sticker block h-auto w-full select-none"
-              style={{
-                "--rise": "12px",
-                "--drift": "6px",
-                "--tilt": "2deg",
-                "--dur": "10s",
-                "--delay": "-2s",
-              } as React.CSSProperties}
-            />
-          </div>
         </div>
 
-        {/* 3. Subtitle Copy */}
-        <p className="m-0 max-w-[34ch] font-sans text-[clamp(14px,3.6vw,17px)] leading-[1.4] text-[#3D065F]">
+        {/* 3. Subtitle Copy
+            ⚠ 34ch IS THE LINE LENGTH, 3.9vw IS THE SIZE, AND THEY ARE NOT THE
+            SAME CONSTRAINT. The ch cap stops a 430-wide phone running 60
+            characters to the line; the vw term stops the type going small on a
+            360. Measured at 78-95px tall across the range, which the column
+            now budgets for instead of discovering at paint. */}
+        <p className="m-0 max-w-[34ch] shrink-0 font-sans text-[clamp(14px,3.9vw,17px)] leading-[1.4] text-[#3D065F]">
           {subtitleEl?.text ??
             "Display any balance on a pixel-perfect Phantom Wallet, Trust Wallet, Ledger, Exodus or Bank app interface. Live prices, custom tokens, push notifications — built purely for entertainment."}
         </p>
 
-        {/* 4. Action Buttons (Buy & Login) */}
-        <div className="mt-5 flex items-center justify-center gap-[clamp(14px,3vw,24px)]">
+        {/* 4. Action Buttons (Buy & Login)
+            ⚠ NO `mt-` HERE — the column sets every gap in one place. A margin
+            on a child plus a gap on the parent is two numbers for one space,
+            and they drift. 48px tall keeps the 44px minimum touch target with
+            room to spare. */}
+        <div className="flex shrink-0 items-center justify-center gap-[clamp(14px,3vw,24px)]">
           <PillButton
             href="#pricing"
             fill="#3D065F"
