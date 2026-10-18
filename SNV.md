@@ -481,6 +481,66 @@ that error.
   neither blocks the build.
 - The site is deployed: **https://larpz-final.vercel.app**
 
+### Mobile round two (2026-10-18, later) — touch, and two FAQ sizing bugs
+
+Three more mobile fixes on top of the pass above. Same method: measure, change,
+measure again.
+
+**The pill buttons now respond to touch.** The whole roll was driven by
+`:hover`, and on a phone that failed in *both* directions at once — measured
+with real touch events through CDP (`Input.dispatchTouchEvent`; a scripted
+`TouchEvent` never sets `:active` and gives a false pass):
+
+| | `__main` | `__hover` | `__fill` opacity |
+|---|---|---|---|
+| press, before | `none` | +24px | 0 |
+| held 1.6s, before | `none` | +24px | 0 |
+| ~1s after release, before | **-24px** | **0** | **1** |
+
+The press did nothing and the *release* played the entrance, which then stuck
+open permanently because the emulated hover outlived the tap. After: the roll
+starts on press (`main -17.9`), holds through a long press (`-24.0`), and
+releases to rest with no stick. Desktop is identical before and after
+(`-23.6` on hover, back to `none` off) — verified on a separate non-touch
+context.
+
+Two things worth keeping in your head:
+
+- **`@media (hover: hover)` alone is not enough.** Chromium grants *neither*
+  `:hover` nor `:active` during a touch hold — it defers both to tap
+  completion — so `:active` cannot express "stays down on long press" on
+  Android. iOS Safari does apply `:active` during a hold, so a CSS-only fix
+  would have worked on one platform and silently not the other. That is why
+  there is a JS trigger: `components/PillTouch.tsx` sets `.pill-btn--press`
+  on `touchstart` and clears it on `touchend`/`touchcancel`.
+- **It is ONE delegated listener**, mounted once in `app/layout.tsx`, not
+  handlers in `PillButton.tsx` and `PriceEl.tsx`. Both of those are server
+  components, so a handler in each would mean two client boundaries and two
+  copies to keep in step. If you add a new pill anywhere, it works
+  automatically — the listener matches `closest(".pill-btn")`.
+
+**FAQ pills no longer break onto two lines on mobile.** Measured before: four
+of the six questions wrapped at 360px, three at 390. Three constraints were
+stacking — the pill's own `calc(100vw - 48px)`, the container's `px-4`
+subtracting 32px more, and a `max-sm:whitespace-normal` that explicitly
+permitted the break. All three changed; zero wraps at 360/390/430/768 now, and
+the text stayed at **16px** rather than being shrunk to fit, which is what the
+owner asked for. The longest question needs 329px and now sits in a 340px pill
+at 360.
+
+If you add or reword a question, re-run the check — a long enough question
+will still overflow, and the pill is `whitespace-nowrap` at every width now,
+so it will push rather than wrap.
+
+**The nav hamburger had collapsed into the left edge.** `HERO.menu.x` is 4.6
+and that is a percentage of the SECTION — right on a wide screen, but 4.6% of
+390px is 18px, and the button's left edge measured 9-13px from the screen edge
+at 360-430 against 92px on desktop. It is `max(4.6%, 22px)` now: the tuned
+percentage wins wherever it is already larger (roughly 480px up, so desktop and
+`/hero-tuner` are untouched and still measure 92px) and the floor only applies
+where the percentage has collapsed. A media query would have been a second
+number to keep in sync with `x`; `max()` reads the same one.
+
 ### One Vercel thing that will block you
 
 Deploys were failing with *"Git author kez-james must have access to the

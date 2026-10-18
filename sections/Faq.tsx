@@ -214,11 +214,16 @@ export default function Faq() {
       </div>
 
       {/* Mobile & Tablet stacked accordion (< 1024px) */}
-      <div className="flex flex-col items-center px-4 py-8 lg:hidden">
+      {/* ⚠ px-2, NOT px-4. The pills are capped at `100vw - 20px` and this
+          padding is subtracted from that again, so 16px a side was 32px of
+          the ~310px a 360 screen has — enough to force the longest question
+          onto a second line. The pills centre themselves, so the gutter is
+          cosmetic here; the width is not. */}
+      <div className="flex flex-col items-center px-2 py-8 lg:hidden">
         <h2 className="mb-8 font-display text-[clamp(3.5rem,14vw,6rem)] leading-[0.9] uppercase select-none text-center">
           FAQ
         </h2>
-        <div className="flex w-full max-w-lg flex-col items-center gap-3">
+        <div className="flex w-full max-w-[min(32rem,100vw-16px)] flex-col items-center gap-3">
           {PILLS.map((p) => (
             <div key={p.q} className="flex w-full justify-center">
               <FaqItem

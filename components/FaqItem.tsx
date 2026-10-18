@@ -216,7 +216,7 @@ export default function FaqItem({
          pill. Solid `#3D065F` with `#EAC2FF` text is the hero nav's own
          treatment (purple bar, pink labels), so the two sections match.
          No border: at full opacity the fill is the edge. */
-      className="group w-fit max-w-[min(520px,calc(100vw-48px))] overflow-hidden rounded-[999px] bg-[#3D065F] text-[#EAC2FF] px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-[#4d0878] open:bg-[#4d0878]"
+      className="group w-fit max-w-[min(520px,calc(100vw-20px))] overflow-hidden rounded-[999px] bg-[#3D065F] text-[#EAC2FF] px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-[#4d0878] open:bg-[#4d0878] lg:max-w-[min(520px,calc(100vw-48px))]"
     >
       <summary
         onClick={toggle}
@@ -233,7 +233,14 @@ export default function FaqItem({
             between one and two lines. The pill hugs this text when closed, so
             nowrap costs nothing — it just stops the width tween from being able
             to re-break it. */}
-        <span className="mr-auto text-balance max-sm:whitespace-normal whitespace-nowrap">{q}</span>
+        {/* ⚠ `nowrap` AT EVERY WIDTH NOW — the `max-sm:whitespace-normal`
+            that used to be here let the question break onto a second line on
+            a phone, and the pill is a PILL: a two-line pill reads as a
+            rounded box and the + drifts off the text's centre. Measured at
+            360: four of the six questions wrapped; at 390, three.
+            The width and the type size below are what make one line possible,
+            so this and they have to change together. */}
+        <span className="mr-auto whitespace-nowrap">{q}</span>
         {/* rotates to an x. CSS, not GSAP — one transition beats a tween. */}
         <span className="shrink-0 text-[1.4em] leading-none transition-transform duration-300 group-open:rotate-45">
           +

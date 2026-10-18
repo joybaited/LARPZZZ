@@ -63,12 +63,34 @@ export const PILL_CSS = `
               opacity 0.4s cubic-bezier(0.33, 0, 0.67, 1);
   opacity: 0;
 }
-.pill-btn:hover .pill-btn__fill,
+/* ⚠ :active CARRIES TOUCH, AND :hover IS FENCED BEHIND (hover: hover).
+   Measured in a 390x770 hasTouch context: a touchstart/touchend and a real
+   touchscreen.tap() left main at none, hover at +24px and fill at scale(0)
+   opacity 0 throughout — the roll never fired at all, because the only
+   triggers were :hover/:focus-visible and a finger produces neither.
+   (hover: hover) reports false there and true at 1536x742, so the fence also
+   kills the other half of it: a phone browser that emulates a lingering hover
+   after the tap can no longer leave the roll stuck open.
+   :active is kept as the keyboard/mouse-down twin of :hover — on a mouse it is
+   a no-op, mousedown always arrives already hovered. The finger's own trigger
+   is .pill-btn--press, set on touchstart by PillTouch.tsx: Chromium grants
+   neither :hover nor :active during a hold, so CSS has nothing to key the long
+   press off. That file has the measurements. */
+.pill-btn--press .pill-btn__fill,
+.pill-btn:active .pill-btn__fill,
 .pill-btn:focus-visible .pill-btn__fill {
   transform: scale(1.03);
   opacity: 1;
   transition: transform 0.55s cubic-bezier(0.4, 1.35, 0.5, 0.97),
               opacity 0.275s cubic-bezier(0.4, 1.35, 0.5, 0.97);
+}
+@media (hover: hover) {
+  .pill-btn:hover .pill-btn__fill {
+    transform: scale(1.03);
+    opacity: 1;
+    transition: transform 0.55s cubic-bezier(0.4, 1.35, 0.5, 0.97),
+                opacity 0.275s cubic-bezier(0.4, 1.35, 0.5, 0.97);
+  }
 }
 
 .pill-btn {
@@ -113,11 +135,19 @@ export const PILL_CSS = `
   line-height: 1.5;
   transition: transform 0.4s cubic-bezier(0.33, 0, 0.67, 1);
 }
-.pill-btn:hover .pill-btn__main,
-.pill-btn:hover .pill-btn__hover,
+.pill-btn--press .pill-btn__main,
+.pill-btn--press .pill-btn__hover,
+.pill-btn:active .pill-btn__main,
+.pill-btn:active .pill-btn__hover,
 .pill-btn:focus-visible .pill-btn__main,
 .pill-btn:focus-visible .pill-btn__hover {
   transition: transform 0.5s cubic-bezier(0.4, 1.35, 0.5, 0.97);
+}
+@media (hover: hover) {
+  .pill-btn:hover .pill-btn__main,
+  .pill-btn:hover .pill-btn__hover {
+    transition: transform 0.5s cubic-bezier(0.4, 1.35, 0.5, 0.97);
+  }
 }
 /* ⚠ THE TRAVEL IS THE HOLDER'S LINE BOX, NOT A HAND-PICKED DISTANCE. At
    1.5 line-height the box is 1.5em, so anything less leaves a sliver of the
@@ -128,10 +158,16 @@ export const PILL_CSS = `
   inset: 0;
   transform: translateY(1.5em);
 }
-.pill-btn:hover .pill-btn__main,
+.pill-btn--press .pill-btn__main,
+.pill-btn:active .pill-btn__main,
 .pill-btn:focus-visible .pill-btn__main { transform: translateY(-1.5em); }
-.pill-btn:hover .pill-btn__hover,
+.pill-btn--press .pill-btn__hover,
+.pill-btn:active .pill-btn__hover,
 .pill-btn:focus-visible .pill-btn__hover { transform: translateY(0); }
+@media (hover: hover) {
+  .pill-btn:hover .pill-btn__main { transform: translateY(-1.5em); }
+  .pill-btn:hover .pill-btn__hover { transform: translateY(0); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .pill-btn__fill,
