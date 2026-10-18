@@ -166,7 +166,7 @@ export default function Faq() {
   return (
     /* bleed: the pills are placed against the full section, not the centred
        content column, so the percentages mean what the tuner showed. */
-    <Section id="faq" bleed className="bg-violet text-[#3D065F]">
+    <Section id="faq" bleed className="text-[#3D065F]">
       {/* Desktop scattered pill layout (>= 1024px) - bounded within canvas ceiling */}
       <div
         ref={wrap}

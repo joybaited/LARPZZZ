@@ -127,12 +127,56 @@ body {
   overflow-x: clip;
 }
 
+/* ⚠ THE PAGE COLOUR LIVES ON THE ROOT ELEMENT AND TWEENS BETWEEN SECTIONS.
+   Lifted 1:1 from phantom.com, read off their live stylesheet:
+
+     background-color and color on html, with
+     transition-property: background-color, color;
+     transition-duration: .4s;
+     transition-timing-function: cubic-bezier(.22,1,.36,1);
+
+   Their sections paint NOTHING — every one is transparent and the root
+   colour changes as you scroll. Sampling their page down its length caught
+   the intermediate values mid-tween (70,59,100 -> 60,49,91 and 80,69,118 ->
+   163,151,231 -> 171,159,242), which is what proves CSS is interpolating
+   rather than a class snapping. There is no fixed full-screen colour layer
+   behind it; I checked for one and found none.
+
+   So: js only writes these two variables, css does the animation. No scroll
+   listener, no rAF, no GSAP.
+
+   Seeded with the hero's pair so the first paint is already right — a null
+   start would flash white before the observer fires. */
+:root {
+  --page-bg: var(--color-paper);
+  --page-fg: var(--color-ink);
+}
+
+html {
+  background-color: var(--page-bg);
+  color: var(--page-fg);
+  transition-property: background-color, color;
+  transition-duration: 0.4s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 body {
-  background: var(--color-paper);
-  color: var(--color-ink);
+  /* transparent, not a colour: the root background is what shows through,
+     and a painted body would sit on top of it and defeat the whole thing. */
+  background: transparent;
+  color: inherit;
   font-family: var(--font-sans);
   font-size: var(--text-base);
   -webkit-font-smoothing: antialiased;
+}
+
+/* ⚠ NO TWEEN FOR ANYONE WHO ASKED FOR NO MOTION. A full-page colour change
+   is exactly the kind of large-area shift that triggers discomfort; the
+   colours still change, they just arrive instantly. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    transition-duration: 0s;
+  }
 }
 
 /* the testimonial marquee — sections/Testimonials.tsx.

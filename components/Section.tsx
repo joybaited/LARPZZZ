@@ -164,7 +164,17 @@ export default function Section({
              font-size variable from a colour one, so it silently produced no
              font-size at all and the heading rendered at the inherited 16px.
              Measured before and after. */
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-center px-(--gutter) text-center font-display uppercase leading-[0.9] tracking-[-0.02em] text-balance"
+          /* ⚠ BOTTOM-ALIGNED IN ITS BAND ON DESKTOP, NOT CENTRED. The band is
+             a fixed HEADING_SPACE — 240px at 1920 — but the glyphs are only
+             117px of it, so centring left 62px of dead air between the
+             wordmark and the first row of content (measured 62/51/43/41 at
+             1920/1536/1366/1280; it is the gap in the Features screenshot).
+             Sitting the type on the band's floor with a small pad turns that
+             into deliberate breathing room instead of a hole, and moves
+             nothing else — the band's own height is unchanged, so every
+             section below starts exactly where it did.
+             Centred below lg, where the band is already tight to the type. */
+          className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-center px-(--gutter) text-center font-display uppercase leading-[0.9] tracking-[-0.02em] text-balance lg:items-end lg:pb-[clamp(16px,2.6vh,40px)]"
           style={{ height: HEADING_SPACE, fontSize: "var(--text-1)" }}
         >
           {heading}

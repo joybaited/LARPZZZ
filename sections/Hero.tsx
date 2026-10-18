@@ -249,7 +249,13 @@ export default function Hero() {
           text and never evaluates it, so the class silently does not exist.
           It rides on an absolute div rather than a `style` prop on <Section>,
           which has none and already uses style for its own minBlockSize. */}
-      <div className="absolute inset-0 -z-20" style={{ background: HERO.bg }} />
+      {/* ⚠ THE GROUND IS TRANSPARENT NOW — <html> PAINTS IT. The hero is the
+          first entry in PageTint's palette, so the root already carries
+          HERO.bg before a scroll happens; a second opaque layer here would
+          cover the tween and the hero would be the one section that never
+          changed colour. The div stays because the trail and the stickers are
+          positioned against it. */}
+      <div className="absolute inset-0 -z-20" />
 
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
           ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so

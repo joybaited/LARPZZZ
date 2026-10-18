@@ -178,7 +178,22 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
 
 export default function Pricing() {
   return (
-    <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
+    <Section id="pricing" heading="Pricing" className="text-grape">
+      {/* ⚠ THE SEAM INTO THE FOOTER. Pricing's ground is the tweened root
+          colour and the footer paints its own #e3b5fb — two different
+          surfaces meeting on a hard line. This fades the second one UP over
+          the foot of this section so the join reads as a blend.
+          It is a gradient to the footer's exact colour, not to transparent:
+          fading to transparent would reveal the root colour underneath and
+          produce a lighter band in the middle of the fade, which is the
+          classic gradient-seam artefact.
+          Bottom-anchored and pointer-events-none, below the cards (z-0,
+          cards are z-10), so it changes nothing about the layout. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
+        style={{ background: "linear-gradient(to bottom, transparent, #e3b5fb)" }}
+      />
       {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN — same reason as
           Features and Testimonials: the three cards are a fixed height, so a
           portrait viewport reserved far more than they need and centring put
