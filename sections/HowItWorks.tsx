@@ -237,50 +237,43 @@ export default function HowItWorks({
           {cards.map((c, i) => (
             <li
               key={c.id}
-              /* max-lg keeps a sane shape while stacked; at lg the row height
+              /* max-lg keeps a sleek proportional shape while stacked; at lg the row height
                  governs and the ratio is whatever the split gives. */
-              className={`${PLACE[i]} flex flex-col overflow-hidden rounded-[clamp(20px,2.778vw,56px)] bg-grape p-[clamp(18px,2.1vw,32px)] text-violet max-sm:aspect-auto max-sm:min-h-[220px] sm:max-lg:aspect-[347/378] lg:aspect-[381/265]`}
+              className={`${PLACE[i]} relative isolate flex flex-col overflow-hidden rounded-[clamp(18px,5vw,28px)] lg:rounded-[clamp(20px,2.778vw,56px)] bg-grape p-5 lg:p-[clamp(18px,2.1vw,32px)] text-violet max-sm:aspect-auto max-sm:min-h-[130px] sm:max-lg:aspect-auto sm:max-lg:min-h-[150px] lg:aspect-[381/265] [container-type:inline-size]`}
             >
-              {/* ⚠ THEIR TYPE AND RADIUS ARE PURE VIEWPORT FUNCTIONS, NO
-                  CONSTANT. Fitted across four widths: font = w/60 (1.667vw,
-                  21.3px at 1280 -> 32px at 1920) and radius = w/36 (2.778vw,
-                  35.6 -> 53.3), both landing within 0.1px at every sample. So
-                  they are written as the vw they actually are, clamped top and
-                  bottom so neither collapses on a phone or runs away on a
-                  display. leading-[1.05] is their 24/24 with room for
-                  descenders, which a flat 1 clips on a 'g'. */}
-              {/* ⚠ MEGION IS ONE WEIGHT (BOLD) AND DISPLAY-ONLY, so there is
-                  no font-weight to set — `font-display` is already the bold
-                  cut, and asking for a lighter one makes the browser
-                  synthesise it. The `font-normal` that was here came off with
-                  the face. `uppercase` is how every other section sets it:
-                  Faq's heading, Testimonials' names, the hero's. */}
-              {/* ⚠ ENLARGED PAST METAMASK'S OWN 24px AT KEZ'S ASK — 2.25vw is
-                  32px at 1440 where theirs is 24. The clamp ceiling is what
-                  keeps it inside the card: the heading is the taller of the
-                  two blocks and a bare vw would outgrow a short card on a
-                  wide, shallow window (1522x738 is the worst case checked). */}
-              <h3 className="font-display text-[clamp(19px,2.25vw,40px)] leading-[1.05] uppercase text-balance">
-                {c.text}
-              </h3>
-              {/* the body. Neue Montreal, not Megion — Megion is display-only
-                  and a paragraph of it at this size is unreadable. Held at
-                  0.58 of the heading (1.3vw against 2.25vw) so the two scale
-                  together rather than drifting apart as separate numbers.
-                  `max-w-[38ch]` keeps the measure readable on a wide card. */}
-              <p className="mt-[clamp(8px,1vw,18px)] max-w-[38ch] text-[clamp(13px,1.3vw,23px)] leading-[1.35] opacity-80">
-                {c.body}
-              </p>
+              <div>
+                <h3 className="font-display text-[clamp(18px,5vw,24px)] lg:text-[clamp(19px,2.25vw,40px)] leading-[1.08] lg:leading-[1.05] uppercase text-balance">
+                  {c.text}
+                </h3>
+                <p className="mt-[clamp(8px,1vw,18px)] max-w-[38ch] text-[clamp(13px,3.5vw,16px)] lg:text-[clamp(13px,1.3vw,23px)] leading-[1.38] lg:leading-[1.35] opacity-80 pe-[75px] sm:pe-[85px] lg:pe-0">
+                  {c.body}
+                </p>
+              </div>
+
+              {/* Mobile/Tablet sticker badge pinned to each card corner */}
+              {!hideStickers && stickers?.[i] && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -bottom-2 -right-1 z-10 block w-[clamp(68px,22cqi,92px)] select-none lg:hidden"
+                  style={{ transform: `rotate(${stickers[i].rotate ?? "0deg"})` }}
+                >
+                  <img
+                    src={stickers[i].src}
+                    alt=""
+                    className="h-auto w-full object-contain select-none drop-shadow-md"
+                  />
+                </div>
+              )}
             </li>
           ))}
           </ul>
 
-          {/* Floating Stickers Layer — locked directly to the cards stage container so window resize cannot cause sticker drift */}
+          {/* Floating Stickers Layer — locked directly to the cards stage container on desktop; hidden below lg where mobile badges take over */}
           {!hideStickers && stickers?.map((st) => (
             <div
               key={st.name}
               aria-hidden="true"
-              className="pointer-events-none absolute"
+              className="pointer-events-none absolute hidden lg:block"
               style={{
                 left: `${st.x}%`,
                 top: `${st.y}%`,
