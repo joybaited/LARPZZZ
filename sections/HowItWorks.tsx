@@ -101,8 +101,8 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-cash",
     src: "/images/step-cash.webp",
     alt: "",
-    x: 28.0,
-    y: 38.3,
+    x: 33.5,
+    y: 40.0,
     w: 14.2,
     rotate: "16deg",
     z: 25,
@@ -111,8 +111,8 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-key",
     src: "/images/step-key.webp",
     alt: "",
-    x: 26.4,
-    y: 88.9,
+    x: 31.5,
+    y: 88.0,
     w: 12.8,
     rotate: "6deg",
     z: 25,
@@ -121,8 +121,8 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-activate",
     src: "/images/step-activate.webp",
     alt: "",
-    x: 94.7,
-    y: 36.8,
+    x: 97.0,
+    y: 36.0,
     w: 8.1,
     rotate: "12deg",
     z: 25,
@@ -131,8 +131,8 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-flex",
     src: "/images/step-flex.webp",
     alt: "",
-    x: 92.7,
-    y: 89.6,
+    x: 95.5,
+    y: 88.5,
     w: 9.6,
     rotate: "6deg",
     z: 25,
@@ -242,22 +242,44 @@ export default function HowItWorks({
               key={c.id}
               /* max-lg keeps a sleek proportional shape while stacked; at lg the row height
                  governs and the ratio is whatever the split gives. */
-              className={`${PLACE[i]} relative isolate flex flex-col justify-between overflow-hidden rounded-[clamp(18px,min(2.778vw,5.5vh),48px)] bg-grape p-[clamp(18px,min(2.1vw,3.6vh),32px)] max-sm:p-5 text-violet max-sm:aspect-auto max-sm:min-h-[130px] sm:max-lg:aspect-auto sm:max-lg:min-h-[150px] lg:aspect-[381/265] shadow-sm`}
+              className={`${PLACE[i]} relative isolate flex flex-col justify-between overflow-hidden rounded-[clamp(18px,min(2.778vw,5.5vh),48px)] bg-grape p-[clamp(18px,min(2.1vw,3.6vh),32px)] max-sm:p-5 text-violet max-sm:aspect-auto max-sm:min-h-[130px] sm:max-lg:aspect-auto sm:max-lg:min-h-[150px] lg:aspect-[381/265] shadow-sm [container-type:inline-size]`}
             >
               <div>
                 <h3 className="font-display text-[clamp(18px,min(2.25vw,4.5vh),36px)] leading-[1.08] uppercase text-balance">
                   {c.text}
                 </h3>
-                <p className="mt-[clamp(8px,min(1vw,1.8vh),16px)] max-w-[34ch] text-[clamp(13px,min(1.3vw,2.4vh),19px)] leading-[1.38] opacity-85">
+                {/* ⚠ THE COPY RESERVES THE BADGE'S CORNER — the badge does not
+                    dodge the copy. Measured: cards 2 and 3 sit at 68.3..100%
+                    of the stage and their copy ran to 96%, i.e. nearly the
+                    full card width, so a badge on the card's outer edge
+                    (91.6..102.4%) HAD to cross it. No coordinate fixes that;
+                    the text occupies the space. Worse, the collision came and
+                    went with window width — clear at 1366 and 1280, 92x49 deep
+                    at 1920 — because the copy wraps at a different line and
+                    ends at a different x each time, which is why four rounds
+                    of nudging the sticker could never converge.
+                    A right margin of ~29% of the card's inline size keeps the
+                    last line clear of the corner the badge occupies, at every
+                    width, by construction. cqi not vw: it is a fraction of
+                    the CARD, which is the box the badge is placed against. */}
+                <p className="mt-[clamp(8px,min(1vw,1.8vh),16px)] max-w-[34ch] text-[clamp(13px,min(1.3vw,2.4vh),19px)] leading-[1.38] opacity-85 [margin-inline-end:25cqi] lg:[margin-inline-end:29cqi]">
                   {c.body}
                 </p>
               </div>
 
-              {/* Mobile/Tablet sticker badge pinned to each card corner */}
+              {/* Mobile/Tablet sticker badge pinned to each card corner.
+                  ⚠ SIZED IN cqi — A FRACTION OF THE CARD, NOT OF THE VIEWPORT.
+                  It was `w-[clamp(64px,14vw,96px)]`: 14vw is a fraction of the
+                  SCREEN, and the card is not a fixed fraction of the screen
+                  (one column at 390, two at 640), so the badge covered a
+                  different share of the card at every width and clipped the
+                  body copy at 360. 22cqi is 22% of the card's own inline size
+                  at every width, which is the thing it has to stay in
+                  proportion to. */}
               {!hideStickers && stickers?.[i] && (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -bottom-3 -right-2 z-10 block w-[clamp(64px,14vw,96px)] select-none lg:hidden"
+                  className="pointer-events-none absolute -bottom-2 -right-1 z-10 block w-[clamp(56px,22cqi,92px)] select-none lg:hidden"
                   style={{ transform: `rotate(${stickers[i].rotate ?? "0deg"})` }}
                 >
                   <img
@@ -271,7 +293,22 @@ export default function HowItWorks({
           ))}
           </ul>
 
-          {/* Floating Stickers Layer — locked directly to the cards stage container so window resize cannot cause sticker drift; hidden below lg to prevent drift over wrapped columns */}
+          {/* Floating Stickers Layer — anchored to the cards stage, so x/y are
+              the same percentages /sticker-tuner reads and writes. Hidden
+              below lg: the stacked 2-up has no scatter field, and each card
+              carries its own corner badge instead.
+
+              ⚠ THE WIDTH IS CAPPED IN px, NOT LEFT AS A RAW STAGE %. `w` is a
+              percentage of the stage, and the stage grows faster than the
+              cards do: measured 212x184 on a 402x280 card at 1920 — a badge
+              covering nearly half the card, crossing the body copy on all
+              four. At 1366 and 1280 the same percentage cleared the text
+              entirely, so the overlap appeared and vanished with window width
+              and no single tuned number could fix it.
+              min() keeps the tuned proportion as the stage scales but stops it
+              at 148px, which measurement puts clear of the copy at every
+              width from 1024 up. Tune the proportion in /sticker-tuner; the
+              cap is the guard rail, not the design. */}
           {!hideStickers && stickers?.map((st) => (
             <div
               key={st.name}
@@ -280,7 +317,7 @@ export default function HowItWorks({
               style={{
                 left: `${st.x}%`,
                 top: `${st.y}%`,
-                width: `${st.w}%`,
+                width: `min(${st.w}%, 148px)`,
                 zIndex: st.z ?? 20,
                 transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
               }}
