@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Section from "@/components/Section";
 import TicketStrip from "@/components/TicketStrip";
 import FooterCoins from "@/components/FooterCoins";
+import MobileCoinRain from "@/components/MobileCoinRain";
 
 
 /**
@@ -65,11 +66,17 @@ export default function Footer() {
         />
 
         {/* 
-          3. Floating Interactive Crypto Coin Field:
+          3a. Floating Interactive Crypto Coin Field (Desktop >= 768px):
           Layered in the gradient pocket behind the cloud border,
           popping to foreground on hover.
         */}
         <FooterCoins />
+
+        {/* 
+          3b. Rain Droplet Crypto Coins (Mobile < 768px):
+          Coins drop gently from underneath the cloud png like raindrops.
+        */}
+        <MobileCoinRain />
 
         {/* 
           1a. Desktop Cloud Group (Strictly UNTOUCHED for desktop >= 768px):

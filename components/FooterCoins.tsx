@@ -257,6 +257,12 @@ export default function FooterCoins() {
     let animId: number;
 
     const tick = () => {
+      // Strictly do not run on mobile (< 768px)
+      if (w < 768) {
+        animId = requestAnimationFrame(tick);
+        return;
+      }
+
       // 1. Mouse Repulsion Force:
       // Smooth displacement when cursor approaches/hovers
       if (mouse.active) {
@@ -403,7 +409,7 @@ export default function FooterCoins() {
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none absolute inset-0 z-10 overflow-hidden select-none"
+      className="pointer-events-none hidden md:block absolute inset-0 z-10 overflow-hidden select-none"
     >
       {COIN_DEFS.map((coin, i) => (
         <div
