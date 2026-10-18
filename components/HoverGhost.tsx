@@ -112,8 +112,13 @@ export default function HoverGhost({
           It is allowed to be taller than the row: grid lets it overflow the
           cell, so `ghost` is not capped by the wordmark's height the way the
           old roller capped it by a cell. */}
+      {/* ⚠ TWO SOURCES, WEBM FIRST — same reason as the feature cards. The
+          webm is VP9 with alpha, which Safari cannot decode, so on the
+          owner's phone the ghost was simply never visible. The mp4 is the
+          same footage matted onto the nav's own fill (#3D065F), opaque and
+          H.264, so it plays everywhere and sits invisibly on that bar.
+          A browser takes the first source it can play: order is the fix. */}
       <video
-        src={src}
         muted
         loop
         playsInline
@@ -123,7 +128,10 @@ export default function HoverGhost({
         /* same treatment, and the offset scales with it or the ghost drifts
            off the word as the type shrinks. */
         style={{ height: `clamp(24px, 7.4vw, ${ghost}px)`, marginTop: `${ghostY}px` }}
-      />
+      >
+        <source src={src} type="video/webm" />
+        <source src={src.replace(/\.webm$/, ".mp4")} type="video/mp4" />
+      </video>
     </div>
   );
 }

@@ -48,6 +48,22 @@ export default function Footer() {
         {/* Background: Vibrant cyan-to-purple gradient from mockup */}
         <div className="absolute inset-0 bg-gradient-to-tr from-[#38bdf8] via-[#607afb] to-[#9481fb]" />
 
+        {/* ⚠ THE GRADIENT'S TOP EDGE IS COVERED BELOW md. The gradient above
+            is meant to sit BEHIND the cloud, and the cloud is `hidden
+            md:block` — so on a phone its first rows were the topmost thing in
+            the section and painted a hard cyan line across the join with
+            pricing. Measured at the seam: rgb(122,125,251), the #607afb stop,
+            a +116 jump in blueness against the rows above it.
+            This is a band of the footer's own ground colour over that edge,
+            fading out just below it so the gradient still emerges where the
+            cloud would have revealed it. Desktop renders nothing here: there
+            the cloud already covers it. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[21] h-[22svh] md:hidden"
+          style={{ background: "linear-gradient(to bottom, #e3b5fb 0%, #e3b5fb 55%, transparent 100%)" }}
+        />
+
         {/* 
           3. Floating Interactive Crypto Coin Field:
           Layered in the gradient pocket behind the cloud border,

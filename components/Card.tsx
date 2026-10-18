@@ -160,7 +160,20 @@ export default function Card({ heading, copy, media }: CardData) {
             <PhoneWheel />
           ) : media.kind === "video" ? (
             <video
-              src={media.src}
+              /* ⚠ TWO SOURCES, WEBM FIRST. The webm is VP9 WITH ALPHA and
+                 Safari cannot decode that — it is why the card videos were
+                 invisible on the owner's phone while Chromium showed them
+                 fine (verified: identical paused/readyState on both, so the
+                 markup was never the bug). HEVC-with-alpha is Safari's only
+                 transparent format and it can only be encoded with Apple's
+                 VideoToolbox, which does not exist on this machine.
+                 So the mp4 is the same footage MATTED onto #EAC2FF — the
+                 card's own flat background, which the section tween does not
+                 touch. Opaque, H.264, plays everywhere, and lands pixel-
+                 identical over that card. Chromium and Firefox still take the
+                 webm and keep real alpha.
+                 ⚠ A browser picks the FIRST source it can play, so order is
+                 the whole mechanism: webm above mp4. */
               autoPlay
               muted
               loop
@@ -213,7 +226,10 @@ export default function Card({ heading, copy, media }: CardData) {
                 translate: `-50% calc(-50% + ${media.down || "0px"})`,
               } as React.CSSProperties}
               className="absolute top-1/2 left-1/2 block aspect-square w-[88%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
-            />
+            >
+              <source src={media.src} type="video/webm" />
+              <source src={media.src.replace(/\.webm$/, ".mp4")} type="video/mp4" />
+            </video>
           ) : (
             <img
               src={media.src}

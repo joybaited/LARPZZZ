@@ -17,28 +17,34 @@ import { useEffect } from "react";
    now. */
 const PALETTE: Record<string, [bg: string, fg: string]> = {
   /* A LADDER BETWEEN THE TWO PALETTE ANCHORS, violet #eac2ff and grape
-     #3d065f, so every step is the house hue at a different lightness and
-     nothing here is a new colour.
+     #3d065f. Every band is the house hue at a different lightness; nothing
+     here is a new colour.
 
-     Ordered so no two neighbours sit on the same step and the one dark band
-     (features) lands in the middle of the scroll, with the sections either
-     side of it lighter than their own neighbours — the contrast reads as a
-     deliberate beat rather than a jolt.
+     ⚠ THE STEPS HAVE TO BE BIG ENOUGH TO SEE. The first version of this
+     ladder was all pale tints and the change was invisible in motion —
+     measured, adjacent bands sat at a contrast ratio of 1.19 to 1.27, which
+     is nothing. These alternate light / mid / light / deep instead, so no
+     two neighbours are on the same step:
 
-       hero          #eac2ff  the anchor itself, unchanged
-       how-it-works  #f7e3ff  lightest pink, clearly apart from the hero
-       features      #4a1070  lighter than the old #3d065f, as asked
-       testimonials  #f2d4ff  light again, a touch deeper than how-it-works
-       faq           #e5b8fd  the deepest of the light bands
-       pricing       #edd0ff  lifts back up to meet the footer's #e3b5fb
+       hero          #f3e2ff  near-white violet
+       how-it-works  #d9a3f7  mid — a clear drop from the hero
+       features      #3d065f  the dark band, mid-scroll
+       testimonials  #efd4ff  back to light
+       faq           #c98ef0  the deepest of the lights
+       pricing       #f7ecff  lifts to meet the footer
 
-     Foreground is grape on every light band and violet on the dark one. */
-  hero: ["#eac2ff", "#3d065f"],
-  "how-it-works": ["#f7e3ff", "#3d065f"],
-  features: ["#4a1070", "#eac2ff"],
-  testimonials: ["#f2d4ff", "#3d065f"],
-  faq: ["#e5b8fd", "#3d065f"],
-  pricing: ["#edd0ff", "#3d065f"],
+     Measured step-to-step contrast: 1.63, 7.58, 11.18, 1.80, 2.14 — every
+     one a visible change, against 1.19-1.27 before.
+
+     Grape text on each light band measures 6.20 to 13.24, and violet on the
+     dark band 9.83, so every pairing clears the 4.5 body-text threshold with
+     room to spare. */
+  hero: ["#f3e2ff", "#3d065f"],
+  "how-it-works": ["#d9a3f7", "#3d065f"],
+  features: ["#3d065f", "#eac2ff"],
+  testimonials: ["#efd4ff", "#3d065f"],
+  faq: ["#c98ef0", "#3d065f"],
+  pricing: ["#f7ecff", "#3d065f"],
 };
 
 /**
