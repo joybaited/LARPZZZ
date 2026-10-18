@@ -541,6 +541,56 @@ percentage wins wherever it is already larger (roughly 480px up, so desktop and
 where the percentage has collapsed. A media query would have been a second
 number to keep in sync with `x`; `max()` reads the same one.
 
+### If it looks wrong on a big screen (@snvzyn — likely you)
+
+Reported but not yet diagnosed: the layout "broke" on a larger display than
+the 1536x742 everything here was tuned against. Two very different things
+look the same from a distance, and they need opposite fixes, so **say which
+one it is before anyone changes a number**:
+
+1. **It collided or overflowed** — genuinely broken, and raising any ceiling
+   makes the collision bigger rather than fixing it. Run
+   `node scripts/responsive-check.mjs`, which covers up to 3440x1300, and
+   paste what it says.
+2. **It just looked small and lost in the viewport** — not broken. Content
+   caps at `--canvas-max-width: 120rem` (1920px), so on a 2560 or 3440 screen
+   there is dead margin either side. That is the ceiling working as designed,
+   and it reads as wrong if the ceiling is simply too low for the hardware
+   people actually use.
+
+**If it is (2), the one-line fix is to raise the ceiling**, in
+`app/globals.css`:
+
+```css
+--canvas-max-width: 120rem;   /* -> 140rem (2240px) or 160rem (2560px) */
+```
+
+and, if the type should grow with it, the root clamp's ceiling on the line
+above it (`1.375rem`, currently 22px). Everything scales together — stages,
+grids, cards, type — because they all derive from those two. Same
+proportions, bigger. Reversible in one line, and it is a shared-file token so
+agree it with the owner first.
+
+**⚠ WHAT NOT TO DO: `transform: scale()` / CSS zoom on the page or a
+section.** `docs/responsive-architecture-method.md` opens by naming this "the
+Lazy Zoom Trap" and it is specifically dangerous in this codebase now:
+
+- **The nav is `position: fixed`.** Under a transformed ancestor, fixed
+  resolves against that ancestor instead of the viewport — the nav scrolls
+  away with the page. `ViewportHUD` is fixed too.
+- **Three things hit-test against real coordinates and would desync:**
+  `PillTouch.tsx` (`closest(".pill-btn")` on touch points),
+  `FooterCoins.tsx` (pointer physics on `getBoundingClientRect` +
+  `clientX/clientY`), and `ImageTrail.tsx` (cursor tracking). Scaled, they
+  read coordinates in one space and paint in another.
+- **The tuners stop telling the truth.** `/sticker-tuner` and `/hero-tuner`
+  emit percentages measured against a stage; a zoomed stage yields numbers
+  that are right there and wrong on the real page — the exact drift class the
+  tuners exist to prevent.
+
+It also breaks font hinting and fails WCAG 1.4.4, both of which that doc
+already covers.
+
 ### One Vercel thing that will block you
 
 Deploys were failing with *"Git author kez-james must have access to the
