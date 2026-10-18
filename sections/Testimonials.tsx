@@ -79,7 +79,13 @@ function Card({ t }: { t: Testimonial }) {
        break the seam. The row depends on being wider than what holds it. */
     /* ⚠ A BOUNDED HEIGHT (SCALPEL QDPA): Sized to prevent vertical overflow on shallow
        viewports (e.g. 1536x742) while preserving proportional growth on tall displays.
-       The height is bounded to fit two rows inside var(--section-fill) minus the gap. */
+       The height is bounded to fit two rows inside var(--section-fill) minus the gap.
+       ⚠ A FIXED `h-` ONLY IN LANDSCAPE. The card's height is derived from
+       --section-fill, which is now smaller on a portrait screen — so a fixed
+       height cut the quote off by 7-8px on every phone (measured 98>91 at
+       412, 91>83 at 390). In portrait it is a MIN-height: the row still has a
+       floor, and a card grows for the text it holds rather than clipping it.
+       Landscape keeps the exact two-rows-in-one-fill geometry as tuned. */
     /* ⚠ NOT justify-between. With a fixed height that pushes the quote to the
        top and the footer to the floor, leaving a hole in the middle on any
        quote shorter than the card. The quote sits at the top, the footer gets
@@ -88,12 +94,31 @@ function Card({ t }: { t: Testimonial }) {
        treatment as the FAQ pills and the hero nav. It was `bg-paper text-ink`
        on a `bg-deep` section; the section is now the hero's `#EAC2FF` ground,
        so a white card would glare against it. */
-    <li className="flex h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)] w-[clamp(280px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(20px,1.2rem+1.4vw,36px)] text-[#EAC2FF]">
+    <li className="flex min-h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)] w-[clamp(280px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(20px,1.2rem+1.4vw,36px)] text-[#EAC2FF] [@media(min-aspect-ratio:1/1)]:h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)]">
       {/* scales with the card, so the quote fills it rather than floating in
           it. line-clamp keeps a long one from pushing the footer out. */}
       {/* 4, not 5: at this height a 5th line is half-cut by the card's floor —
-          the clamp has to stop at what actually fits, not at what overflows. */}
-      <p className="line-clamp-4 text-[clamp(15px,min(0.95rem+0.7vw,2.2vh),24px)] leading-[1.35]">
+          the clamp has to stop at what actually fits, not at what overflows.
+          ⚠ THE LINE COUNT CANNOT BE A FIXED NUMBER, because the card's height
+          comes from the viewport and the line height comes from the type
+          scale, so how many lines FIT changes with both. Measured, lines the
+          card can hold vs lines requested:
+            1920x940  holds 6, asked 4   (wasting two)
+            1366x640  holds 3, asked 4   (cut the 4th)
+            430x860   holds 3, asked 4   (cut the 4th)
+            843x546   holds 2, asked 2   but still overflowed 61>41
+          A media query per viewport is a guess that is wrong between the
+          guesses — a first attempt at `min-height:620px` broke 1280x610,
+          which had been fine. So the quote is a flex child that takes the
+          space the card actually gives it (`flex-1 min-h-0 overflow-hidden`)
+          and the 4-line clamp is only a ceiling for a long quote on a tall
+          card. The box can no longer ask for more room than it has.
+          The one remaining number is the clamp itself: a -webkit-box still
+          reserves its full line count even inside a shorter flex box, so on
+          the two genuinely shallow viewports (843x546, 844x340 — both ~2
+          lines of room) it is 2. 580px is below every normal phone portrait
+          (730+) and above both of those, so no real phone is affected. */}
+      <p className="min-h-0 flex-1 overflow-hidden text-[clamp(15px,min(0.95rem+0.7vw,2.2vh),24px)] leading-[1.35] [-webkit-box-orient:vertical] [display:-webkit-box] [-webkit-line-clamp:2] [@media(min-height:580px)]:[-webkit-line-clamp:4]">
         {t.quote}
       </p>
       {/* ⚠ THE NAME IS THE CARD'S HEADING, AND IT IS THE ONLY MEGION HERE.
@@ -184,7 +209,17 @@ export default function Testimonials({
         {children}
       </div>
 
-      <div className="relative z-10 w-full flex min-h-[var(--section-fill)] flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
+      {/* ⚠ `h-fit` ON A PORTRAIT SCREEN, NOT A FULL --section-fill. Two marquee
+          rows are ~2x300px however tall the viewport is, so on a tall narrow
+          screen the wrapper reserved far more than the rows need and
+          `justify-center` pooled the surplus under the heading — measured
+          237px of dead band at 1024x1290.
+          ⚠ THE GATE IS THE ASPECT RATIO, NOT `lg`. iPad Pro portrait is 1024
+          WIDE and 1290 TALL, so a width breakpoint puts it on the desktop
+          branch and it kept the full 237px gap while every phone was fixed.
+          A landscape screen gets the tuned centred fill; a portrait one lets
+          the rows set their own height. */}
+      <div className="relative z-10 w-full flex flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden py-[clamp(8px,2vh,32px)] [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0">
         <Row />
         <div className="hidden sm:block">
           <Row reverse />

@@ -150,7 +150,13 @@ export default function Features({
          cards set their own ink. Black on this ground is unreadable. */
       className="overflow-hidden bg-[#3D065F] text-violet"
     >
-      <div className="relative z-10 flex min-h-[var(--section-fill)] flex-col justify-center">
+      {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN. On a portrait one
+          the carousel is a fixed card height however tall the viewport is, so
+          reserving a whole fill and centring in it pooled the surplus under
+          the heading — measured 280px of dead band at 820x1100, 240px at
+          1024x1290. Aspect ratio, not a width breakpoint: iPad Pro portrait
+          is 1024 wide and would pass `lg`. */}
+      <div className="relative z-10 flex flex-col justify-center [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)]">
         {/* Ultrawide Controls & Track Containment:
             Bounded by --canvas-max-width (120rem / 1920px) so arrow controls
             and track snap points do not drift off to the 3400px monitor edges on ultrawide displays. */}

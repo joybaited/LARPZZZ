@@ -179,7 +179,13 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
 export default function Pricing() {
   return (
     <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
-      <div className="relative z-10 @container flex min-h-[var(--section-fill)] items-center justify-center py-8 lg:py-0">
+      {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN — same reason as
+          Features and Testimonials: the three cards are a fixed height, so a
+          portrait viewport reserved far more than they need and centring put
+          half the surplus under the heading (measured 331px at 1024x1290).
+          Phones were already fine at ~4% because the cards stack and overflow
+          the fill anyway; this fixes the tablet case without touching them. */}
+      <div className="relative z-10 @container flex items-center justify-center py-8 [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0">
         <ul
           role="list"
           className="@container [container-type:inline-size] m-0 flex w-full max-w-[min(120rem,calc(1200px*var(--scale-factor,1)))] list-none flex-col items-center gap-6 p-0 lg:flex-row lg:items-stretch lg:justify-center lg:gap-[clamp(24px,4.2vw,60px)]"
