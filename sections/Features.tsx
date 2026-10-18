@@ -67,44 +67,10 @@ const CARDS: CardData[] = [
   },
 ];
 
-export const FEATURES_STICKERS = [
-  {
-    id: "sticker-1792129027530",
-    name: "screenshot-2026-10-15-132307",
-    src: "/images/sticker-screenshot-2026-10-15-132307.png",
-    x: 31.3,
-    y: 12.7,
-    w: 11.4,
-    rotate: -67,
-    z: 5,
-  },
-  {
-    id: "sticker-1792129116255",
-    name: "screenshot-2026-10-15-132307",
-    src: "/images/sticker-screenshot-2026-10-15-132307.png",
-    x: 67.4,
-    y: 10.3,
-    w: 10.6,
-    rotate: 90,
-    z: 5,
-  },
-  {
-    id: "sticker-1792129166984",
-    name: "screenshot-2026-10-15-124604",
-    src: "/images/sticker-screenshot-2026-10-15-124604.png",
-    x: 73.9,
-    y: 110.9,
-    w: 9.8,
-    rotate: 16,
-    z: 5,
-  },
-];
 
 export default function Features({
-  hideStickers = false,
   children,
 }: {
-  hideStickers?: boolean;
   children?: React.ReactNode;
 } = {}) {
   const section = useRef<HTMLElement>(null);
@@ -224,31 +190,6 @@ export default function Features({
 
       </div>
 
-      {/* Floating Stickers Layer — Stage-anchored within 120rem canvas ceiling, quarantined to desktop (hidden lg:block), z-[5] behind cards */}
-      {!hideStickers && (
-        <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] hidden lg:block">
-          {FEATURES_STICKERS.map((st) => (
-            <div
-              key={st.id}
-              aria-hidden="true"
-              className="pointer-events-none absolute z-[5]"
-              style={{
-                left: `${st.x}%`,
-                top: `${st.y}%`,
-                width: `${st.w}%`,
-                zIndex: st.z ?? 5,
-                transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-              }}
-            >
-              <img
-                src={st.src}
-                alt={st.name}
-                className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-              />
-            </div>
-          ))}
-        </div>
-      )}
     </Section>
   );
 }

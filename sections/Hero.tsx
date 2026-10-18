@@ -170,99 +170,6 @@ export const HERO = {
     color: "#EAC2FF",
   },
 
-  /* ⚠ FLOATING STICKERS. x/y are PERCENTAGES OF THE SECTION, like els — a
-     placement tuned at one window size has to hold at every other, which is
-     the rule the tuners exist to keep.
-
-     x/y place the sticker's CENTRE, so a size change grows it about its own
-     middle rather than shifting it down and right.
-
-     w is a percentage of the section's WIDTH, so the sticker scales with the
-     page instead of staying a fixed pixel lump on a small screen.
-
-     rise/drift are the float's travel in px and tilt its rotation; dur and
-     delay set the period and stagger it so two stickers never move in
-     lockstep. The motion itself is one keyframe in globals.css.
-
-     ⚠ `rotate` IS THE RESTING ANGLE AND IT LIVES ON THE WRAPPER, not the
-     image. The float keyframe writes `rotate()` on the image every frame, so
-     a static angle set there is overwritten immediately — it has to sit on
-     the element the animation does not touch. `tilt` is the float's own
-     rocking about whatever angle this sets.
-
-     ⚠ z IS ABOUT THE PHONE ART. `HERO.art` renders at z-10 — the same layer
-     the 3D canvas used, so this scale did not change when the model came
-     out — and anything above that paints IN FRONT of the phone, anything
-     below it BEHIND. The balloons are 20 and sit in front at its foot; the
-     padlock is 5 and tucks behind at its top right.
-
-     ⚠ KEEP EVERY STICKER BELOW 30. The nav is z-30 so that the open dropdown
-     covers the hero — a sticker at 30 or above would punch through the panel
-     and float over it, which is the same bug the headline had at z-20 before
-     the nav was raised. Nothing enforces this, so it is a rule, not a
-     guarantee: 20 is the intended ceiling for "in front of the phone". */
-  stickers: [
-    {
-      name: "balloons",
-      src: "/images/sticker-balloons.webp",
-      alt: "",
-      x: 35.5,
-      y: 88.5,
-      w: 13.5,
-      rotate: "-7deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 20,
-    },
-    {
-      name: "lock",
-      src: "/images/sticker-lock.webp",
-      alt: "",
-      x: 68.5,
-      y: 24,
-      w: 14,
-      rotate: "9deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 5,
-    },
-    {
-      name: "screenshot-2026-10-15-132320",
-      src: "/images/sticker-screenshot-2026-10-15-132320.png",
-      alt: "",
-      x: 25.8,
-      y: 110.3,
-      w: 10,
-      rotate: "0deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 25,
-    },
-    {
-      name: "screenshot-2026-10-15-132331",
-      src: "/images/sticker-screenshot-2026-10-15-132331.png",
-      alt: "",
-      x: 75.9,
-      y: 112.9,
-      w: 12.3,
-      rotate: "127deg",
-      rise: 14,
-      drift: 8,
-      tilt: "2deg",
-      dur: "10s",
-      delay: "-3s",
-      z: 25,
-    },
-  ],
 };
 
 /* ⚠ A PAIR IS A `clamp()`, NOT A LERP BETWEEN THE ENDS — and css already
@@ -316,7 +223,7 @@ const PHONE: PhoneTune = {
   ...HERO.phone.parallax,
 };
 
-export default function Hero({ hideStickers = false }: { hideStickers?: boolean } = {}) {
+export default function Hero() {
   const { nav, headline: h } = HERO;
   const subtitleEl = HERO.els.find((e) => e.name === "text 2");
 
@@ -632,35 +539,6 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
             {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
           </div>
 
-          {/* Floating Stickers Layer (Desktop) */}
-          {!hideStickers && HERO.stickers?.map((st) => (
-            <div
-              key={st.name}
-              aria-hidden="true"
-              className="pointer-events-none absolute"
-              style={{
-                left: `${st.x}%`,
-                top: `${st.y}%`,
-                width: `${st.w}%`,
-                zIndex: st.z,
-                transform: `translate(-50%, -50%) rotate(${st.rotate ?? "0deg"})`,
-              }}
-            >
-              <img
-                src={st.src}
-                alt={st.alt}
-                decoding="async"
-                className="animate-sticker block h-auto w-full max-w-none select-none"
-                style={{
-                  "--rise": `${st.rise}px`,
-                  "--drift": `${st.drift}px`,
-                  "--tilt": st.tilt,
-                  "--dur": st.dur,
-                  "--delay": st.delay,
-                } as React.CSSProperties}
-              />
-            </div>
-          ))}
         </div>
       </div>
 
@@ -697,47 +575,7 @@ export default function Hero({ hideStickers = false }: { hideStickers?: boolean 
             decoding="async"
           />
 
-          {/* Lock sticker - anchored to top right of phone */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-3 -right-2 w-[28%] z-[5]"
-            style={{ transform: "rotate(9deg)" }}
-          >
-            <img
-              src="/images/sticker-lock.webp"
-              alt=""
-              decoding="async"
-              className="animate-sticker block h-auto w-full select-none"
-              style={{
-                "--rise": "10px",
-                "--drift": "6px",
-                "--tilt": "2deg",
-                "--dur": "10s",
-                "--delay": "-3s",
-              } as React.CSSProperties}
-            />
-          </div>
 
-          {/* Balloons sticker - anchored to bottom left of phone */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-5 -left-3 w-[26%] z-[20]"
-            style={{ transform: "rotate(-7deg)" }}
-          >
-            <img
-              src="/images/sticker-balloons.webp"
-              alt=""
-              decoding="async"
-              className="animate-sticker block h-auto w-full select-none"
-              style={{
-                "--rise": "12px",
-                "--drift": "6px",
-                "--tilt": "2deg",
-                "--dur": "10s",
-                "--delay": "-2s",
-              } as React.CSSProperties}
-            />
-          </div>
         </div>
 
         {/* 3. Subtitle Copy */}

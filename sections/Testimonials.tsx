@@ -145,25 +145,11 @@ function Row({ reverse }: { reverse?: boolean }) {
   );
 }
 
-export const TESTIMONIALS_STICKERS = [
-  {
-    id: "sticker-1792129229376",
-    name: "screenshot-2026-10-15-135800",
-    src: "/images/sticker-screenshot-2026-10-15-135800.png",
-    x: 12.5,
-    y: 9.1,
-    w: 12.0,
-    rotate: 0,
-    z: 5,
-  },
-];
 
 export default function Testimonials({
-  hideStickers = false,
   stageRef,
   children,
 }: {
-  hideStickers?: boolean;
   stageRef?: React.Ref<HTMLDivElement>;
   children?: React.ReactNode;
 } = {}) {
@@ -195,27 +181,6 @@ export default function Testimonials({
           marginBlock: "auto",
         }}
       >
-        {/* Floating Stickers Layer — quarantined to desktop (hidden lg:block) with z-[5] behind cards and heading */}
-        {!hideStickers && TESTIMONIALS_STICKERS.map((st) => (
-          <div
-            key={st.id}
-            aria-hidden="true"
-            className="pointer-events-none absolute hidden lg:block z-[5]"
-            style={{
-              left: `${st.x}%`,
-              top: `${st.y}%`,
-              width: `${st.w}%`,
-              zIndex: st.z ?? 5,
-              transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-            }}
-          >
-            <img
-              src={st.src}
-              alt={st.name}
-              className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-            />
-          </div>
-        ))}
         {children}
       </div>
 

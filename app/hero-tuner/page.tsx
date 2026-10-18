@@ -764,16 +764,21 @@ export default function HeroTuner() {
   });
 
   /* ---- the config block ------------------------------------------------ */
-  /* ⚠ `phone`, `wordmark`, `navLinks` AND `stickers` ARE PRINTED BACK VERBATIM
-     FROM THE LIVE HERO, not from any dial here. This tuner does not edit them,
-     and the block it prints REPLACES the whole `HERO` object — so emitting it
-     without them would silently delete the phone pose and the stickers the
-     moment it was pasted. Re-emitting what was imported keeps the paste
-     lossless.
+  /* ⚠ `phone`, `wordmark` AND `navLinks` ARE PRINTED BACK VERBATIM FROM THE
+     LIVE HERO, not from any dial here. This tuner does not edit them, and the
+     block it prints REPLACES the whole `HERO` object — so emitting it without
+     them would silently delete the phone pose the moment it was pasted.
+     Re-emitting what was imported keeps the paste lossless.
+
+     `stickers` WAS in this list and is not any more: the hero's stickers were
+     removed, so `HERO.stickers` does not exist. Printing it emitted
+     `stickers: undefined` and `JSON.stringify` returned undefined, which broke
+     the build on `.split` — and re-adding the key on paste would hand the hero
+     back a layer it no longer renders.
 
      `menu` is NOT in this list: its panel height IS tuned here, so it is
      printed from the dial below with its other keys carried through. */
-  const verbatim = (k: "phone" | "wordmark" | "navLinks" | "stickers") =>
+  const verbatim = (k: "phone" | "wordmark" | "navLinks") =>
     `  ${k}: ${JSON.stringify((HERO as Record<string, unknown>)[k], null, 2).split("\n").join("\n  ")},`;
   const config = `/* paste into sections/Hero.tsx — arranged in /hero-tuner */
 export const HERO = {
@@ -803,7 +808,6 @@ export const HERO = {
   menu: { x: ${HERO.menu.x}, y: ${HERO.menu.y}, panelHeight: ${Math.round((ground.menuH / 100) * vh)}, overlay: ${HERO.menu.overlay} },
   /* ↓ not tuned here — carried through from Hero.tsx unchanged. */
 ${verbatim("phone")}
-${verbatim("stickers")}
 ${verbatim("wordmark")}
 ${verbatim("navLinks")}
   els: [

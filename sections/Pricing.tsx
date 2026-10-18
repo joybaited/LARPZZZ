@@ -175,40 +175,8 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
   },
 ];
 
-export const PRICING_STICKERS = [
-  {
-    id: "sticker-1792129446612",
-    name: "screenshot-2026-10-15-131401",
-    src: "/images/sticker-screenshot-2026-10-15-131401.png",
-    x: 90.1,
-    y: 20.6,
-    w: 12.6,
-    rotate: -14,
-    z: 5,
-  },
-  {
-    id: "sticker-1792129480539",
-    name: "screenshot-2026-10-15-131411",
-    src: "/images/sticker-screenshot-2026-10-15-131411.png",
-    x: 9.2,
-    y: 20.2,
-    w: 9.2,
-    rotate: -27,
-    z: 5,
-  },
-  {
-    id: "sticker-1792129500616",
-    name: "screenshot-2026-10-15-131354",
-    src: "/images/sticker-screenshot-2026-10-15-131354.png",
-    x: 61.1,
-    y: 22.1,
-    w: 11,
-    rotate: 23,
-    z: 5,
-  },
-];
 
-export default function Pricing({ hideStickers = false }: { hideStickers?: boolean } = {}) {
+export default function Pricing() {
   return (
     <Section id="pricing" heading="Pricing" className="bg-[#e3b7fa] text-grape">
       <div className="relative z-10 @container flex min-h-[var(--section-fill)] items-center justify-center py-8 lg:py-0">
@@ -238,31 +206,6 @@ export default function Pricing({ hideStickers = false }: { hideStickers?: boole
         </ul>
       </div>
 
-      {/* Floating Stickers Layer — Stage-isolated within 120rem canvas; quarantined to desktop (hidden lg:block) at z-[5] behind cards to prevent text/CTA obstruction */}
-      {!hideStickers && (
-        <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] hidden lg:block z-[5]">
-          {PRICING_STICKERS.map((st) => (
-            <div
-              key={st.id}
-              aria-hidden="true"
-              className="pointer-events-none absolute hidden lg:block z-[5]"
-              style={{
-                left: `${st.x}%`,
-                top: `${st.y}%`,
-                width: `${st.w}%`,
-                zIndex: st.z ?? 5,
-                transform: `translate(-50%, -50%) rotate(${st.rotate}deg)`,
-              }}
-            >
-              <img
-                src={st.src}
-                alt={st.name}
-                className="block h-auto w-full max-w-none select-none drop-shadow-xl"
-              />
-            </div>
-          ))}
-        </div>
-      )}
     </Section>
   );
 }
