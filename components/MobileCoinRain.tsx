@@ -40,9 +40,9 @@ export const MOBILE_RAIN_CONFIG = {
   speedMin: 0.85,
   speedMax: 1.45,
 
-  // Coin diameter in px on mobile
-  sizeMin: 40,
-  sizeMax: 52,
+  // Coin diameter in px on mobile (increased chunky size)
+  sizeMin: 68,
+  sizeMax: 88,
 
   // Subtle horizontal sway amplitude in px
   driftAmp: 8,
@@ -66,7 +66,15 @@ type RainDrop = {
   phaseSpeed: number;
   driftAmp: number;
   iconIndex: number;
+  laneIndex: number;
 };
+
+// Calculate distributed horizontal position so coins rain evenly across the width
+function getLaneX(lane: number, totalLanes: number, width: number): number {
+  const laneSpan = (width * 0.82) / totalLanes;
+  const laneBase = width * 0.09 + lane * laneSpan;
+  return laneBase + (0.15 + Math.random() * 0.7) * laneSpan;
+}
 
 export default function MobileCoinRain() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -82,11 +90,11 @@ export default function MobileCoinRain() {
 
     const count = MOBILE_RAIN_CONFIG.coinCount;
 
-    // Initialize drops with staggered heights so rain is continuous right away
+    // Initialize drops with staggered heights and distributed horizontal lanes
     const drops: RainDrop[] = Array.from({ length: count }, (_, i) => {
       const frac = (i + 0.3) / count;
       const initialY = (MOBILE_RAIN_CONFIG.spawnYMin + frac * (MOBILE_RAIN_CONFIG.despawnY - MOBILE_RAIN_CONFIG.spawnYMin)) * h;
-      const homeX = (0.08 + Math.random() * 0.84) * w;
+      const homeX = getLaneX(i, count, w);
       const size = MOBILE_RAIN_CONFIG.sizeMin + Math.random() * (MOBILE_RAIN_CONFIG.sizeMax - MOBILE_RAIN_CONFIG.sizeMin);
       const iconIndex = Math.floor(Math.random() * COIN_ICONS.length);
 
@@ -102,6 +110,7 @@ export default function MobileCoinRain() {
         phaseSpeed: MOBILE_RAIN_CONFIG.driftFreqMin + Math.random() * (MOBILE_RAIN_CONFIG.driftFreqMax - MOBILE_RAIN_CONFIG.driftFreqMin),
         driftAmp: MOBILE_RAIN_CONFIG.driftAmp * (0.6 + Math.random() * 0.8),
         iconIndex,
+        laneIndex: i,
       };
     });
 
@@ -134,8 +143,9 @@ export default function MobileCoinRain() {
 
         // When drop passes behind ticket strip, recycle to the top underneath the cloud
         if (drop.y > despawnYPx) {
+          drop.laneIndex = (drop.laneIndex + 1 + Math.floor(Math.random() * (count - 1))) % count;
           drop.y = (MOBILE_RAIN_CONFIG.spawnYMin + Math.random() * (MOBILE_RAIN_CONFIG.spawnYMax - MOBILE_RAIN_CONFIG.spawnYMin)) * h;
-          drop.homeX = (0.08 + Math.random() * 0.84) * w;
+          drop.homeX = getLaneX(drop.laneIndex, count, w);
           drop.x = drop.homeX;
           drop.speed = MOBILE_RAIN_CONFIG.speedMin + Math.random() * (MOBILE_RAIN_CONFIG.speedMax - MOBILE_RAIN_CONFIG.speedMin);
           drop.size = MOBILE_RAIN_CONFIG.sizeMin + Math.random() * (MOBILE_RAIN_CONFIG.sizeMax - MOBILE_RAIN_CONFIG.sizeMin);
