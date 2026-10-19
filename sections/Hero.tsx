@@ -436,7 +436,7 @@ export default function Hero() {
               overlay={HERO.menu.overlay}
             >
               {/* ── THE OPEN PANEL ─────────────────────────────────────────────
-                  Osmo's open nav, in our words: numbered links on the left,
+                  Osmo's open nav, in our words: dotted links on the left,
                   a card on the right, a strip of socials and the legal line
                   along the bottom. It replaces the empty VIDEO placeholder.
 
@@ -455,12 +455,13 @@ export default function Hero() {
                     <li key={l.href}>
                       <a
                         href={l.href}
-                        className="panel-link flex items-baseline gap-[clamp(10px,1.2vw,24px)] no-underline [&:hover>span]:!opacity-100"
+                        className="panel-link flex items-center gap-[clamp(10px,1.2vw,24px)] no-underline [&:hover>span]:!opacity-100"
                         style={{ color: HERO.navLinks.color, "--i": i } as React.CSSProperties}
                       >
-                        <span className="w-[2ch] shrink-0 font-mono text-[clamp(11px,0.55rem+0.3vw,0.875rem)] tabular-nums opacity-50 transition-opacity duration-300 group-hover/list:opacity-30">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
+                        <span
+                          aria-hidden="true"
+                          className="size-[clamp(6px,0.3rem+0.2vw,0.625rem)] shrink-0 rounded-full bg-current opacity-50 transition-opacity duration-300 group-hover/list:opacity-30"
+                        />
                         <span className="font-display text-[clamp(30px,1.2rem+2.6vw,3.5rem)] leading-[1.05] uppercase transition-opacity duration-300 group-hover/list:opacity-40">
                           {l.label}
                         </span>
