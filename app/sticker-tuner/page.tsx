@@ -367,6 +367,8 @@ export default function StickerTuner() {
         ];
         if (d.anchor === "card") {
           lines.push(`    anchor: "card",`, `    card: ${d.card},`);
+        } else if (d.anchor === "phone") {
+          lines.push(`    anchor: "phone",`);
         }
         lines.push(`    cap: ${d.cap},`);
         if (d.anchor === "card" ? d.desktopOnly : !d.desktopOnly) {
