@@ -72,7 +72,7 @@ export default function FooterCloudContent() {
           <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-[clamp(13px,3.6vw,15px)] font-semibold max-[359px]:hidden md:hidden">
             {SECTION_LINKS.map((l) => (
               <li key={l.href}>
-                <a href={l.href} className="inline-block py-1 no-underline" style={{ color: INK }}>
+                <a href={l.href} className="-my-1.5 inline-block py-2.5 no-underline" style={{ color: INK }}>
                   {l.label}
                 </a>
               </li>
@@ -84,7 +84,7 @@ export default function FooterCloudContent() {
             <Column heading="Product">
               {SECTION_LINKS.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} className="no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
+                  <a href={l.href} className="-my-1 inline-block py-1 no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
                     {l.label}
                   </a>
                 </li>
@@ -97,24 +97,24 @@ export default function FooterCloudContent() {
             </Column>
             <Column heading="Support">
               <li>
-                <a href={TELEGRAM.href} target="_blank" rel="noopener noreferrer" className="no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
+                <a href={TELEGRAM.href} target="_blank" rel="noopener noreferrer" className="-my-1 inline-block py-1 no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
                   Telegram
                 </a>
               </li>
               <li>
-                <a href="/login" className="no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
+                <a href="/login" className="-my-1 inline-block py-1 no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
                   Login
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
+                <a href="#pricing" className="-my-1 inline-block py-1 no-underline transition-opacity duration-300 hover:opacity-60" style={{ color: INK }}>
                   Buy a license
                 </a>
               </li>
             </Column>
           </div>
 
-          <p className="m-0 border-t-2 pt-3 text-[clamp(11px,0.45rem+0.3vw,0.875rem)] opacity-70" style={{ borderColor: `color-mix(in srgb, ${INK} 25%, transparent)` }}>
+          <p className="m-0 border-t-2 pt-3 text-[clamp(12px,0.45rem+0.3vw,0.875rem)] opacity-70" style={{ borderColor: `color-mix(in srgb, ${INK} 25%, transparent)` }}>
             © {new Date().getFullYear()} Larpz Wallet · {LEGAL}
           </p>
         </div>

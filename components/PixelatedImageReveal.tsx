@@ -154,9 +154,30 @@ export default function PixelatedImageReveal({
       outgoing.style.display = "block";
       incoming.style.display = "block";
       incoming.style.clipPath = "inset(100% 0% 0% 0%)";
-      gsap.set(pixels, { display: "none" });
+      /* visibility, not display, from here on: autoAlpha hides a cell
+         with visibility:hidden at 0, so idle cells still cost nothing, and
+         one tween per cell does the whole on/hold/off. */
+      gsap.set(pixels, { display: "block", autoAlpha: 0 });
 
       const rowStep = stepDuration / grid;
+
+      /* ⚠ THE BAND IS EASED, AND THE CELLS FADE — that is the smoothing.
+         Measured first: the pass already holds 60fps (p95 16.8ms, no long
+         tasks), so nothing here was dropping frames. What read as rough was
+         the motion itself: a constant-speed climb in hard row steps, every
+         cell snapping on and off. Now the climb eases in and out and each
+         cell takes ~1.2 rows to fade, so the pixel look stays but the band
+         moves like one thing.
+         The clip below runs on the SAME ease, and a cell's on-time is that
+         ease INVERTED at its row, so the band stays parked on the clip edge
+         the whole way up. */
+      const ease = gsap.parseEase("sine.inOut");
+      const timeAt = (f: number) => {
+        let lo = 0, hi = 1;
+        for (let k = 0; k < 18; k++) { const m = (lo + hi) / 2; if (ease(m) < f) lo = m; else hi = m; }
+        return lo * stepDuration;
+      };
+      const fade = rowStep * 1.2;
 
       /* ⚠ EVERY CELL IS JITTERED, OR THE BAND IS A BAR. Timed purely by row,
          all 22 cells in a row flip at the same instant and they are
@@ -172,12 +193,17 @@ export default function PixelatedImageReveal({
            the band starts at the bottom and climbs. */
         const row = grid - 1 - Math.floor(i / grid);
         const jitter = (Math.random() - 0.5) * 2 * rowStep * jitterRows;
-        const on = Math.max(0, row * rowStep + jitter);
+        const on = Math.max(0, timeAt(row / grid) + jitter);
         /* the off time keeps the SAME jitter, so each cell is lit for the
            full band thickness wherever it happens to fall. */
         const off = on + bandRows * rowStep;
-        gsap.to(px, { display: "block", duration: 0, delay: on });
-        gsap.to(px, { display: "none", duration: 0, delay: off });
+        gsap.to(px, {
+          delay: on,
+          keyframes: [
+            { autoAlpha: 1, duration: fade, ease: "power1.out" },
+            { autoAlpha: 0, duration: fade, delay: off - on - fade, ease: "power1.in" },
+          ],
+        });
       });
 
       /* the reveal steps one row at a time, trailing the band's back edge:
@@ -189,7 +215,7 @@ export default function PixelatedImageReveal({
         row: grid,
         duration: grid * rowStep,
         delay: bandRows * rowStep,
-        ease: "none",
+        ease,
         snap: { row: 1 },
         onUpdate: () => {
           const pct = 100 - (prog.row / grid) * 100;
@@ -197,7 +223,7 @@ export default function PixelatedImageReveal({
         },
       });
 
-      delayed = gsap.delayedCall((grid + bandRows + jitterRows) * rowStep, () => {
+      delayed = gsap.delayedCall((grid + bandRows + jitterRows) * rowStep + fade, () => {
         show(index);
         incoming.style.clipPath = "";
       });

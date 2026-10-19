@@ -9,6 +9,7 @@ import { NavMenuWithPanel } from "@/components/NavMenu";
 import PillButton from "@/components/PillButton";
 import { LEGAL, SECTION_LINKS, SOCIALS, TELEGRAM, UPDATES } from "@/lib/site";
 import ImageTrail from "@/components/ImageTrail";
+import PixelatedImageReveal from "@/components/PixelatedImageReveal";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -106,7 +107,9 @@ export const HERO = {
   art: {
     src: "/images/hero-phone.webp",
     x: 52.2,
-    y: 58.5,
+    /* 56.5, not the model's 58.5: the step phones are height-bound at 85% of
+       the hero, and 58.5 would run them off the bottom. */
+    y: 56.5,
     w: 33,
     rotate: 0,
     show: true,
@@ -188,6 +191,30 @@ export const HERO = {
    then let clamp hold the floor and the ceiling. Interpolating linearly in js
    was 8px out at 768: correct at both design widths and wrong in between,
    which is the dangerous kind of wrong. */
+/* THE HERO'S PHONE: the six step screens and the pixel transition between
+   them, moved here from How it works (which now shows the old hero phone,
+   static). Same dials it had there. HERO.art.src is still the old phone — the
+   open nav's card crops it into its corner. */
+const STEP_PHONES = ["a", "b", "c", "d", "e", "f"].map((k) => ({ src: `/images/steps-phone-${k}.webp`, alt: "" }));
+const HeroSteps = ({ className = "" }: { className?: string }) => (
+  <PixelatedImageReveal
+    images={STEP_PHONES}
+    grid={26}
+    pattern="wave"
+    waveRows={3}
+    jitterRows={1.1}
+    gap={1.5}
+    glow="0 0 5px rgba(234, 194, 255, 0.8), 0 0 12px rgba(234, 194, 255, 0.35)"
+    stepDuration={1.1}
+    auto
+    loopEvery={2800}
+    maskToArt
+    fit="contain"
+    square={false}
+    className={`!rounded-none text-violet ${className}`}
+  />
+);
+
 const fluid = ([min, max]: number[]) => {
   const m = ((max - min) / (1440 - 390)) * 100; /* vw coefficient */
   const b = min - (m * 390) / 100; /* px intercept */
@@ -364,7 +391,7 @@ export default function Hero() {
 
                 The row has to beat the overlay's 0 but stay under the panel,
                 which is why this is 20 and not something larger. */}
-            <div className="absolute top-1/2 right-[2.5%] z-20 hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
+            <div className="absolute top-1/2 right-[2.5%] z-20 hidden -translate-y-1/2 items-center gap-[clamp(14px,0.2rem+1.6vw,3rem)] lg:flex">
               {/* ⚠ THE LINKS LEAVE THE BAR WHEN THE PANEL OPENS, THE CTA DOES
                   NOT. They are the same four labels the panel lists, so with
                   the panel open the bar would show them twice — and the panel
@@ -389,16 +416,33 @@ export default function Hero() {
                      would need `display: contents` to leave the flex row's
                      spacing alone, and a contents box has nothing to fade —
                      opacity on it does nothing at all. */
-                  className="nav-link whitespace-nowrap no-underline transition-opacity hover:opacity-100"
+                  /* ⚠ THE ROLL: the label slides up out of a one-line window
+                     and its copy slides in from below — the same move the
+                     Login pill makes, so the bar reads as one family. The
+                     window is `overflow-hidden` on the inner span, NOT on the
+                     link, so the link's own opacity fade (.nav-link) still
+                     works. leading 1.3 so the window clears "g" and "y".
+                     ⚠ THE SIZE CEILING IS rem, NOT px. It was 20px, so from
+                     1920 up the links froze while the bar kept growing — 564px
+                     of dead gap beside the wordmark at 2560. At 1024 this is
+                     still 14px, where the gap to the wordmark is only 36px. */
+                  className="nav-link group/roll whitespace-nowrap no-underline"
                   style={{
                     color: HERO.navLinks.color,
-                    fontSize: "clamp(14px, 0.6rem + 0.5vw, 20px)",
+                    fontSize: "clamp(14px, 0.35rem + 0.85vw, 1.5rem)",
                     /* a short stagger so they leave as a sweep rather than a
                        block. Reversed on the way back in by the css. */
                     "--i": i,
                   } as React.CSSProperties}
                 >
-                  {label}
+                  <span className="relative block h-[1.3em] overflow-hidden leading-[1.3]">
+                    <span className="block transition-transform duration-500 ease-[cubic-bezier(0.625,0.05,0,1)] group-hover/roll:-translate-y-full group-focus-visible/roll:-translate-y-full motion-reduce:transition-none">
+                      {label}
+                    </span>
+                    <span aria-hidden="true" className="absolute inset-x-0 top-full block transition-transform duration-500 ease-[cubic-bezier(0.625,0.05,0,1)] group-hover/roll:-translate-y-full group-focus-visible/roll:-translate-y-full motion-reduce:transition-none">
+                      {label}
+                    </span>
+                  </span>
                 </a>
               ))}
               {/* the CTA. `leading-none` plus symmetric padding is what keeps
@@ -408,8 +452,8 @@ export default function Hero() {
                 href="/login"
                 fill={HERO.navLinks.ctaFill}
                 color={HERO.navLinks.ctaColor}
-                className="whitespace-nowrap px-[clamp(16px,0.6rem+0.7vw,24px)] py-[clamp(7px,0.25rem+0.35vw,10px)] leading-none font-semibold"
-                style={{ fontSize: "clamp(13px, 0.55rem + 0.45vw, 17px)" }}
+                className="whitespace-nowrap px-[clamp(16px,0.4rem+1vw,2rem)] py-[clamp(7px,0.2rem+0.45vw,0.875rem)] leading-none font-semibold"
+                style={{ fontSize: "clamp(13px, 0.4rem + 0.65vw, 1.25rem)" }}
               >
                 {HERO.navLinks.cta}
               </PillButton>
@@ -449,7 +493,7 @@ export default function Hero() {
                     <li key={l.href}>
                       <a
                         href={l.href}
-                        className="panel-link flex items-center gap-[clamp(10px,1.2vw,24px)] no-underline [&:hover>span]:!opacity-100"
+                        className="panel-link flex min-h-11 items-center gap-[clamp(10px,1.2vw,24px)] no-underline [&:hover>span]:!opacity-100"
                         style={{ color: HERO.navLinks.color, "--i": i } as React.CSSProperties}
                       >
                         <span
@@ -536,7 +580,7 @@ export default function Hero() {
                     <ul className="m-0 mt-3 flex list-none flex-col gap-2 p-0">
                       {UPDATES.items.map((u) => (
                         <li key={u} className="flex items-start gap-2 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug">
-                          <span className="mt-[0.1em] shrink-0 rounded-full px-2 py-[1px] text-[0.7em] font-semibold tracking-[0.06em] uppercase" style={{ background: HERO.nav.fill, color: HERO.navLinks.color }}>
+                          <span className="mt-[0.1em] shrink-0 rounded-full px-2 py-[1px] text-[max(11px,0.7em)] font-semibold tracking-[0.06em] uppercase" style={{ background: HERO.nav.fill, color: HERO.navLinks.color }}>
                             New
                           </span>
                           {u}
@@ -631,21 +675,30 @@ export default function Hero() {
             left-aligned headline, right-anchored content column, and desktop sticker field. */}
         <div className="pointer-events-none absolute inset-0 hidden lg:block">
           {HERO.art?.show && (
-            <img
-              src={HERO.art.src}
-              alt=""
+            /* ⚠ SIZED BY HEIGHT, NOT WIDTH. These screens are 521x1055 —
+               0.49 wide per tall against the old phone's 0.80 — so the old
+               33%-of-width rule made them 1.6x taller and ran them off the
+               bottom. Height is 85% of the hero, centred 56.5% down, so it
+               spans 14%..99%: clear of the nav, inside the bottom, at every
+               window shape.
+               The 54vw / 64.8rem terms cap the width at ~27% of the stage
+               (54 x 0.494) — always narrower than the old 33% phone, so it
+               cannot reach anything the old one did not. They bind on
+               square-ish and tall windows (1024x768, an iPad Pro portrait at
+               1024x1366); everywhere wider the 80% height governs.
+               Centre stays HERO.art.x/y. */
+            <div
               aria-hidden="true"
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-              className="pointer-events-none absolute z-10 h-auto max-w-none select-none"
+              className="pointer-events-none absolute z-10 aspect-[521/1055]"
               style={{
                 left: `${HERO.art.x}%`,
                 top: `${HERO.art.y}%`,
-                width: "var(--phone-w, 33%)",
+                height: "min(85%, 54vw, 64.8rem)",
                 transform: `translate(-50%, -50%) rotate(${HERO.art.rotate ?? 0}deg)`,
               }}
-            />
+            >
+              <HeroSteps className="size-full" />
+            </div>
           )}
 
           {/* Headline */}
@@ -752,6 +805,8 @@ export default function Hero() {
             section actually needs to do. The 3D/phone art returns the moment
             there is room for it. */}
         <div className="relative hidden min-h-0 w-full flex-1 items-center justify-center [@media(min-height:420px)]:flex">
+          {/* phones keep the static hero phone — the pixel transition is
+              desktop only. */}
           <img
             src={HERO.art.src}
             alt="Larpz Wallet Preview"

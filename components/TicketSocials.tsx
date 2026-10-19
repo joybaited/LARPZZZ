@@ -64,7 +64,7 @@ export default function TicketSocials() {
       className="flex items-center gap-[clamp(12px,3vw,20px)] px-4 py-4 md:h-full md:flex-col md:items-stretch md:gap-[clamp(10px,1.4vh,20px)] md:p-[clamp(14px,1.4vw,28px)] md:pl-[clamp(18px,1.8vw,32px)]"
       style={{ color: INK }}
     >
-      <p className="m-0 hidden text-[clamp(11px,0.45rem+0.3vw,0.8125rem)] font-semibold tracking-[0.1em] uppercase opacity-70 md:block">
+      <p className="m-0 hidden text-[clamp(12px,0.45rem+0.3vw,0.8125rem)] font-semibold tracking-[0.1em] uppercase opacity-70 md:block">
         Scan or tap to follow
       </p>
 
@@ -155,7 +155,7 @@ export default function TicketSocials() {
       {/* desktop: the latest updates, then the CTA pinned to the bottom.
           From lg only — at 768-1023 the strip is ~165px wide. */}
       <div className="mt-auto hidden flex-col gap-[clamp(8px,1vh,12px)] md:flex">
-        <p className="m-0 hidden text-[clamp(11px,0.45rem+0.3vw,0.8125rem)] font-semibold tracking-[0.1em] uppercase opacity-70 lg:block">
+        <p className="m-0 hidden text-[clamp(12px,0.45rem+0.3vw,0.8125rem)] font-semibold tracking-[0.1em] uppercase opacity-70 lg:block">
           Latest updates
         </p>
         <ul className="m-0 hidden list-none flex-col gap-2 p-0 lg:flex">
@@ -166,7 +166,7 @@ export default function TicketSocials() {
               style={{ background: PAPER }}
             >
               <span
-                className="mt-[0.1em] shrink-0 rounded-full px-2 py-[1px] text-[0.72em] font-semibold tracking-[0.06em] uppercase"
+                className="mt-[0.1em] shrink-0 rounded-full px-2 py-[1px] text-[max(11px,0.72em)] font-semibold tracking-[0.06em] uppercase"
                 style={{ background: INK, color: VIOLET }}
               >
                 New

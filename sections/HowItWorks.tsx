@@ -1,7 +1,6 @@
 "use client";
 
 import Section from "@/components/Section";
-import PixelatedImageReveal from "@/components/PixelatedImageReveal";
 import { type Sticker } from "@/components/Stickers";
 
 /* How it works. Four cards in two flanking columns with an empty middle.
@@ -77,12 +76,12 @@ export const HOW_IT_WORKS_CARDS: HowItWorksCard[] = [
   {
     id: "activate",
     text: "Activate your Wallet",
-    body: "Enter your license key, and download the app",
+    body: "Enter your license key and download the app.",
   },
   {
     id: "flex",
-    text: "Flex to your hearts content",
-    body: "Customize Your Portfolio to your hearts content.",
+    text: "Flex to your heart’s content",
+    body: "Customize your portfolio to your heart’s content.",
   },
 ];
 
@@ -179,55 +178,19 @@ export default function HowItWorks({
               in `grid-cols-[1fr_1.066fr_1fr]` that holds the two card columns
               apart — so the element has to exist even when it is empty, or
               the three-column arrangement collapses to two. It carries the
-              two phone mockups and the pixel transition between them, where
-              the 3D model used to be.
+              hero's phone, static — the pixel transition moved to the hero.
               Hidden below lg: the stacked 2-up has no centre column. */}
           <li role="presentation" className="relative hidden lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block">
-            <PixelatedImageReveal
-              /* six phone mockups, cycled in order and wrapping back to the
-                 first. All six are the same 521x1055 trim, so they share one
-                 silhouette and one mask. */
-              images={[
-                { src: "/images/steps-phone-a.webp", alt: "" },
-                { src: "/images/steps-phone-b.webp", alt: "" },
-                { src: "/images/steps-phone-c.webp", alt: "" },
-                { src: "/images/steps-phone-d.webp", alt: "" },
-                { src: "/images/steps-phone-e.webp", alt: "" },
-                { src: "/images/steps-phone-f.webp", alt: "" },
-              ]}
-              /* Grid of 26 gives crisp, well-defined ~14-16px pixel blocks */
-              grid={26}
-              /* A defined band of pixels climbing from the bottom, carrying the next mockup up with it */
-              pattern="wave"
-              waveRows={3}
-              /* Scatters cells off their row for defined, ragged pixel steps */
-              jitterRows={1.1}
-              /* Tiny 1.5px gap so pixel boxes are cleanly separated as floating square tiles */
-              gap={1.5}
-              /* Soft pink glow on each pixel */
-              glow="0 0 5px rgba(234, 194, 255, 0.8), 0 0 12px rgba(234, 194, 255, 0.35)"
-              /* snappy: each half is 0.22s, so the whole swap is under half a
-                 second. The original's 0.3 felt slow at this density because
-                 the stagger is spread across far more cells. */
-              /* ⚠ THIS IS THE CLIMB, NOT A HALF-DISSOLVE. For `wave` it is
-                 the time the band takes to cross all 22 rows, so 0.3 was
-                 ~13ms a row — about one frame each, far too fast to read as
-                 a wave. 1.1s is ~50ms a row, which is a band you can watch
-                 travel. */
-              stepDuration={1.1}
-              /* plays itself when the section scrolls in — there is nothing
-                 to hover in the middle of a card grid. */
-              auto
-              /* swaps every 2.8s while the section is on screen */
-              loopEvery={2800}
-              /* the squares stop at the phone's own edge — the grid is masked
-                 with the artwork, so nothing paints on the transparent
-                 corners. */
-              maskToArt
-              /* the pixels take the site's signature pink/violet (#eac2ff) */
-              className="size-full !rounded-none text-violet"
-              fit="contain"
-              square={false}
+            {/* the hero's phone, swapped in from the hero, which now carries the
+                pixel transition. Static on purpose. object-contain fits it
+                whole inside the centre column on both axes and centres it, so
+                it can never push the grid or overflow it. */}
+            <img
+              src="/images/hero-phone.webp"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 size-full object-contain select-none"
             />
           </li>
 
