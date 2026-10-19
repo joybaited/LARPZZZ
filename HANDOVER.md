@@ -14,9 +14,17 @@ session would get wrong without being told.
 ## Session — 2026-10-18 (session 20) — Claude
 
 Responsive pass over every section, a Phantom-style page-colour system, iOS
-video fallbacks, and a touch fix for the buttons. All of it merged to `main`
-(#8 as `7572c18`, docs #9 as `7fca831`) and deployed:
-**https://larpz-final.vercel.app**
+video fallbacks, and a touch fix for the buttons. All merged to `main` and
+deployed: **https://larpz-final.vercel.app**
+
+| PR | on `main` | what |
+|---|---|---|
+| #8 | `7572c18` | the responsive pass, colour tween, iOS videos, footer seam |
+| #9 | `7fca831` | `SNV.md` handover for the pass |
+| #10 | `794af79` | touch buttons, FAQ pill wrapping, hamburger inset |
+| #11 | `461185c` | `SNV.md`: the big-screen option and why not to zoom |
+
+PR #7 was closed as superseded — its two commits are inside #8.
 
 ### Done
 
@@ -46,13 +54,55 @@ video fallbacks, and a touch fix for the buttons. All of it merged to `main`
   on.
 - **The footer's blue seam line is gone** (mobile only overlay), the footer
   coins are no longer 27% of the screen, and the nav wordmark scales.
-- **Touch buttons, FAQ pill wrapping, hamburger inset** — the last round, all
-  three documented in detail in `SNV.md`.
-- **`SNV.md` gained two handover sections** for @snvzyn covering the method,
-  the traps and what changed in his files.
+- **Touch buttons now work on a phone (#10).** The pill roll was driven
+  entirely by `:hover`, and on touch it failed in BOTH directions at once —
+  measured with real touch through CDP, the press did nothing and the RELEASE
+  played the entrance, which then stuck open permanently because the emulated
+  hover outlived the tap. Now starts on press, holds through a long press,
+  releases clean. Desktop measured identical before and after.
+  ⚠ `@media (hover: hover)` alone was NOT enough: Chromium grants neither
+  `:hover` nor `:active` during a touch hold, so a CSS-only fix would have
+  worked on iOS and silently failed on Android. Hence one delegated listener,
+  `components/PillTouch.tsx`, mounted once in `layout.tsx` — not handlers in
+  `PillButton.tsx` and `PriceEl.tsx`, which are server components.
+- **FAQ pills no longer wrap on mobile (#10).** Four of six questions broke
+  onto two lines at 360px. Three constraints were stacking: the pill's own
+  `calc(100vw-48px)`, the container's `px-4` taking 32px more, and a
+  `max-sm:whitespace-normal` permitting the break. Text stayed at 16px rather
+  than being shrunk, as asked.
+- **The hamburger had collapsed into the left edge (#10).** `HERO.menu.x` is
+  4.6% of the SECTION, which is 18px on a 390 phone — measured 9-13px from the
+  screen edge against 92px on desktop. `max(4.6%, 22px)` floors it without a
+  second number to keep in sync.
+- **`SNV.md` gained three handover sections (#9, #11)** for @snvzyn: the
+  method and the traps, what changed in his files, and the big-screen option.
 
 ### Still open
 
+- **⚠ IT REPORTEDLY BREAKS ON @snvzyn's SCREEN, WHICH IS LARGER THAN THE
+  BASELINE — AND NOBODY HAS DIAGNOSED IT.** This is the biggest open item.
+  Everything here is tuned against the owner's 1536x742; @snvzyn's viewport is
+  **not recorded anywhere in the repo** and nobody has asked. The only hint is
+  indirect: `scripts/apply-all-fixes.mjs` has a hardcoded `C:/Users/SREE
+  HARI/...` path, so Windows.
+  **Get the number before changing anything.** `components/ViewportHUD.tsx` is
+  a dev-only overlay that prints live dimensions and scale — it exists for
+  exactly this and he can read it off in one second.
+  "Broke on a big screen" has two causes that look alike and need OPPOSITE
+  fixes: a real collision (raising a ceiling makes it worse) versus content
+  simply capped at `--canvas-max-width: 120rem` with dead margin either side
+  on a 2560/3440 display (not broken, ceiling too low). The sweep covers up to
+  3440x1300 and reports clean there, which points at the second — but that is
+  inference, not his screen.
+  If it is the second, the fix is one token: raise `--canvas-max-width` and,
+  if type should grow with it, the root clamp's `1.375rem` ceiling. Written up
+  with the reasoning in `SNV.md`.
+  ⚠ The owner asked about `transform: scale()` / "lazy zoom" for this. Do not:
+  the nav and `ViewportHUD` are `position: fixed` and detach under a
+  transformed ancestor, and `PillTouch`, `FooterCoins` and `ImageTrail` all
+  hit-test against real pointer coordinates. `docs/responsive-architecture-
+  method.md` already names it the Lazy Zoom Trap; `SNV.md` now records what it
+  would cost here specifically.
 - **@snvzyn has not been told**, and this touched his files. `Footer.tsx`
   gained one mobile-only overlay and `FooterCoins.tsx` had its mobile sizing
   bounded — both at the owner's explicit request, desktop values untouched.
@@ -63,7 +113,13 @@ video fallbacks, and a touch fix for the buttons. All of it merged to `main`
 - **Two eslint errors pre-date all of this**: `Faq.tsx:46` and
   `hero-tuner:318`. Confirmed by stashing. Neither blocks the build.
 - **The owner was going to rearrange stickers on desktop** and have them
-  baked in as final positions. Not started.
+  baked in as final positions. Not started. Only How it works has stickers
+  now, so it is that section's four badges and `/sticker-tuner`.
+- **Deploys still need the public/private dance.** Vercel refuses to build
+  while the repo is private, and separately reported *"Git author kez-james
+  must have access to the project on Vercel"*. Done three times this session:
+  flip public, wait for success, merge, flip back. The GitHub account needs
+  adding to the Vercel project — then this stops.
 
 ### What the next session would get wrong
 
@@ -99,6 +155,28 @@ viewports, reports collisions, escapes, horizontal scroll and clipped text,
 and never writes a section. **Four separate times a change that looked
 obviously right measured worse**, and only the re-measure caught it. Probes
 for one-off questions go in `scripts/.name.mjs` and get deleted.
+
+Two specific lessons from those four:
+
+- **A detector that has not failed on the known-bad case proves nothing.**
+  Chasing the footer's blue seam, a row-average detector reported "clean" for
+  both the broken and the fixed tree — the line is a few px thin and the
+  average washed it out. Looking for a *discontinuity* between adjacent rows
+  found it immediately.
+- **Re-measure after the fix, not just before it.** The first hero fix made
+  the overflow WORSE (823px on a 770 viewport, against 796 before) because a
+  `flex-1` child cannot shrink without a height ceiling on its parent. It
+  looked right in the diff.
+
+**On parallel agents:** the owner asked for three tasks in parallel agents.
+Only one went to an agent. Two of the three both touched `Faq.tsx` /
+`FaqItem.tsx` — the nav toggle position and the pill sizing — and two agents
+in one file is the failure mode `docs/COLLABORATION.md` exists to prevent. The
+genuinely independent one (`pillHover.tsx`) ran in the background while the
+other two were done in sequence. Same throughput, no collision. Its result was
+verified independently rather than taken at face value, including re-checking
+a duplicate-selector bug it reported fixing — it had, and the two remaining
+occurrences are different properties.
 
 ---
 
