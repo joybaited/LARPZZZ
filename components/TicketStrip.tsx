@@ -1,5 +1,6 @@
 type Props = {
   className?: string;
+  children?: React.ReactNode;
 };
 
 /**
@@ -9,7 +10,7 @@ type Props = {
  * matching the visual weight of the cloud's black ink outline.
  * Elements inside are TBD.
  */
-export default function TicketStrip({ className = "" }: Props) {
+export default function TicketStrip({ className = "", children }: Props) {
   return (
     <aside
       aria-label="Ticket strip"
@@ -47,46 +48,7 @@ export default function TicketStrip({ className = "" }: Props) {
         />
       </svg>
 
-      {/* Desktop Inner Container (Vertical Stub, Strictly Preserved) */}
-      <div className="hidden md:flex relative h-full flex-col items-center justify-between p-(--space-m) text-center select-none overflow-hidden">
-        {/* Top serial marker */}
-        <div className="text-[clamp(11px,0.7vw,13px)] font-mono uppercase tracking-widest text-ink/40">
-          № 007
-        </div>
-
-        {/* Center stub placeholder */}
-        <div className="flex flex-col items-center gap-1.5">
-          <span className="font-display text-[clamp(14px,1vw,20px)] uppercase tracking-wider text-ink/60">
-            TICKET STRIP
-          </span>
-          <span className="text-[clamp(10px,0.65vw,12px)] font-mono text-ink/40 uppercase">
-            [ TBD ]
-          </span>
-        </div>
-
-        {/* Bottom stub footer */}
-        <div className="text-[clamp(10px,0.65vw,12px)] font-mono uppercase tracking-widest text-ink/30">
-          LARPZ • PASS
-        </div>
-      </div>
-
-      {/* Mobile Inner Container (Horizontal Stub at Bottom) */}
-      <div className="flex md:hidden relative h-full items-center justify-between px-5 text-center select-none overflow-hidden">
-        <span className="font-mono text-xs uppercase tracking-widest text-ink/40">
-          № 007
-        </span>
-        <div className="flex flex-col items-center">
-          <span className="font-display text-[15px] uppercase tracking-wider text-ink/60">
-            TICKET STRIP
-          </span>
-          <span className="font-mono text-[10px] text-ink/40 uppercase">
-            [ TBD ]
-          </span>
-        </div>
-        <span className="font-mono text-[11px] uppercase tracking-widest text-ink/30">
-          LARPZ • PASS
-        </span>
-      </div>
+      {children}
     </aside>
   );
 }
