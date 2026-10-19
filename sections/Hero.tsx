@@ -144,6 +144,27 @@ export const HERO = {
     ctaColor: "#3D065F",
   },
 
+  /* ⚠ THE OPEN PANEL'S CONTENT. Notes and card copy are from copy.md.
+     ⚠ THE SOCIAL hrefs ARE PLACEHOLDERS — no social URL exists anywhere in
+     the repo yet. Fill these in; nothing else needs to change. */
+  panel: {
+    links: [
+      { label: "Features", href: "#features", note: "One key. Six apps." },
+      { label: "How it works", href: "#how-it-works", note: "Buy, get your key, flex." },
+      { label: "Pricing", href: "#pricing", note: "Plans from $14." },
+      { label: "Reviews", href: "#testimonials", note: "Straight from the group chat." },
+      { label: "FAQ", href: "#faq", note: "No seed phrase, ever." },
+    ],
+    card: { eyebrow: "Plans from", price: "$14", detail: "All six apps, iOS & Android, no seed phrase." },
+    socials: [
+      { label: "Telegram", href: "#" },
+      { label: "X", href: "#" },
+      { label: "TikTok", href: "#" },
+      { label: "Instagram", href: "#" },
+    ],
+    legal: "For entertainment only — not a real wallet.",
+  },
+
   /* ⚠ THE NAV WORDMARK, AND THE GHOST THAT APPEARS ON HOVER. It was a
      three-cell roller that alternated the two forever; Kez dropped the
      animation, so the wordmark simply sits there and the ghost fades in
@@ -414,85 +435,118 @@ export default function Hero() {
               panelHeight={HERO.menu.panelHeight}
               overlay={HERO.menu.overlay}
             >
-              {/* ⚠ THE SAME FOUR LABELS THE BAR SHOWS, FROM THE SAME CONFIG.
-                  One list, rendered in two places, so they cannot drift — the
-                  failure the tuners in this repo keep hitting. The bar's copy
-                  fades out as these fade in, so only one set is ever readable.
+              {/* ── THE OPEN PANEL ─────────────────────────────────────────────
+                  Osmo's open nav, in our words: numbered links on the left,
+                  a card on the right, a strip of socials and the legal line
+                  along the bottom. It replaces the empty VIDEO placeholder.
 
-                  Laid out as a list rather than placed with coordinates: the
-                  panel is a container, not a canvas, and a stacked list
-                  reflows at any width without a second set of numbers. */}
-              {/* ⚠ THE LIST KEEPS ITS OWN PADDING AND ITS OWN HEIGHT. It was
-                  briefly wrapped in a padded row with the media box as a
-                  sibling, which made the BOX the tallest thing in the panel —
-                  and the surface behind the bar measures the panel and grows to
-                  cover it, so the open nav turned into a dark slab. The links
-                  decide the panel's height, exactly as before; the box is
-                  overlaid on top of that box rather than added to it. */}
-              <div className="relative">
-                <ul className="m-0 flex list-none flex-col gap-[clamp(6px,0.3rem+0.6vw,16px)] p-[clamp(20px,1rem+2vw,48px)]">
-                  {HERO.navLinks.items.map((label, i) => (
-                    <li key={label}>
+                  ⚠ ITS OWN LIST, NOT `navLinks.items`. The bar shows four
+                  labels; the panel has room for every section plus a note on
+                  each, and forcing the bar to carry five would crowd it at
+                  1024. Each note is taken from copy.md.
+
+                  ⚠ EVERY TOP-LEVEL PIECE IS A `.panel-link` WITH ITS OWN `--i`,
+                  so the stagger in globals.css runs links -> card -> strip as
+                  one sweep. That CSS existed already; nothing new animates. */}
+              <div className="grid gap-x-[clamp(24px,4vw,96px)] gap-y-[clamp(20px,2.5vw,40px)] p-[clamp(20px,1rem+2vw,48px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+                {/* the links. On hover-capable screens the rest dim while one
+                    is pointed at — osmo's focus effect, CSS only. */}
+                <ul className="group/list m-0 flex list-none flex-col gap-[clamp(2px,0.15rem+0.4vw,12px)] p-0">
+                  {HERO.panel.links.map((l, i) => (
+                    <li key={l.href}>
                       <a
-                        href={label === "Features" ? "#features" : label === "Pricing" || label === "Buy" ? "#pricing" : label === "Reviews" ? "#testimonials" : "#"}
-                        className="panel-link inline-block no-underline"
-                        style={{
-                          color: HERO.navLinks.color,
-                          fontFamily: "var(--font-display)",
-                          textTransform: "uppercase",
-                          fontSize: "clamp(28px, 1.2rem + 2.6vw, 56px)",
-                          lineHeight: 1.05,
-                          "--i": i,
-                        } as React.CSSProperties}
+                        href={l.href}
+                        className="panel-link flex items-baseline gap-[clamp(10px,1.2vw,24px)] no-underline [&:hover>span]:!opacity-100"
+                        style={{ color: HERO.navLinks.color, "--i": i } as React.CSSProperties}
                       >
-                        {label}
+                        <span className="w-[2ch] shrink-0 font-mono text-[clamp(11px,0.55rem+0.3vw,0.875rem)] tabular-nums opacity-50 transition-opacity duration-300 group-hover/list:opacity-30">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="font-display text-[clamp(30px,1.2rem+2.6vw,3.5rem)] leading-[1.05] uppercase transition-opacity duration-300 group-hover/list:opacity-40">
+                          {l.label}
+                        </span>
+                        <span className="ml-auto hidden text-right text-[clamp(13px,0.55rem+0.35vw,1rem)] opacity-60 transition-opacity duration-300 group-hover/list:opacity-40 sm:block">
+                          {l.note}
+                        </span>
                       </a>
                     </li>
                   ))}
                 </ul>
 
-                {/* ── THE MEDIA BOX ────────────────────────────────────────
-                    Placeholder for a video player. Measured off osmo's open nav
-                    at 1440: their right column `is--ad` is 397x437 (0.909) with
-                    a 16px radius, holding a 238x149 (16:10) preview. Ours keeps
-                    the 0.909 card and the 16:10 well inside it.
-
-                    ⚠ ABSOLUTE, SO IT ADDS NO HEIGHT. In flow it is the tallest
-                    child and the panel — and the dark surface with it — grows
-                    to its 437px. Out of flow it sits inside the height the
-                    links already set, which is what keeps the open nav the size
-                    it has always been. `inset-y` + `aspect` means the links,
-                    not a number here, decide how big it is.
-
-                    Centred with left-1/2 + -translate-x-1/2 rather than a grid
-                    column: nothing else shares its line, so there is no track
-                    to balance against.
-
-                    ⚠ HIDDEN BELOW lg, NOT BELOW md. It was md, so it appeared
-                    at 768 — a tablet-portrait panel where the card sits over
-                    the link list and makes the labels unreadable, which is the
-                    exact thing the old comment said it was hidden to avoid. It
-                    is a desktop ornament; the mobile panel is the links. */}
+                {/* the get-started card, where the video box was. The phone is
+                    the hero's own art — already loaded above, so it costs no
+                    request — cropped into the corner. Absolute, so it adds no
+                    height; desktop only, where the card has room for it. */}
                 <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-[clamp(20px,1rem+2vw,48px)] left-1/2 hidden -translate-x-1/2 lg:flex aspect-[397/437] items-center justify-center rounded-[16px] border-2 border-dashed p-[clamp(12px,1.5vw,28px)]"
-                  style={{ borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 40%, transparent)` }}
+                  className="panel-link relative isolate flex flex-col justify-between gap-[clamp(16px,2vw,32px)] overflow-hidden rounded-[16px] p-[clamp(18px,1.6vw,32px)]"
+                  style={{
+                    color: HERO.navLinks.color,
+                    background: `color-mix(in srgb, ${HERO.navLinks.color} 9%, transparent)`,
+                    "--i": HERO.panel.links.length,
+                  } as React.CSSProperties}
                 >
-                  <div
-                    className="flex aspect-[16/10] w-full items-center justify-center rounded-[8px] border border-dashed"
-                    style={{
-                      borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 30%, transparent)`,
-                      color: `color-mix(in srgb, ${HERO.navLinks.color} 55%, transparent)`,
-                      fontFamily: "var(--font-mono, monospace)",
-                      fontSize: "clamp(10px, 0.6vw, 12px)",
-                      letterSpacing: "0.12em",
-                    }}
-                  >
-                    VIDEO
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO.art.src}
+                    alt=""
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-[14%] -bottom-[38%] -z-10 hidden w-[62%] max-w-none rotate-[-8deg] select-none opacity-90 lg:block"
+                  />
+                  <div className="lg:max-w-[58%]">
+                    <p className="m-0 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] tracking-[0.08em] uppercase opacity-60">{HERO.panel.card.eyebrow}</p>
+                    <p className="m-0 mt-1 font-display text-[clamp(44px,2rem+2.4vw,4.5rem)] leading-none">{HERO.panel.card.price}</p>
+                    <p className="m-0 mt-2 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug opacity-75">{HERO.panel.card.detail}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <PillButton
+                      href="#pricing"
+                      fill={HERO.navLinks.ctaFill}
+                      color={HERO.navLinks.ctaColor}
+                      className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                      style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                    >
+                      Buy
+                    </PillButton>
+                    <PillButton
+                      href="/login"
+                      fill={`color-mix(in srgb, ${HERO.navLinks.color} 16%, transparent)`}
+                      color={HERO.navLinks.color}
+                      className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                      style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                    >
+                      Login
+                    </PillButton>
                   </div>
                 </div>
-              </div>
 
+                {/* the strip: socials big enough to hit, legal line beside. */}
+                <div
+                  className="panel-link flex flex-col gap-4 border-t pt-[clamp(16px,1.6vw,28px)] sm:flex-row sm:items-end sm:justify-between lg:col-span-2"
+                  style={{
+                    color: HERO.navLinks.color,
+                    borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 20%, transparent)`,
+                    "--i": HERO.panel.links.length + 1,
+                  } as React.CSSProperties}
+                >
+                  <ul className="m-0 flex list-none flex-wrap gap-x-[clamp(18px,2.2vw,44px)] gap-y-2 p-0">
+                    {HERO.panel.socials.map((so) => (
+                      <li key={so.label}>
+                        <a
+                          href={so.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex min-h-11 items-center gap-1 font-display text-[clamp(20px,0.9rem+1vw,2rem)] uppercase no-underline transition-opacity duration-300 hover:opacity-60"
+                          style={{ color: HERO.navLinks.color }}
+                        >
+                          {so.label}
+                          <span aria-hidden="true" className="text-[0.7em]">↗</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="m-0 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] opacity-50 sm:text-right">{HERO.panel.legal}</p>
+                </div>
+              </div>
               {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} fluidText /> : null))}
             </NavMenuWithPanel>
 
