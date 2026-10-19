@@ -329,7 +329,7 @@ export default function Hero() {
               height: fluid(nav.h),
             }}
           >
-            {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} /> : null))}
+            {HERO.els.map((el, i) => (el.in === "nav" ? <PriceEl key={i} el={el} fluidText /> : null))}
 
             {/* ⚠ A CLIENT COMPONENT, like <HoverGhost> and for the same reason:
                 this section is a server component and the button needs state
@@ -493,7 +493,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} /> : null))}
+              {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} fluidText /> : null))}
             </NavMenuWithPanel>
 
             {/* ⚠ A CLIENT COMPONENT, AND ONLY BECAUSE OF TWO HANDLERS. This
@@ -571,7 +571,7 @@ export default function Hero() {
 
           {/* stage-level elements. Desktop: rendered at tuned coordinates via PriceEl */}
           <div className="hero-stage-container pointer-events-none absolute inset-0 z-20 [&>*]:pointer-events-auto">
-            {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} />))}
+            {HERO.els.map((el, i) => (el.in ? null : <PriceEl key={i} el={el} fluidText />))}
           </div>
 
         </div>
