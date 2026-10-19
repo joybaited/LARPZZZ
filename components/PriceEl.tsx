@@ -16,7 +16,13 @@ import { PILL_HOVER_FILL, PILL_HOVER_TEXT } from "@/components/pillHover";
  * 1440 and ~214px at 768, so a % box scales with it while the type stays
  * legible. Mixing the two is deliberate, not an oversight.
  */
-export default function PriceEl({ el }: { el: El }) {
+/* `fluidText` is OPT-IN, AND ONLY THE HERO PASSES IT. The text branch below
+   sizes in raw px by default, which is what Pricing's cards were authored
+   and tuned against — their feature lines are `size: 20` text elements and
+   scaling them silently grew every card's copy. The hero's subtitle is the
+   one place that needed to keep pace with its neighbours on a big screen,
+   so it asks for it rather than every caller getting it. */
+export default function PriceEl({ el, fluidText = false }: { el: El; fluidText?: boolean }) {
   if (el.show === false) return null;
 
   const pos: React.CSSProperties = {
@@ -122,14 +128,18 @@ export default function PriceEl({ el }: { el: El }) {
            element a real `w` (drag a side handle) to control where. */
         maxWidth: el.w ? undefined : "92%",
         color: el.color ?? "#ffffff",
-        /* ⚠ `--px`, NOT RAW px — THE BOX BRANCH ABOVE ALREADY DOES THIS AND
-           THE TEXT BRANCH DID NOT. A raw px size is frozen forever, so on a
-           screen bigger than the design the buttons and the headline grew
-           while the body copy stayed at its authored size: measured 24px at
-           both 1536x742 and 2160x1440, which is what left the big empty
-           band between the subtitle and the buttons. `--px` is `1rem/16`, so
-           at a 16px root this is the SAME number the tuner wrote. */
-        fontSize: typeof el.size === "string" ? el.size : `calc(${el.size ?? 16} * var(--px, 1px))`,
+        /* ⚠ RAW px UNLESS THE CALLER ASKS OTHERWISE. `--px` here scaled the
+           hero's subtitle, which is what it was for — but PriceEl also
+           renders every Pricing card, so it grew their copy too and the
+           CTA label outgrew the `210px` cap on its own box. Opt-in keeps
+           the hero's fix without reaching into a section that never asked
+           for it. */
+        fontSize:
+          typeof el.size === "string"
+            ? el.size
+            : fluidText
+              ? `calc(${el.size ?? 16} * var(--px, 1px))`
+              : `${el.size ?? 16}px`,
         fontWeight: el.weight ?? 400,
         letterSpacing: `${el.tracking ?? 0}em`,
         /* ⚠ MEGION IS ONE WEIGHT (BOLD) AND DISPLAY ONLY. Picking it ignores
