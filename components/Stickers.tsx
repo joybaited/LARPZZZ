@@ -24,16 +24,16 @@
    percentage is the bug above. The cap is the guard rail, not the design —
    tune the proportion, leave the cap alone. */
 
-export type StickerAnchor = "stage" | "card" | "phone";
+export type StickerAnchor = "stage" | "card" | "phone" | "heading";
 
 export type Sticker = {
   name: string;
   src: string;
   alt?: string;
-  /** % of the stage (anchor "stage"), of the card (anchor "card"), or of the phone (anchor "phone") */
+  /** % of the stage (anchor "stage"), of the card (anchor "card"), of the phone (anchor "phone"), or of the heading (anchor "heading") */
   x: number;
   y: number;
-  /** % of the stage, cqi of the card, or % of the phone */
+  /** % of the stage, cqi of the card, % of the phone, or % of the heading */
   w: number;
   rotate?: string;
   z?: number;
@@ -48,8 +48,8 @@ export type Sticker = {
   desktopOnly?: boolean;
 };
 
-/** Stage-anchored or phone-anchored stickers for a section. Mount inside the SAME box the
-    tuner measures, as a child of the section's stage or phone. */
+/** Stage-anchored, phone-anchored, or heading-anchored stickers for a section. Mount inside the SAME box the
+    tuner measures, as a child of the section's stage, phone, or heading. */
 export function StickerLayer({
   stickers,
   hide,
@@ -69,12 +69,12 @@ export function StickerLayer({
             key={s.name}
             aria-hidden="true"
             className={`pointer-events-none absolute ${
-              s.desktopOnly === false ? "block" : "hidden lg:block"
+              s.desktopOnly === false || s.anchor === "heading" ? "block" : "hidden lg:block"
             }`}
             style={{
               left: `${s.x}%`,
               top: `${s.y}%`,
-              width: s.cap ? `min(${s.w}%, ${s.cap}px)` : `${s.w}%`,
+              width: s.cap && (s.anchor ?? "stage") === "stage" ? `min(${s.w}%, ${s.cap}px)` : `${s.w}%`,
               zIndex: s.z ?? 20,
               transform: `translate(-50%, -50%) rotate(${s.rotate ?? "0deg"})`,
             }}

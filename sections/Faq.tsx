@@ -39,12 +39,12 @@ export const FAQ_STICKERS: Sticker[] = [
     name: "pop-03",
     src: "/images/stickers/pop-03.webp",
     alt: "",
-    x: 48.5,
-    y: 0.5,
-    w: 8.3,
+    x: 43.5,
+    y: -9.4,
+    w: 39.5,
     rotate: "0deg",
     z: 1,
-    cap: 148,
+    anchor: "heading",
   },
 ];
 
@@ -96,8 +96,9 @@ export default function Faq({
         {children}
 
         <div className="relative z-10 flex flex-col items-center px-(--gutter) py-8">
-          <h2 className="mb-8 text-center font-display text-[clamp(3.5rem,14vw,12.5rem)] leading-[0.9] uppercase select-none">
+          <h2 className="relative mb-8 text-center font-display text-[clamp(3.5rem,14vw,12.5rem)] leading-[0.9] uppercase select-none">
             FAQ
+            <StickerLayer stickers={stickers} hide={hideStickers} anchor="heading" />
           </h2>
 
           {/* ⚠ THE COLUMN WIDTH IS THE ANSWER'S MEASURE. 54rem at 24px type is
