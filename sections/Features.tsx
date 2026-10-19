@@ -162,7 +162,7 @@ export default function Features({
          height has no say in it. */
       /* `text-violet` is for the section HEADING, which inherits it — the
          cards set their own ink. Black on this ground is unreadable. */
-      className="overflow-hidden text-violet"
+      className="overflow-hidden bg-[#3d065f] text-violet"
     >
       {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN. On a portrait one
           the carousel is a fixed card height however tall the viewport is, so

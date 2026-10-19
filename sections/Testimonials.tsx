@@ -296,7 +296,7 @@ export default function Testimonials({
   return (
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
-    <Section id="testimonials" bleed heading="Testimonials" className="text-[#3D065F]">
+    <Section id="testimonials" bleed heading="Testimonials" className="bg-[#efd4ff] text-[#3D065F]">
       {/* ⚠ RATIO-LOCKED STICKER STAGE. The sticker x/y are percentages, and a
           percentage is only proportional while the box it measures is the same
           SHAPE. On `inset-0` this box took the section's aspect ratio, which

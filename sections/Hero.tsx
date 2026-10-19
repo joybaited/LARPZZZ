@@ -181,7 +181,18 @@ export const HERO = {
 const fluid = ([min, max]: number[]) => {
   const m = ((max - min) / (1440 - 390)) * 100; /* vw coefficient */
   const b = min - (m * 390) / 100; /* px intercept */
-  return `clamp(${min}px, ${b.toFixed(2)}px + ${m.toFixed(3)}vw, ${max}px)`;
+  /* ⚠ THE CEILING IS IN rem SO IT KEEPS RISING ABOVE 1440. The line is
+     solved through the two design widths and then clamped — but a px
+     ceiling freezes the arrangement there, and the STAGE does not freeze:
+     measured at 2560 the headline still sat at 102px,265px, 96px type, on a
+     2560-wide stage, i.e. crushed into the top-left corner with the rest of
+     the screen empty. That is the "breaks on a big screen" report.
+     `max/16` rem rides the root clamp in globals.css (16px up to 36px), so
+     above 1440 every hero coordinate grows with the page instead of
+     stopping. At or below 1440 the root is <=16px, so this is the SAME
+     number it always was — the ceiling only lifts on screens bigger than
+     the design. */
+  return `clamp(${min}px, ${b.toFixed(2)}px + ${m.toFixed(3)}vw, ${(max / 16).toFixed(4)}rem)`;
 };
 
 /* ⚠ THE HEADLINE DOES NOT USE `fluid`. Its css is the one session 4 wrote —
@@ -192,7 +203,9 @@ const fluid = ([min, max]: number[]) => {
    min/max in HERO are that clamp solved at the two design widths; they are
    the ceiling and floor, not the line. */
 const headSize = (min: number, max: number) =>
-  `clamp(${min}px, 1.14rem + 5.4vw, ${max}px)`;
+  /* same rem ceiling as `fluid`, for the same reason: 9rem of a 16px root is
+     the 96px it has always been, and it keeps growing past 1440. */
+  `clamp(${min}px, 1.14rem + 5.4vw, ${(max / 16).toFixed(4)}rem)`;
 
 /* ⚠ HERO.phone IS GROUPED FOR READING; PhoneTune IS FLAT. Flattened here
    rather than reshaping either side: the tuner prints the grouped block and
@@ -255,7 +268,10 @@ export default function Hero() {
           cover the tween and the hero would be the one section that never
           changed colour. The div stays because the trail and the stickers are
           positioned against it. */}
-      <div className="absolute inset-0 -z-20" />
+      {/* the hero's ground. Painted here rather than on <Section> because
+          this layer already exists and grows with the section's bottom
+          padding, so the extra space below the hero is the same colour. */}
+      <div className="absolute inset-0 -z-20 bg-[#f3e2ff]" />
 
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
           ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so

@@ -122,7 +122,14 @@ export default function PriceEl({ el }: { el: El }) {
            element a real `w` (drag a side handle) to control where. */
         maxWidth: el.w ? undefined : "92%",
         color: el.color ?? "#ffffff",
-        fontSize: typeof el.size === "string" ? el.size : `${el.size ?? 16}px`,
+        /* ⚠ `--px`, NOT RAW px — THE BOX BRANCH ABOVE ALREADY DOES THIS AND
+           THE TEXT BRANCH DID NOT. A raw px size is frozen forever, so on a
+           screen bigger than the design the buttons and the headline grew
+           while the body copy stayed at its authored size: measured 24px at
+           both 1536x742 and 2160x1440, which is what left the big empty
+           band between the subtitle and the buttons. `--px` is `1rem/16`, so
+           at a 16px root this is the SAME number the tuner wrote. */
+        fontSize: typeof el.size === "string" ? el.size : `calc(${el.size ?? 16} * var(--px, 1px))`,
         fontWeight: el.weight ?? 400,
         letterSpacing: `${el.tracking ?? 0}em`,
         /* ⚠ MEGION IS ONE WEIGHT (BOLD) AND DISPLAY ONLY. Picking it ignores
