@@ -149,11 +149,11 @@ export const HERO = {
      the repo yet. Fill these in; nothing else needs to change. */
   panel: {
     links: [
-      { label: "Features", href: "#features", note: "One key. Six apps." },
-      { label: "How it works", href: "#how-it-works", note: "Buy, get your key, flex." },
-      { label: "Pricing", href: "#pricing", note: "Plans from $14." },
-      { label: "Reviews", href: "#testimonials", note: "Straight from the group chat." },
-      { label: "FAQ", href: "#faq", note: "No seed phrase, ever." },
+      { label: "Features", href: "#features" },
+      { label: "How it works", href: "#how-it-works" },
+      { label: "Pricing", href: "#pricing" },
+      { label: "Reviews", href: "#testimonials" },
+      { label: "FAQ", href: "#faq" },
     ],
     card: { eyebrow: "Plans from", price: "$14", detail: "All six apps, iOS & Android, no seed phrase." },
     socials: [
@@ -441,9 +441,8 @@ export default function Hero() {
                   along the bottom. It replaces the empty VIDEO placeholder.
 
                   ⚠ ITS OWN LIST, NOT `navLinks.items`. The bar shows four
-                  labels; the panel has room for every section plus a note on
-                  each, and forcing the bar to carry five would crowd it at
-                  1024. Each note is taken from copy.md.
+                  labels; the panel has room for every section, and forcing
+                  the bar to carry five would crowd it at 1024.
 
                   ⚠ EVERY TOP-LEVEL PIECE IS A `.panel-link` WITH ITS OWN `--i`,
                   so the stagger in globals.css runs links -> card -> strip as
@@ -464,9 +463,6 @@ export default function Hero() {
                         </span>
                         <span className="font-display text-[clamp(30px,1.2rem+2.6vw,3.5rem)] leading-[1.05] uppercase transition-opacity duration-300 group-hover/list:opacity-40">
                           {l.label}
-                        </span>
-                        <span className="ml-auto hidden text-right text-[clamp(13px,0.55rem+0.35vw,1rem)] opacity-60 transition-opacity duration-300 group-hover/list:opacity-40 sm:block">
-                          {l.note}
                         </span>
                       </a>
                     </li>
