@@ -290,6 +290,17 @@ export const HERO_STICKERS: Sticker[] = [
     anchor: "phone",
     cap: 148,
   },
+  {
+    name: "squiggle-20",
+    src: "/images/stickers/squiggle-20.webp",
+    alt: "",
+    x: 30.6,
+    y: 53.8,
+    w: 7.8,
+    rotate: "32deg",
+    z: 1,
+    cap: 148,
+  },
 ];
 
 export default function Hero({
