@@ -239,7 +239,7 @@ export default function HowItWorks({
               className={`${PLACE[i]} relative isolate flex flex-col justify-between overflow-hidden rounded-[clamp(18px,min(2.778vw,5.5vh),48px)] bg-grape p-[clamp(18px,min(2.1vw,3.6vh),32px)] max-sm:p-5 text-violet max-sm:aspect-auto max-sm:min-h-[130px] sm:max-lg:aspect-auto sm:max-lg:min-h-[150px] lg:aspect-[381/265] shadow-sm [container-type:inline-size]`}
             >
               <div>
-                <h3 className="font-display text-[clamp(18px,min(2.25vw,4.5vh),36px)] leading-[1.08] uppercase text-balance">
+                <h3 className="font-display text-[clamp(18px,min(2.25vw,6.2vh),2.25rem)] leading-[1.08] uppercase text-balance">
                   {c.text}
                 </h3>
                 {/* ⚠ THE COPY RESERVES THE BADGE'S CORNER — the badge does not
@@ -256,7 +256,7 @@ export default function HowItWorks({
                     last line clear of the corner the badge occupies, at every
                     width, by construction. cqi not vw: it is a fraction of
                     the CARD, which is the box the badge is placed against. */}
-                <p className="mt-[clamp(8px,min(1vw,1.8vh),16px)] max-w-[34ch] text-[clamp(13px,min(1.3vw,2.4vh),19px)] leading-[1.38] opacity-85 [margin-inline-end:25cqi] lg:[margin-inline-end:29cqi]">
+                <p className="mt-[clamp(8px,min(1vw,1.8vh),1rem)] max-w-[34ch] text-[clamp(13px,min(1.3vw,3.3vh),1.1875rem)] leading-[1.38] opacity-85 [margin-inline-end:25cqi] lg:[margin-inline-end:29cqi]">
                   {c.body}
                 </p>
               </div>

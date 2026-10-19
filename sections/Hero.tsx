@@ -181,7 +181,18 @@ export const HERO = {
 const fluid = ([min, max]: number[]) => {
   const m = ((max - min) / (1440 - 390)) * 100; /* vw coefficient */
   const b = min - (m * 390) / 100; /* px intercept */
-  return `clamp(${min}px, ${b.toFixed(2)}px + ${m.toFixed(3)}vw, ${max}px)`;
+  /* ⚠ THE CEILING IS IN rem SO IT KEEPS RISING ABOVE 1440. The line is
+     solved through the two design widths and then clamped — but a px
+     ceiling freezes the arrangement there, and the STAGE does not freeze:
+     measured at 2560 the headline still sat at 102px,265px, 96px type, on a
+     2560-wide stage, i.e. crushed into the top-left corner with the rest of
+     the screen empty. That is the "breaks on a big screen" report.
+     `max/16` rem rides the root clamp in globals.css (16px up to 36px), so
+     above 1440 every hero coordinate grows with the page instead of
+     stopping. At or below 1440 the root is <=16px, so this is the SAME
+     number it always was — the ceiling only lifts on screens bigger than
+     the design. */
+  return `clamp(${min}px, ${b.toFixed(2)}px + ${m.toFixed(3)}vw, ${(max / 16).toFixed(4)}rem)`;
 };
 
 /* ⚠ THE HEADLINE DOES NOT USE `fluid`. Its css is the one session 4 wrote —
@@ -192,7 +203,9 @@ const fluid = ([min, max]: number[]) => {
    min/max in HERO are that clamp solved at the two design widths; they are
    the ceiling and floor, not the line. */
 const headSize = (min: number, max: number) =>
-  `clamp(${min}px, 1.14rem + 5.4vw, ${max}px)`;
+  /* same rem ceiling as `fluid`, for the same reason: 9rem of a 16px root is
+     the 96px it has always been, and it keeps growing past 1440. */
+  `clamp(${min}px, 1.14rem + 5.4vw, ${(max / 16).toFixed(4)}rem)`;
 
 /* ⚠ HERO.phone IS GROUPED FOR READING; PhoneTune IS FLAT. Flattened here
    rather than reshaping either side: the tuner prints the grouped block and

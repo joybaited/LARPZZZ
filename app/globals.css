@@ -105,17 +105,37 @@
     --dpa-h-factor: calc(100vh / 46.375);
     --dpa-dual-axis: min(var(--dpa-w-factor), var(--dpa-h-factor));
 
-    /* Bounded between 14px (0.875rem) and 22px (1.375rem) */
-    font-size: clamp(0.875rem, var(--dpa-dual-axis), 1.375rem);
+    /* ⚠ THE CEILING IS THE "BIG SCREEN" FIX, AND IT IS WHY NOT TO ZOOM.
+       This clamp IS the whole-page scale: every section derives from rem, so
+       raising the ceiling grows type, cards, stages and gaps together — the
+       same result as zooming the page, with none of its cost. It stopped at
+       22px (reached at ~1920 wide), so above that the BOXES kept growing
+       with vw while the TYPE froze. Measured on How it works: card 380->656px
+       from 1536 to 2160 (+73%) while the heading went 33.4->36px (+7%), which
+       left 69% of each card empty. That is the "it breaks on a big screen"
+       report.
+       36px holds the same ratio out to ~3456 wide. The dual-axis min() means
+       a short screen still takes its height bound first, so a 2560x1080 does
+       not blow up.
+       ⚠ DO NOT "fix" a big screen with `transform: scale()` / zoom instead:
+       10 components are `position: fixed` (the nav and ViewportHUD among
+       them) and detach under a transformed ancestor, and PillTouch,
+       FooterCoins and ImageTrail hit-test against real pointer coordinates.
+       See the Lazy Zoom Trap in docs/responsive-architecture-method.md. */
+    /* Bounded between 14px (0.875rem) and 36px (2.25rem) */
+    font-size: clamp(0.875rem, var(--dpa-dual-axis), 2.25rem);
 
     /* Computed Scale Variables */
-    --root-font-size-px: clamp(14px, min(calc(100vw / 96), calc(100vh / 46.375)), 22px);
+    --root-font-size-px: clamp(14px, min(calc(100vw / 96), calc(100vh / 46.375)), 36px);
     --scale-factor: calc(var(--root-font-size-px) / 16px);
 
     /* Proportional Pixel Bridge */
     --px: calc(1rem / 16);
 
-    /* Basement Studio 120rem (1920px) Canvas Ceiling */
+    /* ⚠ THE CANVAS CEILING IS IN rem, SO IT RISES WITH THE ROOT. 120rem is
+       1920px at a 16px root and 2640px at 22px — it was never a hard 1920.
+       Left as-is: it is the proportion, and the root clamp above is the
+       thing that governs how big the page actually gets. */
     --canvas-max-width: 120rem;
     --content-max: min(120rem, 92vw);
   }
