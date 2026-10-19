@@ -30,10 +30,23 @@ const QA: [string, string][] = [
   ["Is my payment anonymous?", "Crypto payments (SOL, ETH, BNB, BTC, TRX, USDT, USDC) require no personal information at all — no account, no email. Card payments (credit card, Apple Pay, Google Pay) require an email address, which is passed directly to the payment processor and is not stored by us. Either way, your license key is all you need to use the app."],
 ];
 
+
 export const PILLS = QA.map(([q, a]) => ({ q, a, x: 0, y: 0, tilt: 0, openW: 0, size: 20 }));
 
 
-export const FAQ_STICKERS: Sticker[] = [];
+export const FAQ_STICKERS: Sticker[] = [
+  {
+    name: "pop-03",
+    src: "/images/stickers/pop-03.webp",
+    alt: "",
+    x: 48.5,
+    y: 0.5,
+    w: 8.3,
+    rotate: "0deg",
+    z: 1,
+    cap: 148,
+  },
+];
 
 export default function Faq({
   children,
