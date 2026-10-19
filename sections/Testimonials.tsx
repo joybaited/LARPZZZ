@@ -309,15 +309,6 @@ export default function Testimonials({
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
     <Section id="testimonials" bleed heading="Testimonials" className="bg-[#efd4ff] text-[#3D065F]">
-      {/* ⚠ THE SEAM FROM FEATURES. Eased smootherstep cross-fade starting from the Features boundary (#3d065f) down into Testimonials ground (#efd4ff). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 -top-1 z-0 h-[clamp(90px,13vh,150px)]"
-        style={{
-          background:
-            "linear-gradient(to bottom, #3d065f 0%, rgba(61,6,95,0.995) 4%, rgba(61,6,95,0.97) 10%, rgba(61,6,95,0.92) 19%, rgba(61,6,95,0.83) 28%, rgba(61,6,95,0.70) 38%, rgba(61,6,95,0.54) 48%, rgba(61,6,95,0.38) 57%, rgba(61,6,95,0.25) 66%, rgba(61,6,95,0.14) 75%, rgba(61,6,95,0.06) 84%, rgba(61,6,95,0.015) 92%, rgba(61,6,95,0) 100%)",
-        }}
-      />
       {/* ⚠ THE SEAM INTO FAQ. Eased smootherstep cross-fade to Faq ground colour (#c98ef0). */}
       <div
         aria-hidden="true"
