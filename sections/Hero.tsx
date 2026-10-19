@@ -356,11 +356,14 @@ export default function Hero({
         />
       </div>
 
-      {/* ⚠ THE SEAM INTO HOW IT WORKS. Cross-fades to How It Works ground colour (#d9a3f7). */}
+      {/* ⚠ THE SEAM INTO HOW IT WORKS. Eased smootherstep cross-fade to How It Works ground colour (#d9a3f7). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[clamp(80px,14vh,200px)]"
-        style={{ background: "linear-gradient(to bottom, transparent, #d9a3f7)" }}
+        className="pointer-events-none absolute inset-x-0 -bottom-1 -z-10 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(217,163,247,0) 0%, rgba(217,163,247,0.015) 8%, rgba(217,163,247,0.06) 16%, rgba(217,163,247,0.14) 25%, rgba(217,163,247,0.25) 34%, rgba(217,163,247,0.38) 43%, rgba(217,163,247,0.54) 52%, rgba(217,163,247,0.70) 62%, rgba(217,163,247,0.83) 72%, rgba(217,163,247,0.92) 81%, rgba(217,163,247,0.97) 90%, rgba(217,163,247,0.995) 96%, #d9a3f7 100%)",
+        }}
       />
 
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING

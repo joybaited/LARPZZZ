@@ -309,11 +309,14 @@ export default function Testimonials({
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
     <Section id="testimonials" bleed heading="Testimonials" className="bg-[#efd4ff] text-[#3D065F]">
-      {/* ⚠ THE SEAM INTO FAQ. Cross-fades to Faq ground colour (#c98ef0). */}
+      {/* ⚠ THE SEAM INTO FAQ. Eased smootherstep cross-fade to Faq ground colour (#c98ef0). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
-        style={{ background: "linear-gradient(to bottom, transparent, #c98ef0)" }}
+        className="pointer-events-none absolute inset-x-0 -bottom-1 z-0 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(201,142,240,0) 0%, rgba(201,142,240,0.015) 8%, rgba(201,142,240,0.06) 16%, rgba(201,142,240,0.14) 25%, rgba(201,142,240,0.25) 34%, rgba(201,142,240,0.38) 43%, rgba(201,142,240,0.54) 52%, rgba(201,142,240,0.70) 62%, rgba(201,142,240,0.83) 72%, rgba(201,142,240,0.92) 81%, rgba(201,142,240,0.97) 90%, rgba(201,142,240,0.995) 96%, #c98ef0 100%)",
+        }}
       />
       {/* ⚠ RATIO-LOCKED STICKER STAGE. The sticker x/y are percentages, and a
           percentage is only proportional while the box it measures is the same

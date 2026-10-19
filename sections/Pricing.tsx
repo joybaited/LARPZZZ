@@ -108,14 +108,14 @@ export default function Pricing({
 } = {}) {
   return (
     <Section id="pricing" heading="Pricing" className="bg-[#f7ecff] text-grape">
-      {/* ⚠ THE SEAM INTO THE FOOTER. A gradient to the footer's exact colour
-          over the foot of this section, so the join reads as a blend. To the
-          colour, not to transparent — fading to transparent would show a
-          lighter band mid-fade. Below the cards (z-0 vs z-10). */}
+      {/* ⚠ THE SEAM INTO THE FOOTER. Eased smootherstep cross-fade to Footer ground colour (#e3b5fb). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
-        style={{ background: "linear-gradient(to bottom, transparent, #e3b5fb)" }}
+        className="pointer-events-none absolute inset-x-0 -bottom-1 z-0 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(227,181,251,0) 0%, rgba(227,181,251,0.015) 8%, rgba(227,181,251,0.06) 16%, rgba(227,181,251,0.14) 25%, rgba(227,181,251,0.25) 34%, rgba(227,181,251,0.38) 43%, rgba(227,181,251,0.54) 52%, rgba(227,181,251,0.70) 62%, rgba(227,181,251,0.83) 72%, rgba(227,181,251,0.92) 81%, rgba(227,181,251,0.97) 90%, rgba(227,181,251,0.995) 96%, #e3b5fb 100%)",
+        }}
       />
       {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN: on a portrait one
           the cards are their own height and centring in a full fill pooled

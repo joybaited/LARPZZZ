@@ -164,11 +164,14 @@ export default function Features({
          cards set their own ink. Black on this ground is unreadable. */
       className="overflow-hidden bg-[#3d065f] text-violet"
     >
-      {/* ⚠ THE SEAM INTO TESTIMONIALS. Cross-fades to Testimonials ground colour (#efd4ff). */}
+      {/* ⚠ THE SEAM INTO TESTIMONIALS. Eased smootherstep cross-fade to Testimonials ground colour (#efd4ff). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
-        style={{ background: "linear-gradient(to bottom, transparent, #efd4ff)" }}
+        className="pointer-events-none absolute inset-x-0 -bottom-1 z-0 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(239,212,255,0) 0%, rgba(239,212,255,0.015) 8%, rgba(239,212,255,0.06) 16%, rgba(239,212,255,0.14) 25%, rgba(239,212,255,0.25) 34%, rgba(239,212,255,0.38) 43%, rgba(239,212,255,0.54) 52%, rgba(239,212,255,0.70) 62%, rgba(239,212,255,0.83) 72%, rgba(239,212,255,0.92) 81%, rgba(239,212,255,0.97) 90%, rgba(239,212,255,0.995) 96%, #efd4ff 100%)",
+        }}
       />
       {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN. On a portrait one
           the carousel is a fixed card height however tall the viewport is, so

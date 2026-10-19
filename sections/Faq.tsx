@@ -58,11 +58,14 @@ export default function Faq({
        measured, the section grew 0px at 768x1024 and 2160x1440 and 0-28px at
        1024x768 while a row opened. */
     <Section id="faq" bleed className="!min-h-0 bg-[#c98ef0] text-[#3D065F]">
-      {/* ⚠ THE SEAM INTO PRICING. Cross-fades to Pricing ground colour (#f7ecff). */}
+      {/* ⚠ THE SEAM INTO PRICING. Eased smootherstep cross-fade to Pricing ground colour (#f7ecff). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
-        style={{ background: "linear-gradient(to bottom, transparent, #f7ecff)" }}
+        className="pointer-events-none absolute inset-x-0 -bottom-1 z-0 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(247,236,255,0) 0%, rgba(247,236,255,0.015) 8%, rgba(247,236,255,0.06) 16%, rgba(247,236,255,0.14) 25%, rgba(247,236,255,0.25) 34%, rgba(247,236,255,0.38) 43%, rgba(247,236,255,0.54) 52%, rgba(247,236,255,0.70) 62%, rgba(247,236,255,0.83) 72%, rgba(247,236,255,0.92) 81%, rgba(247,236,255,0.97) 90%, rgba(247,236,255,0.995) 96%, #f7ecff 100%)",
+        }}
       />
       {/* ⚠ ONE STACKED COLUMN AT EVERY WIDTH, every row the column's width.
           It was a desktop scatter, then a centred stack of pills that each
