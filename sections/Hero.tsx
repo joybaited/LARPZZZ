@@ -110,7 +110,7 @@ export const HERO = {
     x: 52.2,
     /* 56.5, not the model's 58.5: the step phones are height-bound at 85% of
        the hero, and 58.5 would run them off the bottom. */
-    y: 56.5,
+    y: 54,
     w: 33,
     rotate: 0,
     show: true,
@@ -277,7 +277,19 @@ const PHONE: PhoneTune = {
 /* Free-floating decoration for this section. Stage-anchored: x/y are
    percentages of the stage box below, which is the same box /sticker-tuner
    measures. Tune in /sticker-tuner and paste the block back here. */
-export const HERO_STICKERS: Sticker[] = [];
+export const HERO_STICKERS: Sticker[] = [
+  {
+    name: "pop-16",
+    src: "/images/stickers/pop-16.webp",
+    alt: "",
+    x: 43.8,
+    y: 11.2,
+    w: 3.9,
+    rotate: "-9deg",
+    z: 25,
+    cap: 148,
+  },
+];
 
 export default function Hero({
   children,
