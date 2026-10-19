@@ -1,4 +1,5 @@
 import Section from "@/components/Section";
+import { StickerLayer, CardStickers, type Sticker } from "@/components/Stickers";
 
 /* Section four. Two rows of testimonial cards travelling in opposite
  * directions, forever. Carried over from LZ-2's section 05.
@@ -72,7 +73,17 @@ const TESTIMONIALS: Testimonial[] = [
    the pair does not read as one block sliding. */
 const DURATION = ["40s", "52s"];
 
-function Card({ t }: { t: Testimonial }) {
+function Card({
+  t,
+  index,
+  stickers,
+  hideStickers,
+}: {
+  t: Testimonial;
+  index: number;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+}) {
   return (
     /* ⚠ shrink-0 — a flex item defaults to shrinking to fit, which would
        compress the cards onto the screen, make the travel distance wrong and
@@ -94,7 +105,7 @@ function Card({ t }: { t: Testimonial }) {
        treatment as the FAQ pills and the hero nav. It was `bg-paper text-ink`
        on a `bg-deep` section; the section is now the hero's `#EAC2FF` ground,
        so a white card would glare against it. */
-    <li className="flex min-h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)] w-[clamp(280px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(20px,1.2rem+1.4vw,36px)] text-[#EAC2FF] [@media(min-aspect-ratio:1/1)]:h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)]">
+    <li data-sticker-card={index} className="relative [container-type:inline-size] flex min-h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)] w-[clamp(280px,17rem+9.5vw,500px)] shrink-0 flex-col rounded-[20px] bg-[#3D065F] p-[clamp(20px,1.2rem+1.4vw,36px)] text-[#EAC2FF] [@media(min-aspect-ratio:1/1)]:h-[clamp(170px,min(12rem+6.5vw,calc((var(--section-fill)-clamp(24px,1rem+1.4vw,44px)-2rem)/2)),360px)]">
       {/* scales with the card, so the quote fills it rather than floating in
           it. line-clamp keeps a long one from pushing the footer out. */}
       {/* 4, not 5: at this height a 5th line is half-cut by the card's floor —
@@ -135,15 +146,36 @@ function Card({ t }: { t: Testimonial }) {
         <p className="font-display text-[1.15em] leading-[1.1] uppercase tracking-[0.02em]">{t.name}</p>
         {t.detail && <p className="opacity-80">{t.detail}</p>}
       </footer>
+      {/* ⚠ PINNED TO THE CARD, SO IT RIDES THE MARQUEE. The row renders the
+          set TWICE for the seamless loop, so a card sticker is drawn in both
+          copies — that is correct, it is the same card coming round again.
+          Sized in cqi against the card's own inline size, so it holds its
+          proportion at every width instead of being tuned per breakpoint. */}
+      <CardStickers stickers={stickers} index={index} hide={hideStickers} />
     </li>
   );
 }
 
-function Row({ reverse }: { reverse?: boolean }) {
+function Row({
+  reverse,
+  stickers,
+  hideStickers,
+  tuning,
+}: {
+  reverse?: boolean;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+  tuning?: boolean;
+}) {
   /* the set, twice. the second copy is aria-hidden: it is the same cards over
      again and a screen reader should meet them once. */
   return (
-    <div className="flex flex-nowrap gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden">
+    /* ⚠ overflow-x-clip, NOT overflow-hidden: the marquee needs its
+       HORIZONTAL bleed hidden, but the corner stickers overhang
+       VERTICALLY and overflow-hidden cut them off. `clip` clips one
+       axis and leaves the other genuinely visible — `hidden` on one
+       axis forces the other to `auto` and yields a scrollbar. */
+    <div className="flex flex-nowrap gap-[clamp(24px,1rem+1.4vw,44px)] overflow-x-clip">
       {[false, true].map((dupe) => (
         <ul
           key={String(dupe)}
@@ -158,11 +190,22 @@ function Row({ reverse }: { reverse?: boolean }) {
             "--gap": "clamp(24px, 1rem + 1.4vw, 44px)",
             animationDuration: DURATION[reverse ? 1 : 0],
             animationDirection: reverse ? "reverse" : undefined,
+            /* ⚠ PAUSED WHILE TUNING. A card sticker is dragged against the
+               card's live rect; if the row keeps scrolling the card moves out
+               from under the pointer mid-gesture and the percentage written
+               is wrong by the distance it travelled. */
+            animationPlayState: tuning ? "paused" : undefined,
           } as React.CSSProperties}
           className="animate-marquee m-0 flex shrink-0 list-none gap-[clamp(24px,1rem+1.4vw,44px)] p-0"
         >
-          {TESTIMONIALS.map((t) => (
-            <Card key={t.id} t={t} />
+          {TESTIMONIALS.map((t, i) => (
+            <Card
+              key={t.id}
+              t={t}
+              index={i}
+              stickers={stickers}
+              hideStickers={hideStickers}
+            />
           ))}
         </ul>
       ))}
@@ -171,12 +214,84 @@ function Row({ reverse }: { reverse?: boolean }) {
 }
 
 
+export const TESTIMONIALS_STICKERS: Sticker[] = [
+  /* ⚠ PINNED TO THE CARDS, ALTERNATING CORNERS. x/y are percentages of ONE
+     CARD and `w` is cqi — a fraction of that card's own inline size — so each
+     badge holds its proportion and its corner at every width instead of being
+     re-tuned per breakpoint. The row renders the set TWICE for the seamless
+     loop, so each of these is drawn in both copies; that is the same card
+     coming round again, not a duplicate.
+     The corners alternate top-left / bottom-right down the set so the eye
+     meets them off-rhythm rather than as a row of matching badges.
+     Values sit just OUTSIDE the card (0 / 100) so the sticker breaks the
+     corner and reads as applied on top, not as an icon inside it. The card
+     has no overflow-hidden, so nothing clips. */
+  {
+    name: "pop-08",
+    src: "/images/stickers/pop-08.webp",
+    alt: "",
+    x: 2,
+    y: 2,
+    w: 20,
+    rotate: "-14deg",
+    z: 25,
+    anchor: "card",
+    card: 0,
+    cap: 112,
+  },
+  {
+    name: "pop-06",
+    src: "/images/stickers/pop-06.webp",
+    alt: "",
+    x: 98,
+    y: 98,
+    w: 22,
+    rotate: "12deg",
+    z: 25,
+    anchor: "card",
+    card: 1,
+    cap: 112,
+  },
+  {
+    name: "pop-07",
+    src: "/images/stickers/pop-07.webp",
+    alt: "",
+    x: 2,
+    y: 2,
+    w: 21,
+    rotate: "9deg",
+    z: 25,
+    anchor: "card",
+    card: 2,
+    cap: 112,
+  },
+  {
+    name: "pop-02",
+    src: "/images/stickers/pop-02.webp",
+    alt: "",
+    x: 98,
+    y: 98,
+    w: 19,
+    rotate: "-18deg",
+    z: 25,
+    anchor: "card",
+    card: 3,
+    cap: 112,
+  },
+];
+
 export default function Testimonials({
   stageRef,
   children,
+  stickers = TESTIMONIALS_STICKERS,
+  hideStickers,
+  tuning,
 }: {
   stageRef?: React.Ref<HTMLDivElement>;
   children?: React.ReactNode;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+  tuning?: boolean;
 } = {}) {
   return (
     /* bleed: the rows are deliberately wider than the screen, so they must not
@@ -198,7 +313,17 @@ export default function Testimonials({
           rather than pinned to its top. */}
       <div
         ref={stageRef}
-        className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 px-(--gutter)"
+        /* ⚠ pointer-events-none ON THE LIVE SITE, so the sticker stage never
+           swallows a click meant for the page. /sticker-tuner passes
+           `tuning` to re-enable them, or its drag handles are dead: a
+           pointer-events-auto CHILD cannot override a `none` ancestor. */
+        /* ⚠ z-20: ABOVE THE MARQUEE, WHICH IS z-10 AND COMES AFTER IT.
+           Without a z-index this box makes no stacking context, so the rows
+           below painted over it and swallowed every pointer event — the
+           tuner's handles were under the cards, not on them. */
+        className={`absolute inset-y-0 left-1/2 z-20 -translate-x-1/2 px-(--gutter) ${
+          tuning ? "pointer-events-auto" : "pointer-events-none"
+        }`}
         style={{
           aspectRatio: "1536 / 742",
           width: "min(var(--canvas-max-width, 120rem), 100vw, calc(var(--section-fill) * 2.0701))",
@@ -206,6 +331,7 @@ export default function Testimonials({
           marginBlock: "auto",
         }}
       >
+        <StickerLayer stickers={stickers} hide={hideStickers} />
         {children}
       </div>
 
@@ -219,10 +345,10 @@ export default function Testimonials({
           branch and it kept the full 237px gap while every phone was fixed.
           A landscape screen gets the tuned centred fill; a portrait one lets
           the rows set their own height. */}
-      <div className="relative z-10 w-full flex flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-hidden py-[clamp(8px,2vh,32px)] [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0">
-        <Row />
+      <div className="relative z-10 w-full flex flex-col justify-center gap-[clamp(24px,1rem+1.4vw,44px)] overflow-x-clip py-[clamp(8px,2vh,32px)] [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0">
+        <Row stickers={stickers} hideStickers={hideStickers} tuning={tuning} />
         <div className="hidden sm:block">
-          <Row reverse />
+          <Row reverse stickers={stickers} hideStickers={hideStickers} tuning={tuning} />
         </div>
       </div>
     </Section>

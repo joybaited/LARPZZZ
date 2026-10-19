@@ -1,0 +1,506 @@
+[
+ {
+  "name": "cartoon-01",
+  "src": "/images/stickers/cartoon-01.webp",
+  "family": "cartoon",
+  "w": 742,
+  "h": 623,
+  "ratio": 1.191
+ },
+ {
+  "name": "cartoon-02",
+  "src": "/images/stickers/cartoon-02.webp",
+  "family": "cartoon",
+  "w": 738,
+  "h": 675,
+  "ratio": 1.0933
+ },
+ {
+  "name": "cartoon-03",
+  "src": "/images/stickers/cartoon-03.webp",
+  "family": "cartoon",
+  "w": 831,
+  "h": 713,
+  "ratio": 1.1655
+ },
+ {
+  "name": "cartoon-04",
+  "src": "/images/stickers/cartoon-04.webp",
+  "family": "cartoon",
+  "w": 718,
+  "h": 613,
+  "ratio": 1.1713
+ },
+ {
+  "name": "cartoon-05",
+  "src": "/images/stickers/cartoon-05.webp",
+  "family": "cartoon",
+  "w": 738,
+  "h": 491,
+  "ratio": 1.5031
+ },
+ {
+  "name": "cartoon-06",
+  "src": "/images/stickers/cartoon-06.webp",
+  "family": "cartoon",
+  "w": 634,
+  "h": 788,
+  "ratio": 0.8046
+ },
+ {
+  "name": "cartoon-07",
+  "src": "/images/stickers/cartoon-07.webp",
+  "family": "cartoon",
+  "w": 656,
+  "h": 716,
+  "ratio": 0.9162
+ },
+ {
+  "name": "cartoon-08",
+  "src": "/images/stickers/cartoon-08.webp",
+  "family": "cartoon",
+  "w": 673,
+  "h": 651,
+  "ratio": 1.0338
+ },
+ {
+  "name": "cartoon-09",
+  "src": "/images/stickers/cartoon-09.webp",
+  "family": "cartoon",
+  "w": 682,
+  "h": 802,
+  "ratio": 0.8504
+ },
+ {
+  "name": "cartoon-10",
+  "src": "/images/stickers/cartoon-10.webp",
+  "family": "cartoon",
+  "w": 773,
+  "h": 894,
+  "ratio": 0.8647
+ },
+ {
+  "name": "cartoon-11",
+  "src": "/images/stickers/cartoon-11.webp",
+  "family": "cartoon",
+  "w": 764,
+  "h": 583,
+  "ratio": 1.3105
+ },
+ {
+  "name": "cartoon-12",
+  "src": "/images/stickers/cartoon-12.webp",
+  "family": "cartoon",
+  "w": 807,
+  "h": 875,
+  "ratio": 0.9223
+ },
+ {
+  "name": "cartoon-13",
+  "src": "/images/stickers/cartoon-13.webp",
+  "family": "cartoon",
+  "w": 853,
+  "h": 800,
+  "ratio": 1.0662
+ },
+ {
+  "name": "cartoon-14",
+  "src": "/images/stickers/cartoon-14.webp",
+  "family": "cartoon",
+  "w": 900,
+  "h": 508,
+  "ratio": 1.7717
+ },
+ {
+  "name": "cartoon-15",
+  "src": "/images/stickers/cartoon-15.webp",
+  "family": "cartoon",
+  "w": 740,
+  "h": 983,
+  "ratio": 0.7528
+ },
+ {
+  "name": "pop-01",
+  "src": "/images/stickers/pop-01.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 810,
+  "ratio": 1.1111
+ },
+ {
+  "name": "pop-02",
+  "src": "/images/stickers/pop-02.webp",
+  "family": "pop",
+  "w": 770,
+  "h": 1107,
+  "ratio": 0.6956
+ },
+ {
+  "name": "pop-03",
+  "src": "/images/stickers/pop-03.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 824,
+  "ratio": 1.0922
+ },
+ {
+  "name": "pop-04",
+  "src": "/images/stickers/pop-04.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 789,
+  "ratio": 1.1407
+ },
+ {
+  "name": "pop-05",
+  "src": "/images/stickers/pop-05.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 739,
+  "ratio": 1.2179
+ },
+ {
+  "name": "pop-06",
+  "src": "/images/stickers/pop-06.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 1220,
+  "ratio": 0.7377
+ },
+ {
+  "name": "pop-07",
+  "src": "/images/stickers/pop-07.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 972,
+  "ratio": 0.9259
+ },
+ {
+  "name": "pop-08",
+  "src": "/images/stickers/pop-08.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 1242,
+  "ratio": 0.7246
+ },
+ {
+  "name": "pop-09",
+  "src": "/images/stickers/pop-09.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 918,
+  "ratio": 0.9804
+ },
+ {
+  "name": "pop-10",
+  "src": "/images/stickers/pop-10.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 875,
+  "ratio": 1.0286
+ },
+ {
+  "name": "pop-11",
+  "src": "/images/stickers/pop-11.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 892,
+  "ratio": 1.009
+ },
+ {
+  "name": "pop-12",
+  "src": "/images/stickers/pop-12.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 799,
+  "ratio": 1.1264
+ },
+ {
+  "name": "pop-13",
+  "src": "/images/stickers/pop-13.webp",
+  "family": "pop",
+  "w": 788,
+  "h": 774,
+  "ratio": 1.0181
+ },
+ {
+  "name": "pop-14",
+  "src": "/images/stickers/pop-14.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 790,
+  "ratio": 1.1392
+ },
+ {
+  "name": "pop-15",
+  "src": "/images/stickers/pop-15.webp",
+  "family": "pop",
+  "w": 864,
+  "h": 903,
+  "ratio": 0.9568
+ },
+ {
+  "name": "pop-16",
+  "src": "/images/stickers/pop-16.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 695,
+  "ratio": 1.295
+ },
+ {
+  "name": "pop-17",
+  "src": "/images/stickers/pop-17.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 854,
+  "ratio": 1.0539
+ },
+ {
+  "name": "pop-18",
+  "src": "/images/stickers/pop-18.webp",
+  "family": "pop",
+  "w": 900,
+  "h": 738,
+  "ratio": 1.2195
+ },
+ {
+  "name": "pop-19",
+  "src": "/images/stickers/pop-19.webp",
+  "family": "pop",
+  "w": 813,
+  "h": 854,
+  "ratio": 0.952
+ },
+ {
+  "name": "pop-20",
+  "src": "/images/stickers/pop-20.webp",
+  "family": "pop",
+  "w": 328,
+  "h": 258,
+  "ratio": 1.2713
+ },
+ {
+  "name": "squiggle-01",
+  "src": "/images/stickers/squiggle-01.webp",
+  "family": "squiggle",
+  "w": 801,
+  "h": 863,
+  "ratio": 0.9282
+ },
+ {
+  "name": "squiggle-02",
+  "src": "/images/stickers/squiggle-02.webp",
+  "family": "squiggle",
+  "w": 804,
+  "h": 770,
+  "ratio": 1.0442
+ },
+ {
+  "name": "squiggle-03",
+  "src": "/images/stickers/squiggle-03.webp",
+  "family": "squiggle",
+  "w": 731,
+  "h": 773,
+  "ratio": 0.9457
+ },
+ {
+  "name": "squiggle-04",
+  "src": "/images/stickers/squiggle-04.webp",
+  "family": "squiggle",
+  "w": 703,
+  "h": 798,
+  "ratio": 0.881
+ },
+ {
+  "name": "squiggle-05",
+  "src": "/images/stickers/squiggle-05.webp",
+  "family": "squiggle",
+  "w": 326,
+  "h": 398,
+  "ratio": 0.8191
+ },
+ {
+  "name": "squiggle-06",
+  "src": "/images/stickers/squiggle-06.webp",
+  "family": "squiggle",
+  "w": 394,
+  "h": 403,
+  "ratio": 0.9777
+ },
+ {
+  "name": "squiggle-07",
+  "src": "/images/stickers/squiggle-07.webp",
+  "family": "squiggle",
+  "w": 355,
+  "h": 436,
+  "ratio": 0.8142
+ },
+ {
+  "name": "squiggle-08",
+  "src": "/images/stickers/squiggle-08.webp",
+  "family": "squiggle",
+  "w": 411,
+  "h": 410,
+  "ratio": 1.0024
+ },
+ {
+  "name": "squiggle-09",
+  "src": "/images/stickers/squiggle-09.webp",
+  "family": "squiggle",
+  "w": 777,
+  "h": 1040,
+  "ratio": 0.7471
+ },
+ {
+  "name": "squiggle-10",
+  "src": "/images/stickers/squiggle-10.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 907,
+  "ratio": 0.9923
+ },
+ {
+  "name": "squiggle-11",
+  "src": "/images/stickers/squiggle-11.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 1063,
+  "ratio": 0.8467
+ },
+ {
+  "name": "squiggle-12",
+  "src": "/images/stickers/squiggle-12.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 1177,
+  "ratio": 0.7647
+ },
+ {
+  "name": "squiggle-13",
+  "src": "/images/stickers/squiggle-13.webp",
+  "family": "squiggle",
+  "w": 576,
+  "h": 1229,
+  "ratio": 0.4687
+ },
+ {
+  "name": "squiggle-14",
+  "src": "/images/stickers/squiggle-14.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 1188,
+  "ratio": 0.7576
+ },
+ {
+  "name": "squiggle-15",
+  "src": "/images/stickers/squiggle-15.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 747,
+  "ratio": 1.2048
+ },
+ {
+  "name": "squiggle-16",
+  "src": "/images/stickers/squiggle-16.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 1066,
+  "ratio": 0.8443
+ },
+ {
+  "name": "squiggle-17",
+  "src": "/images/stickers/squiggle-17.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 1071,
+  "ratio": 0.8403
+ },
+ {
+  "name": "squiggle-18",
+  "src": "/images/stickers/squiggle-18.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 928,
+  "ratio": 0.9698
+ },
+ {
+  "name": "squiggle-19",
+  "src": "/images/stickers/squiggle-19.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 942,
+  "ratio": 0.9554
+ },
+ {
+  "name": "squiggle-20",
+  "src": "/images/stickers/squiggle-20.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 931,
+  "ratio": 0.9667
+ },
+ {
+  "name": "squiggle-21",
+  "src": "/images/stickers/squiggle-21.webp",
+  "family": "squiggle",
+  "w": 900,
+  "h": 998,
+  "ratio": 0.9018
+ },
+ {
+  "name": "squiggle-22",
+  "src": "/images/stickers/squiggle-22.webp",
+  "family": "squiggle",
+  "w": 464,
+  "h": 438,
+  "ratio": 1.0594
+ },
+ {
+  "name": "squiggle-23",
+  "src": "/images/stickers/squiggle-23.webp",
+  "family": "squiggle",
+  "w": 447,
+  "h": 442,
+  "ratio": 1.0113
+ },
+ {
+  "name": "squiggle-24",
+  "src": "/images/stickers/squiggle-24.webp",
+  "family": "squiggle",
+  "w": 458,
+  "h": 480,
+  "ratio": 0.9542
+ },
+ {
+  "name": "squiggle-25",
+  "src": "/images/stickers/squiggle-25.webp",
+  "family": "squiggle",
+  "w": 431,
+  "h": 455,
+  "ratio": 0.9473
+ },
+ {
+  "name": "squiggle-26",
+  "src": "/images/stickers/squiggle-26.webp",
+  "family": "squiggle",
+  "w": 468,
+  "h": 473,
+  "ratio": 0.9894
+ },
+ {
+  "name": "squiggle-27",
+  "src": "/images/stickers/squiggle-27.webp",
+  "family": "squiggle",
+  "w": 568,
+  "h": 436,
+  "ratio": 1.3028
+ },
+ {
+  "name": "squiggle-28",
+  "src": "/images/stickers/squiggle-28.webp",
+  "family": "squiggle",
+  "w": 240,
+  "h": 268,
+  "ratio": 0.8955
+ }
+]

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Section from "@/components/Section";
+import { StickerLayer, type Sticker } from "@/components/Stickers";
 import Card, { type CardData } from "@/components/Card";
 
 /* Section two. Six cards in a carousel, rebuilt 1:1 against phantom.com's
@@ -68,10 +69,23 @@ const CARDS: CardData[] = [
 ];
 
 
+/* Free-floating decoration for this section. Stage-anchored: x/y are
+   percentages of the stage box below, which is the same box /sticker-tuner
+   measures. Tune in /sticker-tuner and paste the block back here. */
+export const FEATURES_STICKERS: Sticker[] = [];
+
 export default function Features({
   children,
+  stickers = FEATURES_STICKERS,
+  hideStickers,
+  stageRef,
+  tuning,
 }: {
   children?: React.ReactNode;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+  stageRef?: React.Ref<HTMLDivElement>;
+  tuning?: boolean;
 } = {}) {
   const section = useRef<HTMLElement>(null);
   /* `align: "start"` + `containScroll: "trimSnaps"` is what makes the first
@@ -160,7 +174,11 @@ export default function Features({
         {/* Ultrawide Controls & Track Containment:
             Bounded by --canvas-max-width (120rem / 1920px) so arrow controls
             and track snap points do not drift off to the 3400px monitor edges on ultrawide displays. */}
-        <div className="mx-auto w-full max-w-[var(--canvas-max-width,120rem)]">
+        <div
+          ref={stageRef}
+          className="relative mx-auto w-full max-w-[var(--canvas-max-width,120rem)]"
+        >
+          <StickerLayer stickers={stickers} hide={hideStickers} />
           {/* The arrows sit ABOVE the rail, not under it — they are the
               control for what follows, so they read before the thing they
               drive. Phantom's shape, scaled up from their 40px. */}
