@@ -1,75 +1,21 @@
 import Section from "@/components/Section";
-import PriceEl from "@/components/PriceEl";
+import PillButton from "@/components/PillButton";
 import { StickerLayer, CardStickers, type Sticker } from "@/components/Stickers";
 
-/* Pricing. Three cards in a centred row, carried over from LZ-2's section 04.
+/* Pricing. Three tier cards in a row from lg, one column below it.
  *
- * DELIBERATELY EMPTY CARDS. They are empty in LZ-2 too — the intent is
- * pricing, the content was never written, and nothing is invented here. No
- * headings, no prices, no placeholder copy. The structure is built to hold
- * content so that when it arrives it drops in rather than being positioned
- * into a shape.
- *
- * NO FIGURES. LZ-2 stands a squiggle at each end of the row, rotated a
- * quarter turn and overlapping the cards. Carried over, measured, looked at,
- * and dropped at Kez's call: a 900px box rotated 90deg is 900px WIDE, so each
- * one spans most of the row and reads as a pink sliver between opaque cards
- * rather than as a shape. The cards carry the section on their own.
+ * Built on the tier-card pattern (pricingpages.design's gallery, osmo.supply's
+ * own pricing): name and badge, the price with the full one struck through,
+ * the button ABOVE the features so all three line up, then a check / cross
+ * list. One house pair — grape cards, violet ink — on the section's #f7ecff.
  *
  * THE LIST IS NOT THE LAYOUT. A <ul> of <li>, each holding an <article>:
- * three of the same kind of thing is a list, and a pricing tier makes sense
- * on its own. A screen reader meets "list, 3 items" instead of three
- * anonymous boxes.
- *
- * ⚠ FLEX, NOT LZ-2'S ABSOLUTE POSITIONING. LZ-2 derives each card's `left`
- * from the row's inset plus N x (width + gutter), which is correct arithmetic
- * that runs off BOTH edges below ~1200px — its own open item 14. The cards
- * are identical and evenly spaced, which is what flex does natively, so the
- * no-overlap guarantee comes from the layout instead of from maths.
+ * three of the same kind of thing is a list, and a tier makes sense alone.
  */
 
-/* the card. LZ-2: 360x640, 20px radius, 3px border, 60px gutter.
- *
- * ⚠ FILL AND BORDER ARE BOTH GRAPE AND ARE KEPT SEPARATE ANYWAY. The 3px edge
- * cannot be seen against its own fill, but dropping the border would silently
- * take 3px off each side of the 360x640 (box-sizing is border-box) and throw
- * away the ability to give the fill a lighter edge later. LZ-2 held this
- * through every size change; it is held here for the same reason.
- *
- * ⚠ THE ROW SCALES, WHERE LZ-2'S DOES NOT. Three 360px cards and two 60px
- * gutters is 1200px — its natural size, capped by max-w and inside
- * --content-max (1280). Below that the cards are `flex-1 min-w-0` and the
- * gutter clamps, so the row fits the width it is given instead of running off
- * both edges. That is LZ-2's open item 14, and it is the one deliberate
- * behaviour change in this port.
- *
- * `min-w-0` is load-bearing: a flex item's default `min-width: auto` refuses
- * to shrink below its content, which is what silently keeps a row overflowing
- * when `flex-1` looks like it should have handled it.
- *
- * ⚠ BELOW `sm` THE ROW BECOMES A COLUMN. Three cards side by side at 390 is
- * three 101px slivers 640px tall. They stack instead, at a height that is not
- * the desktop 640 — see the note on the <li>.
- */
-/* ⚠ ARRANGED IN /pricing-tuner, PASTED BACK. Do not hand-edit — open the
- * tuner, move things, copy the config.
- *
- * ⚠ FEATURE ROWS CARRY `w: 88` AND SIT AT x: 50. Kez's tuner config had them
- * at x: 54.4 with no width — auto-width text, so a 20.5px line is ~310px and
- * overflows a 214px card at 768. A width makes it wrap instead of spill, and
- * x: 50 is the centre the off-by-4.4 was approximating.
- *
- * Three INDEPENDENT cards. Nothing is shared: each owns its own element list,
- * so card 2 can be laid out differently from card 1.
- *
- * ⚠ x/y/w/h ARE PERCENTAGES OF THE CARD, NOT OF THE SECTION. The row is
- * `flex-1` and reflows below 1200px, so a section-relative percentage would
- * slide off the card at every other width. Card-relative holds at any size.
- *
- * x/y are the element's CENTRE, so resizing or retyping keeps it on its mark.
- *
- * `kind` is the shape, not the meaning. `show: false` hides without deleting.
- */
+/* ⚠ THE SHARED ELEMENT TYPE STAYS HERE. Hero's nav, stage and buttons are
+ * <PriceEl> elements, and Hero, PriceEl, /hero-tuner and /pricing-tuner all
+ * import this type from this file. Pricing itself no longer uses it. */
 export type PriceEl = {
   name: string;
   kind: "text" | "box" | "line" | "ellipse";
@@ -115,67 +61,36 @@ export type PriceEl = {
   in?: "nav" | "menu";
 };
 
-/* `fill` is the card's own background. NONE OF THE THREE SETS ONE NOW —
- * Kez's call, all three cards read identically. The reference inverted the
- * middle tier to pull the eye; that emphasis is gone deliberately, not
- * missed. Omitted means the card's class fill, which is grape.
+/* ── THE PLANS ────────────────────────────────────────────────────────────
  *
- * ⚠ THE SECTION IS THE HOUSE VIOLET PAIR, NOT ITS OWN MONOCHROME. It was
- * `bg-haze` with ink cards and white text — the only section still on black
- * and white, which is why it read as a different site. It is now `violet`
- * ground / `grape` cards, the same pair Faq and Testimonials use, so the
- * three violet sections match. The CTA pill inverts within the card: violet
- * fill, grape label.
+ * ⚠ THE COPY IS THE OWNER'S — copy.md's three cards, the same as the live
+ * site (larpzwallet.app). `was` is the full price the live page shows; `price`
+ * is copy.md's discounted one. Six features are shared by every plan and each
+ * plan includes the first `has` of them, which is exactly how copy.md ticks
+ * them off — so a seventh feature is one line here, not three.
  *
- * ⚠ COLOURS ARE TOKENS, NOT HEX. `var(--color-violet)` / `--color-grape`,
- * added to globals.css this session. Faq and Testimonials still hold the raw
- * hex and should be converted when either is next touched — until then the
- * same two colours are written two ways in the codebase. */
-export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
-  {
-    name: "Card 1",
-    els: [
-      { name: "text 1", kind: "text", text: "Starter", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
-      { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 3", kind: "text", text: "7 days", x: 50, y: 23.5, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60, show: false },
-      { name: "box 5", kind: "box", text: "Get Started", btn: true, x: 50, y: 33.1, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 60.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 73.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 10", kind: "text", text: "Community support", x: 50, y: 85.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-    ],
-  },
-  {
-    name: "Card 2",
-    els: [
-      { name: "text 1", kind: "text", text: "Monthly", x: 50, y: 9.0, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
-      { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 3", kind: "text", text: "/month", x: 50, y: 23.6, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
-      { name: "box 5", kind: "box", text: "Try It Free", btn: true, x: 50, y: 33.5, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 57.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 67.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 10", kind: "text", text: "Priority email support", x: 50, y: 76.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 11", kind: "text", text: "Custom export presets", x: 50, y: 86.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-    ],
-  },
-  {
-    name: "Card 3",
-    els: [
-      { name: "text 1", kind: "text", text: "Lifetime", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
-      { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 3", kind: "text", text: "once", x: 50, y: 22.2, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
-      { name: "box 5", kind: "box", text: "Buy Lifetime", btn: true, x: 50, y: 33.2, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
-      { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 56.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 64.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 10", kind: "text", text: "Founder badge", x: 50, y: 72.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 11", kind: "text", text: "Direct line to the team", x: 50, y: 80.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-      { name: "text 12", kind: "text", text: "No subscription, ever", x: 50, y: 88.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
-    ],
-  },
+ * The cards used to be absolutely-positioned elements from /pricing-tuner.
+ * They are a flow layout now, so the text can never spill a card at any width
+ * and the three buttons line up by construction. /pricing-tuner keeps the old
+ * arrangement as its own copy and no longer drives this section. */
+const FEATURES = [
+  "Full app access on iOS & Android",
+  "All wallets (Ghost, Ledger, Trust Wallet, Exodus, Bank, Fomo)",
+  "Free PDF money guide",
+  "Unlimited custom balances & tokens",
+  "Priority Telegram support",
+  "Early access to new features",
 ];
 
+const PLANS = [
+  { name: "Starter", access: "7 days access", was: 29, price: 14, has: 4 },
+  { name: "Monthly", access: "1 month access", was: 99, price: 44, has: 5, badge: "Most popular" },
+  { name: "Lifetime", access: "Lifetime access", was: 299, price: 199, has: 6, badge: "Best value" },
+];
+
+/* the plan the live site gives the solid button. The cards themselves stay
+   one colour — Kez's call — so the badge and the button carry the emphasis. */
+const FEATURED = "Monthly";
 
 export const PRICING_STICKERS: Sticker[] = [];
 
@@ -184,7 +99,6 @@ export default function Pricing({
   stickers = PRICING_STICKERS,
   hideStickers,
   stageRef,
-  tuning,
 }: {
   children?: React.ReactNode;
   stickers?: Sticker[];
@@ -194,63 +108,126 @@ export default function Pricing({
 } = {}) {
   return (
     <Section id="pricing" heading="Pricing" className="bg-[#f7ecff] text-grape">
-      {/* ⚠ THE SEAM INTO THE FOOTER. Pricing's ground is the tweened root
-          colour and the footer paints its own #e3b5fb — two different
-          surfaces meeting on a hard line. This fades the second one UP over
-          the foot of this section so the join reads as a blend.
-          It is a gradient to the footer's exact colour, not to transparent:
-          fading to transparent would reveal the root colour underneath and
-          produce a lighter band in the middle of the fade, which is the
-          classic gradient-seam artefact.
-          Bottom-anchored and pointer-events-none, below the cards (z-0,
-          cards are z-10), so it changes nothing about the layout. */}
+      {/* ⚠ THE SEAM INTO THE FOOTER. A gradient to the footer's exact colour
+          over the foot of this section, so the join reads as a blend. To the
+          colour, not to transparent — fading to transparent would show a
+          lighter band mid-fade. Below the cards (z-0 vs z-10). */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
         style={{ background: "linear-gradient(to bottom, transparent, #e3b5fb)" }}
       />
-      {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN — same reason as
-          Features and Testimonials: the three cards are a fixed height, so a
-          portrait viewport reserved far more than they need and centring put
-          half the surplus under the heading (measured 331px at 1024x1290).
-          Phones were already fine at ~4% because the cards stack and overflow
-          the fill anyway; this fixes the tablet case without touching them. */}
+      {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN: on a portrait one
+          the cards are their own height and centring in a full fill pooled
+          the surplus under the heading (331px at 1024x1290). */}
       <div
         ref={stageRef}
-        className="relative z-10 @container flex items-center justify-center py-8 [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0"
+        className="relative z-10 flex flex-col items-center justify-center py-8 [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)]"
       >
         <StickerLayer stickers={stickers} hide={hideStickers} />
         {children}
+        {/* one column up to lg, capped at 30rem so a phone-width card does not
+            stretch across a tablet; three equal columns from lg. `items-
+            stretch` makes the three cards one height, and since everything
+            above each button is the same height in every card, the buttons
+            sit on one line. */}
         <ul
           role="list"
-          className="@container [container-type:inline-size] m-0 flex w-full max-w-[min(120rem,calc(1200px*var(--scale-factor,1)))] list-none flex-col items-center gap-6 p-0 lg:flex-row lg:items-stretch lg:justify-center lg:gap-[clamp(24px,4.2vw,60px)]"
+          className="m-0 grid w-full max-w-[30rem] list-none gap-[clamp(16px,0.6rem+1.2vw,40px)] p-0 lg:max-w-[min(120rem,calc(1200px*var(--scale-factor,1)))] lg:grid-cols-3"
         >
-          {CARDS.map((card, ci) => (
-            <li
-              key={card.name}
-              data-sticker-card={ci}
-              /* Desktop card height scaled proportionally via QDPA and bounded by
-                 --section-fill to eliminate laptop vertical overflow (e.g. 1536x742).
-                 Stacked on mobile via aspect ratio. */
-              style={card.fill ? { background: card.fill } : undefined}
-              className="relative z-10 [container-type:inline-size] w-full max-w-[380px] min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape aspect-[360/500] sm:aspect-[360/480] lg:max-w-none lg:aspect-auto lg:h-[min(calc(640px*var(--scale-factor,1)),calc(var(--section-fill)-2rem))]"
-            >
-              {/* the inner <article>. `relative` is what the elements' x/y
-                  percentages resolve against, so they are card-relative and
-                  survive the row reflowing. */}
-              <article className="relative h-full">
-                {card.els.map((el) => (
-                  <PriceEl key={el.name} el={el} />
-                ))}
-              </article>
-              {/* card-anchored stickers sit OUTSIDE the article so a sticker
-                  on an outside corner is not clipped by the card's radius. */}
-              <CardStickers stickers={stickers} index={ci} hide={hideStickers} />
-            </li>
-          ))}
-        </ul>
-      </div>
+          {PLANS.map((plan, ci) => {
+            const featured = plan.name === FEATURED;
+            const save = Math.round((1 - plan.price / plan.was) * 100);
+            return (
+              <li
+                key={plan.name}
+                data-sticker-card={ci}
+                className="relative z-10 flex min-w-0 flex-col rounded-[20px] border-[3px] border-grape bg-grape p-[clamp(20px,0.8rem+1.2vw,2.5rem)] text-violet [container-type:inline-size]"
+              >
+                <article className="flex flex-1 flex-col">
+                  {/* name + badge. The badge is shorter than the name's line,
+                      so a card without one is the same height. */}
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="m-0 font-display text-[clamp(22px,0.9rem+0.9vw,2.25rem)] leading-none uppercase">{plan.name}</h3>
+                    {plan.badge && (
+                      <span className="shrink-0 rounded-full bg-violet px-[0.9em] py-[0.5em] text-[clamp(11px,0.4rem+0.3vw,0.875rem)] leading-none font-semibold tracking-[0.08em] text-grape uppercase">
+                        {plan.badge}
+                      </span>
+                    )}
+                  </div>
 
+                  {/* ⚠ THE PRICE IS SIZED IN cqi — A FRACTION OF THE CARD. At
+                      1024 a card's content box is ~230px; a vw size put "$199"
+                      plus its struck "$299" past that and wrapped the row in one
+                      card only, which knocked that card's button off the line. */}
+                  <p className="m-0 mt-[clamp(18px,0.8rem+1.2vw,2.5rem)] flex items-baseline gap-[0.25em] whitespace-nowrap">
+                    {/* ⚠ NOT MEGION. The Megion file is the free personal-use
+                        cut and its 5, 6, 7, 8 and 9 are each a "PERSONAL USE
+                        ONLY" stamp, not a digit — "$199" rendered as "$1" and
+                        a badge. Checked glyph by glyph: 0-4 and every letter
+                        are real, 5-9 are 78-contour stamps. Neue Montreal
+                        Medium has real numerals; Megion stays for words. */}
+                    <span className="font-sans text-[clamp(44px,22cqi,6rem)] leading-[0.85] font-medium tracking-[-0.045em]">${plan.price}</span>
+                    <s className="text-[clamp(17px,7cqi,1.875rem)] opacity-55">
+                      <span className="sr-only">Regular price </span>${plan.was}
+                    </s>
+                  </p>
+                  <div className="mt-[clamp(8px,0.3rem+0.4vw,1rem)] flex items-center justify-between gap-3 text-[clamp(14px,0.55rem+0.35vw,1.125rem)]">
+                    <span className="opacity-75">{plan.access}</span>
+                    <span className="shrink-0 rounded-full border-2 border-current px-[0.6em] py-[0.2em] text-[0.85em] font-semibold">Save {save}%</span>
+                  </div>
+
+                  {/* the same pill and hover as every other button on the site.
+                      Solid on the featured plan, a tint on the others — the
+                      live site's primary / ghost pair. */}
+                  <PillButton
+                    href="/buy"
+                    fill={featured ? "var(--color-violet)" : "color-mix(in srgb, var(--color-violet) 14%, transparent)"}
+                    color={featured ? "var(--color-grape)" : "var(--color-violet)"}
+                    className="mt-[clamp(18px,0.8rem+1vw,2.25rem)] min-h-12 w-full py-[clamp(14px,0.6rem+0.5vw,1.25rem)] leading-none font-semibold tracking-[0.04em] uppercase"
+                    style={{ fontSize: "clamp(15px, 0.6rem + 0.4vw, 1.25rem)" }}
+                  >
+                    Buy {plan.name}
+                  </PillButton>
+
+                  <hr className="my-[clamp(18px,0.8rem+1vw,2.25rem)] border-0 border-t-2 border-violet/20" />
+
+                  <ul className="m-0 flex list-none flex-col gap-[clamp(10px,0.4rem+0.5vw,1.125rem)] p-0 text-[clamp(14px,0.55rem+0.4vw,1.1875rem)] leading-snug">
+                    {FEATURES.map((f, fi) => {
+                      const ok = fi < plan.has;
+                      return (
+                        <li key={f} className={`flex items-start gap-[0.7em] ${ok ? "" : "opacity-45"}`}>
+                          <span
+                            aria-hidden="true"
+                            className={`mt-[0.08em] grid size-[1.25em] shrink-0 place-items-center rounded-full ${ok ? "bg-violet text-grape" : "border-2 border-violet/60"}`}
+                          >
+                            <svg viewBox="0 0 16 16" className="size-[0.7em]" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                              {ok ? <path d="M3 8.5 6.5 12 13 4.5" /> : <path d="M4.5 4.5l7 7m0-7-7 7" />}
+                            </svg>
+                          </span>
+                          <span>
+                            <span className="sr-only">{ok ? "Included: " : "Not included: "}</span>
+                            {f}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </article>
+                {/* card-anchored stickers sit outside the article so an outside
+                    corner is not clipped by the card's radius. */}
+                <CardStickers stickers={stickers} index={ci} hide={hideStickers} />
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* the two questions a buyer has at the button, answered from the
+            FAQ's own copy (payment methods, automated key delivery). */}
+        <p className="m-0 mt-[clamp(20px,0.8rem+1.2vw,2.75rem)] max-w-[40ch] text-center text-[clamp(13px,0.5rem+0.35vw,1.0625rem)] text-balance opacity-75">
+          Pay with crypto or card. Your license key is delivered automatically, usually within minutes.
+        </p>
+      </div>
     </Section>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { CARDS, type PriceEl as El } from "@/sections/Pricing";
+import type { PriceEl as El } from "@/sections/Pricing";
 import PriceEl from "@/components/PriceEl";
 
 /* Pricing tuner. Add shapes and text to three independent cards, drag them,
@@ -30,6 +30,54 @@ import PriceEl from "@/components/PriceEl";
  */
 
 type Card = { name: string; els: El[]; fill?: string };
+
+/* ⚠ THE LAST ABSOLUTE ARRANGEMENT, MOVED HERE FROM sections/Pricing.tsx. The
+   section is a flow layout now and no longer reads these, so this tuner tunes
+   nothing live — it is kept only until someone retires it. */
+const CARDS: Card[] = [
+  {
+    name: "Card 1",
+    els: [
+      { name: "text 1", kind: "text", text: "Starter", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$14", x: 50, y: 16.8, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 3", kind: "text", text: "7 days", x: 50, y: 23.5, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60, show: false },
+      { name: "box 5", kind: "box", text: "Get Started", btn: true, x: 50, y: 33.1, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "text 7", kind: "text", text: "iOS & Android access", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Access to core AI tools", x: 50, y: 60.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Up to 3 active projects", x: 50, y: 73.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Community support", x: 50, y: 85.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+    ],
+  },
+  {
+    name: "Card 2",
+    els: [
+      { name: "text 1", kind: "text", text: "Monthly", x: 50, y: 9.0, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$44", x: 50, y: 16.8, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 3", kind: "text", text: "/month", x: 50, y: 23.6, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
+      { name: "box 5", kind: "box", text: "Try It Free", btn: true, x: 50, y: 33.5, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "text 7", kind: "text", text: "Everything in Starter", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Unlimited active projects", x: 50, y: 57.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Advanced AI tools", x: 50, y: 67.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Priority email support", x: 50, y: 76.5, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 11", kind: "text", text: "Custom export presets", x: 50, y: 86.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+    ],
+  },
+  {
+    name: "Card 3",
+    els: [
+      { name: "text 1", kind: "text", text: "Lifetime", x: 50, y: 7.6, w: 86, size: 26, font: "display", caps: true, align: "left", color: "var(--color-violet)" },
+      { name: "text 2", kind: "text", text: "$149", x: 50, y: 15.7, w: 86, size: "clamp(44px, 3.8cqw + 24px, 62px)", weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 3", kind: "text", text: "once", x: 50, y: 22.2, w: 86, size: 16, weight: 400, align: "left", color: "var(--color-violet)", opacity: 60 },
+      { name: "box 5", kind: "box", text: "Buy Lifetime", btn: true, x: 50, y: 33.2, w: 86, h: 8.8, size: 18, radius: 999, weight: 600, caps: true, tracking: 0.03, fill: "var(--color-violet)", color: "var(--color-grape)" },
+      { name: "text 7", kind: "text", text: "Everything in Monthly", x: 50, y: 48.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 8", kind: "text", text: "Lifetime updates", x: 50, y: 56.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 9", kind: "text", text: "Early access to tools", x: 50, y: 64.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 10", kind: "text", text: "Founder badge", x: 50, y: 72.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 11", kind: "text", text: "Direct line to the team", x: 50, y: 80.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+      { name: "text 12", kind: "text", text: "No subscription, ever", x: 50, y: 88.0, w: 86, size: 20, weight: 400, align: "left", color: "var(--color-violet)" },
+    ],
+  },
+];
 type Guide = { x?: number; y?: number };
 
 const SNAP = 6; /* px — the threshold real tools use (6-10) */
