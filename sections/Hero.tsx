@@ -294,8 +294,8 @@ export const HERO_STICKERS: Sticker[] = [
     name: "squiggle-20",
     src: "/images/stickers/squiggle-20.webp",
     alt: "",
-    x: 31.6,
-    y: 53,
+    x: 31.7,
+    y: 52.5,
     w: 7.8,
     rotate: "18deg",
     z: 1,
@@ -347,10 +347,14 @@ export default function Hero({
           cover the tween and the hero would be the one section that never
           changed colour. The div stays because the trail and the stickers are
           positioned against it. */}
-      {/* the hero's ground. Painted here rather than on <Section> because
-          this layer already exists and grows with the section's bottom
-          padding, so the extra space below the hero is the same colour. */}
-      <div className="absolute inset-0 -z-20 bg-[#f3e2ff]" />
+      <div className="pointer-events-none absolute inset-0 -z-20 overflow-hidden bg-[#f3e2ff]">
+        <img
+          src="/images/herotextre/herotext.jpg"
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover opacity-30 select-none"
+        />
+      </div>
 
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
           ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so
