@@ -22,6 +22,14 @@ Still fine, because they are not looking at pixels:
 
 A position, a size, a colour, a spacing, "does this look right" — theirs.
 
+**Do not pass long code through a Bash heredoc.** On this machine (Git Bash
+via the Bash tool) a long quoted heredoc — `<<'PY'` / `<<'EOF'` carrying
+~100+ lines of JSX/TS with template literals — fails with `unexpected EOF
+while looking for matching '` and nothing runs. It happened twice in one
+session. Short heredocs (commit messages) are fine. For anything long, write
+the script to the scratchpad with the Write tool and run it from there
+(`python <path>` / `node <path>`).
+
 **Read `HANDOVER.md` at the start of every session.** It is the running log of
 what happened previously, what is still open, and what the last session knew
 that this one does not.

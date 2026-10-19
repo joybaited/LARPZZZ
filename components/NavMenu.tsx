@@ -105,9 +105,12 @@ export function NavMenuWithPanel({
   useEffect(() => {
     const el = panelRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setReach(el.scrollHeight));
+    /* offsetHeight, not scrollHeight: the panel is capped to the viewport
+       and scrolls inside itself, so its box — not its content — is how far
+       the surface has to reach. */
+    const ro = new ResizeObserver(() => setReach(el.offsetHeight));
     ro.observe(el);
-    setReach(el.scrollHeight);
+    setReach(el.offsetHeight);
     return () => ro.disconnect();
   }, [panelHeight]);
 
@@ -158,7 +161,13 @@ export function NavMenuWithPanel({
        it just means "close". Not { once: true } — the menu can also be closed
        by Escape or a click, and a stale one-shot listener left armed would
        swallow the next unrelated gesture. */
-    const onScrollIntent = () => setOpen(false);
+    /* ⚠ EXCEPT INSIDE THE PANEL. On a short screen (a phone in landscape)
+       the panel scrolls itself, and a swipe there is reading the menu, not
+       leaving it. */
+    const onScrollIntent = (e: Event) => {
+      if ((e.target as Element | null)?.closest?.("#nav-menu-panel")) return;
+      setOpen(false);
+    };
 
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onDown, true);
@@ -325,9 +334,16 @@ export function NavMenuWithPanel({
         className="absolute top-full right-0 left-0 pt-[6px]"
         style={{ pointerEvents: open ? "auto" : "none" }}
       >
+        {/* `inert` while closed: aria-hidden alone left every link in the
+            hidden panel reachable by Tab. A click on any link closes the
+            menu so the page is handed back as the anchor scrolls. */}
         <div
           id="nav-menu-panel"
           aria-hidden={!open}
+          inert={!open}
+          onClick={(e) => {
+            if ((e.target as Element).closest("a")) setOpen(false);
+          }}
           className="grid overflow-hidden motion-reduce:transition-none"
           style={{
             gridTemplateRows: open ? "1fr" : "0fr",
@@ -348,7 +364,19 @@ export function NavMenuWithPanel({
 
                 `panelHeight` is what gives the row a height to animate to;
                 with real children it can go once they fill it. */}
-            <div ref={panelRef} className="relative" style={{ minHeight: `${panelHeight}px` }}>
+            {/* ⚠ CAPPED TO THE SCREEN AND SCROLLS INSIDE ITSELF. Page scroll
+                is locked while the menu is open, so a panel taller than the
+                viewport (phone landscape, ~390px tall) would be cut off with
+                no way to reach the bottom. 7.5rem clears the bar above at
+                every width. `data-lenis-prevent` lets the wheel/touch through
+                to this box while Lenis is stopped.
+                `panelHeight` no longer sets a min-height — the panel has real
+                content now and sizes itself; the prop only seeds `reach`. */}
+            <div
+              ref={panelRef}
+              data-lenis-prevent
+              className="relative max-h-[calc(100svh-7.5rem)] overflow-y-auto overscroll-contain"
+            >
               {children}
             </div>
           </div>

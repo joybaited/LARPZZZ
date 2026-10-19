@@ -59,19 +59,31 @@ export type Testimonial = {
   detail?: string;
 };
 
-/* Placeholder copy, clearly marked as such. LZ-2 left its boxes empty rather
-   than inventing testimonials; these exist so the row has something to measure
-   and are not meant to ship. */
+/* The live site's reviews, verbatim — larpzwallet.app's #reviews, which it
+   sources from its Telegram group. Seven per row: row one is the first seven,
+   row two the rest, so the two rows never show the same card side by side.
+   Phones show row one only. */
 const TESTIMONIALS: Testimonial[] = [
-  { id: "t1", quote: "Placeholder quote of about the length a real one runs to, so the card is sized against something honest.", name: "Name", detail: "@handle" },
-  { id: "t2", quote: "A shorter placeholder — this is what a brief one looks like.", name: "Name", detail: "@handle" },
-  { id: "t3", quote: "Placeholder quote that runs a little longer than the others, to show where the copy starts to crowd the card and the clamp takes over.", name: "Name", detail: "@handle" },
-  { id: "t4", quote: "Placeholder quote, middling length, roughly three lines at this card size.", name: "Name", detail: "@handle" },
+  { id: "t1", quote: "Appreciate the fast reply and the help, thank you. Works great on iPhone 12", name: "Abankek", detail: "via Telegram" },
+  { id: "t2", quote: "Thanks bro, the UI looks insane! Love the new update yall did to the Ghost Wallet", name: "itshane", detail: "via Telegram" },
+  { id: "t3", quote: "Bought the lifetime key, amazing and fast service thank you so much!", name: "John Stockton", detail: "via Telegram" },
+  { id: "t4", quote: "Heavy vouch, support fast asf and services are goated", name: "jasjasjas", detail: "via Telegram" },
+  { id: "t5", quote: "Very good, all wallet works good. Shoutout for realll", name: "framed", detail: "via Telegram" },
+  { id: "t6", quote: "Thanks bro, huge vouch for you, very helpful and fast service instantly fixed my issue", name: "Ethan", detail: "via Telegram" },
+  { id: "t7", quote: "Just saw that there’s a Ledger skin I’ll buy more often, you’re a life changer", name: "lt", detail: "via Telegram" },
+  { id: "t8", quote: "Thank you so much, everything working! Best larp wallet out there", name: "Tokarz", detail: "via Telegram" },
+  { id: "t9", quote: "Cheers bro, great product vouch +1. Indistinguishable from normal app", name: "Kal", detail: "via Telegram" },
+  { id: "t10", quote: "Bro its actually crazy how good this looks to the original app lol. I appreciate it a ton", name: "j", detail: "via Telegram" },
+  { id: "t11", quote: "I’m surprised its so cheap. As a content creator, this is the best thing I’ve seen in a while", name: "N", detail: "via Telegram" },
+  { id: "t12", quote: "Amazing. Will get the lifetime license asap and recommend, thanks for the support.", name: "Money", detail: "via Telegram" },
+  { id: "t13", quote: "Been looking for that the 3 last months, the two developer friends I had could not do it.", name: "Littleknife", detail: "via Telegram" },
+  { id: "t14", quote: "Vouch Larpz Wallet works perfect for the price 10/10", name: "Gvems", detail: "via Telegram" },
 ];
+const ROWS = [TESTIMONIALS.slice(0, 7), TESTIMONIALS.slice(7)];
 
-/* LZ-2 1:1. 40s one way; row two is slower so the two never beat in sync and
+/* LZ-2's speed: 40s for four cards, so 70s for seven; row two is slower so the two never beat in sync and
    the pair does not read as one block sliding. */
-const DURATION = ["40s", "52s"];
+const DURATION = ["70s", "91s"];
 
 function Card({
   t,
@@ -198,7 +210,7 @@ function Row({
           } as React.CSSProperties}
           className="animate-marquee m-0 flex shrink-0 list-none gap-[clamp(24px,1rem+1.4vw,44px)] p-0"
         >
-          {TESTIMONIALS.map((t, i) => (
+          {ROWS[reverse ? 1 : 0].map((t, i) => (
             <Card
               key={t.id}
               t={t}

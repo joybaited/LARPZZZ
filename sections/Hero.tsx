@@ -7,7 +7,9 @@ import PriceEl from "@/components/PriceEl";
 import HoverGhost from "@/components/HoverGhost";
 import { NavMenuWithPanel } from "@/components/NavMenu";
 import PillButton from "@/components/PillButton";
+import { LEGAL, SECTION_LINKS, SOCIALS, TELEGRAM, UPDATES } from "@/lib/site";
 import ImageTrail from "@/components/ImageTrail";
+import PixelatedImageReveal from "@/components/PixelatedImageReveal";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -105,7 +107,9 @@ export const HERO = {
   art: {
     src: "/images/hero-phone.webp",
     x: 52.2,
-    y: 58.5,
+    /* 56.5, not the model's 58.5: the step phones are height-bound at 85% of
+       the hero, and 58.5 would run them off the bottom. */
+    y: 56.5,
     w: 33,
     rotate: 0,
     show: true,
@@ -144,6 +148,15 @@ export const HERO = {
     ctaColor: "#3D065F",
   },
 
+  /* ⚠ THE OPEN PANEL'S CONTENT. Notes and card copy are from copy.md.
+     ⚠ THE SOCIAL hrefs ARE PLACEHOLDERS — no social URL exists anywhere in
+     the repo yet. Fill these in; nothing else needs to change. */
+  panel: {
+    card: { eyebrow: "Plans from", price: "$14", detail: "All six apps, iOS & Android, no seed phrase." },
+    /* the links, updates, socials and legal line are NOT here — they live
+       in lib/site.ts, shared with the footer, so each is set once. */
+  },
+
   /* ⚠ THE NAV WORDMARK, AND THE GHOST THAT APPEARS ON HOVER. It was a
      three-cell roller that alternated the two forever; Kez dropped the
      animation, so the wordmark simply sits there and the ghost fades in
@@ -178,6 +191,30 @@ export const HERO = {
    then let clamp hold the floor and the ceiling. Interpolating linearly in js
    was 8px out at 768: correct at both design widths and wrong in between,
    which is the dangerous kind of wrong. */
+/* THE HERO'S PHONE: the six step screens and the pixel transition between
+   them, moved here from How it works (which now shows the old hero phone,
+   static). Same dials it had there. HERO.art.src is still the old phone — the
+   open nav's card crops it into its corner. */
+const STEP_PHONES = ["a", "b", "c", "d", "e", "f"].map((k) => ({ src: `/images/steps-phone-${k}.webp`, alt: "" }));
+const HeroSteps = ({ className = "" }: { className?: string }) => (
+  <PixelatedImageReveal
+    images={STEP_PHONES}
+    grid={26}
+    pattern="wave"
+    waveRows={3}
+    jitterRows={1.1}
+    gap={1.5}
+    glow="0 0 5px rgba(234, 194, 255, 0.8), 0 0 12px rgba(234, 194, 255, 0.35)"
+    stepDuration={1.1}
+    auto
+    loopEvery={2800}
+    maskToArt
+    fit="contain"
+    square={false}
+    className={`!rounded-none text-violet ${className}`}
+  />
+);
+
 const fluid = ([min, max]: number[]) => {
   const m = ((max - min) / (1440 - 390)) * 100; /* vw coefficient */
   const b = min - (m * 390) / 100; /* px intercept */
@@ -354,7 +391,7 @@ export default function Hero() {
 
                 The row has to beat the overlay's 0 but stay under the panel,
                 which is why this is 20 and not something larger. */}
-            <div className="absolute top-1/2 right-[2.5%] z-20 hidden -translate-y-1/2 items-center gap-[clamp(14px,0.6rem+1.1vw,32px)] lg:flex">
+            <div className="absolute top-1/2 right-[2.5%] z-20 hidden -translate-y-1/2 items-center gap-[clamp(14px,0.2rem+1.6vw,3rem)] lg:flex">
               {/* ⚠ THE LINKS LEAVE THE BAR WHEN THE PANEL OPENS, THE CTA DOES
                   NOT. They are the same four labels the panel lists, so with
                   the panel open the bar would show them twice — and the panel
@@ -379,16 +416,33 @@ export default function Hero() {
                      would need `display: contents` to leave the flex row's
                      spacing alone, and a contents box has nothing to fade —
                      opacity on it does nothing at all. */
-                  className="nav-link whitespace-nowrap no-underline transition-opacity hover:opacity-100"
+                  /* ⚠ THE ROLL: the label slides up out of a one-line window
+                     and its copy slides in from below — the same move the
+                     Login pill makes, so the bar reads as one family. The
+                     window is `overflow-hidden` on the inner span, NOT on the
+                     link, so the link's own opacity fade (.nav-link) still
+                     works. leading 1.3 so the window clears "g" and "y".
+                     ⚠ THE SIZE CEILING IS rem, NOT px. It was 20px, so from
+                     1920 up the links froze while the bar kept growing — 564px
+                     of dead gap beside the wordmark at 2560. At 1024 this is
+                     still 14px, where the gap to the wordmark is only 36px. */
+                  className="nav-link group/roll whitespace-nowrap no-underline"
                   style={{
                     color: HERO.navLinks.color,
-                    fontSize: "clamp(14px, 0.6rem + 0.5vw, 20px)",
+                    fontSize: "clamp(14px, 0.35rem + 0.85vw, 1.5rem)",
                     /* a short stagger so they leave as a sweep rather than a
                        block. Reversed on the way back in by the css. */
                     "--i": i,
                   } as React.CSSProperties}
                 >
-                  {label}
+                  <span className="relative block h-[1.3em] overflow-hidden leading-[1.3]">
+                    <span className="block transition-transform duration-500 ease-[cubic-bezier(0.625,0.05,0,1)] group-hover/roll:-translate-y-full group-focus-visible/roll:-translate-y-full motion-reduce:transition-none">
+                      {label}
+                    </span>
+                    <span aria-hidden="true" className="absolute inset-x-0 top-full block transition-transform duration-500 ease-[cubic-bezier(0.625,0.05,0,1)] group-hover/roll:-translate-y-full group-focus-visible/roll:-translate-y-full motion-reduce:transition-none">
+                      {label}
+                    </span>
+                  </span>
                 </a>
               ))}
               {/* the CTA. `leading-none` plus symmetric padding is what keeps
@@ -398,8 +452,8 @@ export default function Hero() {
                 href="/login"
                 fill={HERO.navLinks.ctaFill}
                 color={HERO.navLinks.ctaColor}
-                className="whitespace-nowrap px-[clamp(16px,0.6rem+0.7vw,24px)] py-[clamp(7px,0.25rem+0.35vw,10px)] leading-none font-semibold"
-                style={{ fontSize: "clamp(13px, 0.55rem + 0.45vw, 17px)" }}
+                className="whitespace-nowrap px-[clamp(16px,0.4rem+1vw,2rem)] py-[clamp(7px,0.2rem+0.45vw,0.875rem)] leading-none font-semibold"
+                style={{ fontSize: "clamp(13px, 0.4rem + 0.65vw, 1.25rem)" }}
               >
                 {HERO.navLinks.cta}
               </PillButton>
@@ -414,85 +468,180 @@ export default function Hero() {
               panelHeight={HERO.menu.panelHeight}
               overlay={HERO.menu.overlay}
             >
-              {/* ⚠ THE SAME FOUR LABELS THE BAR SHOWS, FROM THE SAME CONFIG.
-                  One list, rendered in two places, so they cannot drift — the
-                  failure the tuners in this repo keep hitting. The bar's copy
-                  fades out as these fade in, so only one set is ever readable.
+              {/* ── THE OPEN PANEL ─────────────────────────────────────────────
+                  Osmo's open nav, in our words: dotted links on the left,
+                  a card on the right, a strip of socials and the legal line
+                  along the bottom. It replaces the empty VIDEO placeholder.
 
-                  Laid out as a list rather than placed with coordinates: the
-                  panel is a container, not a canvas, and a stacked list
-                  reflows at any width without a second set of numbers. */}
-              {/* ⚠ THE LIST KEEPS ITS OWN PADDING AND ITS OWN HEIGHT. It was
-                  briefly wrapped in a padded row with the media box as a
-                  sibling, which made the BOX the tallest thing in the panel —
-                  and the surface behind the bar measures the panel and grows to
-                  cover it, so the open nav turned into a dark slab. The links
-                  decide the panel's height, exactly as before; the box is
-                  overlaid on top of that box rather than added to it. */}
-              <div className="relative">
-                <ul className="m-0 flex list-none flex-col gap-[clamp(6px,0.3rem+0.6vw,16px)] p-[clamp(20px,1rem+2vw,48px)]">
-                  {HERO.navLinks.items.map((label, i) => (
-                    <li key={label}>
+                  ⚠ ITS OWN LIST, NOT `navLinks.items`. The bar shows four
+                  labels; the panel has room for every section, and forcing
+                  the bar to carry five would crowd it at 1024.
+
+                  ⚠ EVERY TOP-LEVEL PIECE IS A `.panel-link` WITH ITS OWN `--i`,
+                  so the stagger in globals.css runs links -> card -> strip as
+                  one sweep. That CSS existed already; nothing new animates. */}
+              {/* ⚠ THE CARDS STACK UNTIL xl. Side by side they need ~46rem,
+                  and at 1024-1279 the links column cannot spare it. From xl
+                  the links take only their own width (`auto`) and the pair is
+                  pushed to the right edge, capped so it does not balloon on a
+                  2560 screen. */}
+              <div className="grid gap-x-[clamp(24px,4vw,96px)] gap-y-[clamp(20px,2.5vw,40px)] p-[clamp(20px,1rem+2vw,48px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:grid-cols-[auto_minmax(0,52rem)] xl:justify-between">
+                {/* the links. On hover-capable screens the rest dim while one
+                    is pointed at — osmo's focus effect, CSS only. */}
+                <ul className="group/list m-0 flex list-none flex-col gap-[clamp(2px,0.15rem+0.4vw,12px)] p-0">
+                  {SECTION_LINKS.map((l, i) => (
+                    <li key={l.href}>
                       <a
-                        href={label === "Features" ? "#features" : label === "Pricing" || label === "Buy" ? "#pricing" : label === "Reviews" ? "#testimonials" : "#"}
-                        className="panel-link inline-block no-underline"
-                        style={{
-                          color: HERO.navLinks.color,
-                          fontFamily: "var(--font-display)",
-                          textTransform: "uppercase",
-                          fontSize: "clamp(28px, 1.2rem + 2.6vw, 56px)",
-                          lineHeight: 1.05,
-                          "--i": i,
-                        } as React.CSSProperties}
+                        href={l.href}
+                        className="panel-link flex min-h-11 items-center gap-[clamp(10px,1.2vw,24px)] no-underline [&:hover>span]:!opacity-100"
+                        style={{ color: HERO.navLinks.color, "--i": i } as React.CSSProperties}
                       >
-                        {label}
+                        <span
+                          aria-hidden="true"
+                          className="size-[clamp(6px,0.3rem+0.2vw,0.625rem)] shrink-0 rounded-full bg-current opacity-50 transition-opacity duration-300 group-hover/list:opacity-30"
+                        />
+                        <span className="font-display text-[clamp(30px,1.2rem+2.6vw,3.5rem)] leading-[1.05] uppercase transition-opacity duration-300 group-hover/list:opacity-40">
+                          {l.label}
+                        </span>
                       </a>
                     </li>
                   ))}
                 </ul>
 
-                {/* ── THE MEDIA BOX ────────────────────────────────────────
-                    Placeholder for a video player. Measured off osmo's open nav
-                    at 1440: their right column `is--ad` is 397x437 (0.909) with
-                    a 16px radius, holding a 238x149 (16:10) preview. Ours keeps
-                    the 0.909 card and the 16:10 well inside it.
-
-                    ⚠ ABSOLUTE, SO IT ADDS NO HEIGHT. In flow it is the tallest
-                    child and the panel — and the dark surface with it — grows
-                    to its 437px. Out of flow it sits inside the height the
-                    links already set, which is what keeps the open nav the size
-                    it has always been. `inset-y` + `aspect` means the links,
-                    not a number here, decide how big it is.
-
-                    Centred with left-1/2 + -translate-x-1/2 rather than a grid
-                    column: nothing else shares its line, so there is no track
-                    to balance against.
-
-                    ⚠ HIDDEN BELOW lg, NOT BELOW md. It was md, so it appeared
-                    at 768 — a tablet-portrait panel where the card sits over
-                    the link list and makes the labels unreadable, which is the
-                    exact thing the old comment said it was hidden to avoid. It
-                    is a desktop ornament; the mobile panel is the links. */}
+                <div className="grid gap-[clamp(12px,1vw,20px)] xl:grid-cols-2">
+                {/* the get-started card, where the video box was. The phone is
+                    the hero's own art — already loaded above, so it costs no
+                    request — cropped into the corner. Absolute, so it adds no
+                    height; desktop only, where the card has room for it. */}
                 <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-[clamp(20px,1rem+2vw,48px)] left-1/2 hidden -translate-x-1/2 lg:flex aspect-[397/437] items-center justify-center rounded-[16px] border-2 border-dashed p-[clamp(12px,1.5vw,28px)]"
-                  style={{ borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 40%, transparent)` }}
+                  className="panel-link relative isolate flex flex-col justify-between gap-[clamp(16px,2vw,32px)] overflow-hidden rounded-[16px] p-[clamp(18px,1.6vw,32px)]"
+                  style={{
+                    color: HERO.navLinks.color,
+                    background: `color-mix(in srgb, ${HERO.navLinks.color} 9%, transparent)`,
+                    "--i": SECTION_LINKS.length,
+                  } as React.CSSProperties}
                 >
-                  <div
-                    className="flex aspect-[16/10] w-full items-center justify-center rounded-[8px] border border-dashed"
-                    style={{
-                      borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 30%, transparent)`,
-                      color: `color-mix(in srgb, ${HERO.navLinks.color} 55%, transparent)`,
-                      fontFamily: "var(--font-mono, monospace)",
-                      fontSize: "clamp(10px, 0.6vw, 12px)",
-                      letterSpacing: "0.12em",
-                    }}
-                  >
-                    VIDEO
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO.art.src}
+                    alt=""
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-[14%] -bottom-[38%] -z-10 hidden w-[62%] max-w-none rotate-[-8deg] select-none opacity-90 lg:block"
+                  />
+                  <div className="lg:max-w-[58%]">
+                    <p className="m-0 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] tracking-[0.08em] uppercase opacity-60">{HERO.panel.card.eyebrow}</p>
+                    <p className="m-0 mt-1 font-display text-[clamp(44px,2rem+2.4vw,4.5rem)] leading-none">{HERO.panel.card.price}</p>
+                    <p className="m-0 mt-2 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug opacity-75">{HERO.panel.card.detail}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <PillButton
+                      href="#pricing"
+                      fill={HERO.navLinks.ctaFill}
+                      color={HERO.navLinks.ctaColor}
+                      className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                      style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                    >
+                      Buy
+                    </PillButton>
+                    <PillButton
+                      href="/login"
+                      fill={`color-mix(in srgb, ${HERO.navLinks.color} 16%, transparent)`}
+                      color={HERO.navLinks.color}
+                      className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                      style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                    >
+                      Login
+                    </PillButton>
                   </div>
                 </div>
-              </div>
 
+                {/* the updates card — the price card's inverse (violet ground,
+                    grape type) so the pair reads as two different things.
+                    Osmo's pattern: a live dot, then each update with a NEW
+                    tag, then the Telegram ask. Content is UPDATES in
+                    lib/site.ts, shared with the footer's ticket strip. */}
+                <div
+                  className="panel-link flex flex-col justify-between gap-[clamp(16px,2vw,32px)] rounded-[16px] p-[clamp(18px,1.6vw,32px)]"
+                  style={{
+                    background: HERO.navLinks.color,
+                    color: HERO.nav.fill,
+                    "--i": SECTION_LINKS.length + 1,
+                  } as React.CSSProperties}
+                >
+                  <div>
+                    <p className="m-0 flex items-center gap-2 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] tracking-[0.08em] uppercase opacity-70">
+                      <span aria-hidden="true" className="relative flex size-2">
+                        <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-60 motion-reduce:animate-none" />
+                        <span className="relative inline-flex size-2 rounded-full bg-current" />
+                      </span>
+                      {UPDATES.eyebrow}
+                    </p>
+                    <p className="m-0 mt-1 font-display text-[clamp(32px,1.4rem+1.8vw,3.25rem)] leading-[0.95] uppercase">{UPDATES.title}</p>
+                    <ul className="m-0 mt-3 flex list-none flex-col gap-2 p-0">
+                      {UPDATES.items.map((u) => (
+                        <li key={u} className="flex items-start gap-2 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug">
+                          <span className="mt-[0.1em] shrink-0 rounded-full px-2 py-[1px] text-[max(11px,0.7em)] font-semibold tracking-[0.06em] uppercase" style={{ background: HERO.nav.fill, color: HERO.navLinks.color }}>
+                            New
+                          </span>
+                          {u}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="m-0 mb-3 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug font-semibold">{UPDATES.join}</p>
+                    <div className="flex flex-wrap gap-3">
+                      <PillButton
+                        href={TELEGRAM.href}
+                        fill={HERO.nav.fill}
+                        color={HERO.navLinks.color}
+                        className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                        style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                      >
+                        Join Telegram
+                      </PillButton>
+                      <PillButton
+                        href="#features"
+                        fill={`color-mix(in srgb, ${HERO.nav.fill} 12%, transparent)`}
+                        color={HERO.nav.fill}
+                        className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                        style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                      >
+                        See the wallets
+                      </PillButton>
+                    </div>
+                  </div>
+                </div>
+                </div>
+
+                {/* the strip: socials big enough to hit, legal line beside. */}
+                <div
+                  className="panel-link flex flex-col gap-4 border-t pt-[clamp(16px,1.6vw,28px)] sm:flex-row sm:items-end sm:justify-between lg:col-span-2"
+                  style={{
+                    color: HERO.navLinks.color,
+                    borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 20%, transparent)`,
+                    "--i": SECTION_LINKS.length + 2,
+                  } as React.CSSProperties}
+                >
+                  <ul className="m-0 flex list-none flex-wrap gap-x-[clamp(18px,2.2vw,44px)] gap-y-2 p-0">
+                    {SOCIALS.map((so) => (
+                      <li key={so.label}>
+                        <a
+                          href={so.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex min-h-11 items-center gap-1 font-display text-[clamp(20px,0.9rem+1vw,2rem)] uppercase no-underline transition-opacity duration-300 hover:opacity-60"
+                          style={{ color: HERO.navLinks.color }}
+                        >
+                          {so.label}
+                          <span aria-hidden="true" className="text-[0.7em]">↗</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="m-0 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] opacity-50 sm:text-right">{LEGAL}</p>
+                </div>
+              </div>
               {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} fluidText /> : null))}
             </NavMenuWithPanel>
 
@@ -526,21 +675,30 @@ export default function Hero() {
             left-aligned headline, right-anchored content column, and desktop sticker field. */}
         <div className="pointer-events-none absolute inset-0 hidden lg:block">
           {HERO.art?.show && (
-            <img
-              src={HERO.art.src}
-              alt=""
+            /* ⚠ SIZED BY HEIGHT, NOT WIDTH. These screens are 521x1055 —
+               0.49 wide per tall against the old phone's 0.80 — so the old
+               33%-of-width rule made them 1.6x taller and ran them off the
+               bottom. Height is 85% of the hero, centred 56.5% down, so it
+               spans 14%..99%: clear of the nav, inside the bottom, at every
+               window shape.
+               The 54vw / 64.8rem terms cap the width at ~27% of the stage
+               (54 x 0.494) — always narrower than the old 33% phone, so it
+               cannot reach anything the old one did not. They bind on
+               square-ish and tall windows (1024x768, an iPad Pro portrait at
+               1024x1366); everywhere wider the 80% height governs.
+               Centre stays HERO.art.x/y. */
+            <div
               aria-hidden="true"
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-              className="pointer-events-none absolute z-10 h-auto max-w-none select-none"
+              className="pointer-events-none absolute z-10 aspect-[521/1055]"
               style={{
                 left: `${HERO.art.x}%`,
                 top: `${HERO.art.y}%`,
-                width: "var(--phone-w, 33%)",
+                height: "min(85%, 54vw, 64.8rem)",
                 transform: `translate(-50%, -50%) rotate(${HERO.art.rotate ?? 0}deg)`,
               }}
-            />
+            >
+              <HeroSteps className="size-full" />
+            </div>
           )}
 
           {/* Headline */}
@@ -647,6 +805,8 @@ export default function Hero() {
             section actually needs to do. The 3D/phone art returns the moment
             there is room for it. */}
         <div className="relative hidden min-h-0 w-full flex-1 items-center justify-center [@media(min-height:420px)]:flex">
+          {/* phones keep the static hero phone — the pixel transition is
+              desktop only. */}
           <img
             src={HERO.art.src}
             alt="Larpz Wallet Preview"

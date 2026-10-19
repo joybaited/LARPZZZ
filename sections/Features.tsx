@@ -38,32 +38,32 @@ import Card, { type CardData } from "@/components/Card";
  * per-media dials. */
 const CARDS: CardData[] = [
   {
-    heading: ["Winter", "Blankets"],
-    copy: "Get big warmth for cold heavy. Snow out freezing or stay cozy — this night.",
+    heading: ["Custom", "Balances"],
+    copy: "Set any balance for any token. Show off millions or keep it subtle — it’s your call.",
     media: { kind: "video", src: "/video/settingcust.webm", eager: true, down: "6cqw" },
   },
   {
-    heading: ["Heavy-Weather", "Day"],
-    copy: "Prepared to stay resilient in massive storms. Radical for photography, hiking, or camping in your local area.",
+    heading: ["Pixel-Perfect", "UI"],
+    copy: "Designed to look identical to popular wallets. Perfect for screenshots, videos, or flexing on your group chat.",
     media: { kind: "wheel" },
   },
   {
-    heading: ["Red Apples", "Rolled"],
-    copy: "They never look for blue birds, yellow cars, or green umbrellas. Totally fun to watch.",
+    heading: ["No Data", "Collected"],
+    copy: "We don’t ask for seed phrases, private keys, or personal information. Completely safe to use.",
   },
   {
-    heading: ["Bake Fresh", "Cakes"],
-    copy: "Bake bread for local bakery shop guests and let them eat it warm in the morning — entirely.",
+    heading: ["Send Between", "Users"],
+    copy: "Send crypto to other Larpz Wallet users and have it appear live in their wallet — instantly.",
     media: { kind: "video", src: "/video/idek.webm", down: "6cqw" },
   },
   {
-    heading: ["Yellow Banana", "Slices"],
-    copy: "Throw soft rubber balls that make them bounce high — on time, near our house.",
+    heading: ["Custom Receive", "Alerts"],
+    copy: "Trigger real push notifications that show you receiving crypto — on cue, from any device.",
     media: { kind: "video", src: "/video/folk.webm" },
   },
   {
-    heading: ["Rain &", "Lightning"],
-    copy: "Crashes like a wave on our little sailboat. No dry towel remains.",
+    heading: ["iOS &", "Android"],
+    copy: "Installs as a PWA on any modern smartphone. No app store required.",
     media: { kind: "image", src: "/images/safa.webp", w: 1080, h: 1080 },
   },
 ];
