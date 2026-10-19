@@ -7,6 +7,7 @@ import PriceEl from "@/components/PriceEl";
 import HoverGhost from "@/components/HoverGhost";
 import { NavMenuWithPanel } from "@/components/NavMenu";
 import PillButton from "@/components/PillButton";
+import { LEGAL, SECTION_LINKS, SOCIALS, TELEGRAM, UPDATES } from "@/lib/site";
 import ImageTrail from "@/components/ImageTrail";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
@@ -148,30 +149,9 @@ export const HERO = {
      ⚠ THE SOCIAL hrefs ARE PLACEHOLDERS — no social URL exists anywhere in
      the repo yet. Fill these in; nothing else needs to change. */
   panel: {
-    links: [
-      { label: "Features", href: "#features" },
-      { label: "How it works", href: "#how-it-works" },
-      { label: "Pricing", href: "#pricing" },
-      { label: "Reviews", href: "#testimonials" },
-      { label: "FAQ", href: "#faq" },
-    ],
     card: { eyebrow: "Plans from", price: "$14", detail: "All six apps, iOS & Android, no seed phrase." },
-    /* ⚠ THE UPDATES CARD. Edit freely — add or remove `items`, each gets a
-       NEW tag. Keep it to two or three lines or the card outgrows its pair.
-       The wallet names are not in the repo yet; name them here. */
-    updates: {
-      eyebrow: "What's new",
-      title: "2 new wallets",
-      items: ["Two new wallet UIs added", "Switch between them from your dashboard"],
-      cta: { label: "See the wallets", href: "#features" },
-    },
-    socials: [
-      { label: "Telegram", href: "#" },
-      { label: "X", href: "#" },
-      { label: "TikTok", href: "#" },
-      { label: "Instagram", href: "#" },
-    ],
-    legal: "For entertainment only — not a real wallet.",
+    /* the links, updates, socials and legal line are NOT here — they live
+       in lib/site.ts, shared with the footer, so each is set once. */
   },
 
   /* ⚠ THE NAV WORDMARK, AND THE GHOST THAT APPEARS ON HOVER. It was a
@@ -465,7 +445,7 @@ export default function Hero() {
                 {/* the links. On hover-capable screens the rest dim while one
                     is pointed at — osmo's focus effect, CSS only. */}
                 <ul className="group/list m-0 flex list-none flex-col gap-[clamp(2px,0.15rem+0.4vw,12px)] p-0">
-                  {HERO.panel.links.map((l, i) => (
+                  {SECTION_LINKS.map((l, i) => (
                     <li key={l.href}>
                       <a
                         href={l.href}
@@ -494,7 +474,7 @@ export default function Hero() {
                   style={{
                     color: HERO.navLinks.color,
                     background: `color-mix(in srgb, ${HERO.navLinks.color} 9%, transparent)`,
-                    "--i": HERO.panel.links.length,
+                    "--i": SECTION_LINKS.length,
                   } as React.CSSProperties}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -534,13 +514,14 @@ export default function Hero() {
                 {/* the updates card — the price card's inverse (violet ground,
                     grape type) so the pair reads as two different things.
                     Osmo's pattern: a live dot, then each update with a NEW
-                    tag. The content is all in HERO.panel.updates. */}
+                    tag, then the Telegram ask. Content is UPDATES in
+                    lib/site.ts, shared with the footer's ticket strip. */}
                 <div
                   className="panel-link flex flex-col justify-between gap-[clamp(16px,2vw,32px)] rounded-[16px] p-[clamp(18px,1.6vw,32px)]"
                   style={{
                     background: HERO.navLinks.color,
                     color: HERO.nav.fill,
-                    "--i": HERO.panel.links.length + 1,
+                    "--i": SECTION_LINKS.length + 1,
                   } as React.CSSProperties}
                 >
                   <div>
@@ -549,11 +530,11 @@ export default function Hero() {
                         <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-60 motion-reduce:animate-none" />
                         <span className="relative inline-flex size-2 rounded-full bg-current" />
                       </span>
-                      {HERO.panel.updates.eyebrow}
+                      {UPDATES.eyebrow}
                     </p>
-                    <p className="m-0 mt-1 font-display text-[clamp(32px,1.4rem+1.8vw,3.25rem)] leading-[0.95] uppercase">{HERO.panel.updates.title}</p>
+                    <p className="m-0 mt-1 font-display text-[clamp(32px,1.4rem+1.8vw,3.25rem)] leading-[0.95] uppercase">{UPDATES.title}</p>
                     <ul className="m-0 mt-3 flex list-none flex-col gap-2 p-0">
-                      {HERO.panel.updates.items.map((u) => (
+                      {UPDATES.items.map((u) => (
                         <li key={u} className="flex items-start gap-2 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug">
                           <span className="mt-[0.1em] shrink-0 rounded-full px-2 py-[1px] text-[0.7em] font-semibold tracking-[0.06em] uppercase" style={{ background: HERO.nav.fill, color: HERO.navLinks.color }}>
                             New
@@ -564,15 +545,27 @@ export default function Hero() {
                     </ul>
                   </div>
                   <div>
-                    <PillButton
-                      href={HERO.panel.updates.cta.href}
-                      fill={HERO.nav.fill}
-                      color={HERO.navLinks.color}
-                      className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
-                      style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
-                    >
-                      {HERO.panel.updates.cta.label}
-                    </PillButton>
+                    <p className="m-0 mb-3 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug font-semibold">{UPDATES.join}</p>
+                    <div className="flex flex-wrap gap-3">
+                      <PillButton
+                        href={TELEGRAM.href}
+                        fill={HERO.nav.fill}
+                        color={HERO.navLinks.color}
+                        className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                        style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                      >
+                        Join Telegram
+                      </PillButton>
+                      <PillButton
+                        href="#features"
+                        fill={`color-mix(in srgb, ${HERO.nav.fill} 12%, transparent)`}
+                        color={HERO.nav.fill}
+                        className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                        style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                      >
+                        See the wallets
+                      </PillButton>
+                    </div>
                   </div>
                 </div>
                 </div>
@@ -583,11 +576,11 @@ export default function Hero() {
                   style={{
                     color: HERO.navLinks.color,
                     borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 20%, transparent)`,
-                    "--i": HERO.panel.links.length + 2,
+                    "--i": SECTION_LINKS.length + 2,
                   } as React.CSSProperties}
                 >
                   <ul className="m-0 flex list-none flex-wrap gap-x-[clamp(18px,2.2vw,44px)] gap-y-2 p-0">
-                    {HERO.panel.socials.map((so) => (
+                    {SOCIALS.map((so) => (
                       <li key={so.label}>
                         <a
                           href={so.href}
@@ -602,7 +595,7 @@ export default function Hero() {
                       </li>
                     ))}
                   </ul>
-                  <p className="m-0 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] opacity-50 sm:text-right">{HERO.panel.legal}</p>
+                  <p className="m-0 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] opacity-50 sm:text-right">{LEGAL}</p>
                 </div>
               </div>
               {HERO.els.map((el, i) => (el.in === "menu" ? <PriceEl key={i} el={el} fluidText /> : null))}

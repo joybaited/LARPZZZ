@@ -5,6 +5,8 @@ import Section from "@/components/Section";
 import TicketStrip from "@/components/TicketStrip";
 import FooterCoins from "@/components/FooterCoins";
 import MobileCoinRain from "@/components/MobileCoinRain";
+import TicketSocials from "@/components/TicketSocials";
+import FooterCloudContent from "@/components/FooterCloudContent";
 
 
 /**
@@ -132,12 +134,20 @@ export default function Footer() {
         </div>
 
 
+        {/* the content inside the cloud — a layer over it, sized to its edge */}
+        <FooterCloudContent />
+
         {/*
           2. Ticket Strip:
           Positioned along the right edge at ~78.5vw (meeting the user's white guide line)
           with perforated dashed left border.
         */}
-        <TicketStrip />
+        {/* below md the band grows to fit the QR + icons + CTA instead of
+            a fixed 18svh — on a 360x640 phone 18svh is 115px, too short
+            to hold them. It still never drops below 18svh. */}
+        <TicketStrip className="max-md:h-auto max-md:min-h-[18svh]">
+          <TicketSocials />
+        </TicketStrip>
       </div>
     </Section>
   );
