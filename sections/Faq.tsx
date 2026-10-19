@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
 import Section from "@/components/Section";
 import FaqItem from "@/components/FaqItem";
 import { StickerLayer, type Sticker } from "@/components/Stickers";
@@ -12,11 +10,12 @@ import { StickerLayer, type Sticker } from "@/components/Stickers";
  * the bold cut — there is no font-weight to set.
  */
 
-/* ⚠ ARRANGED IN /faq-tuner, PASTED BACK. Do not hand-edit these numbers —
- * open the tuner, move things, copy the config. x and y are percentages of the
- * section, so the arrangement holds at any window size; tilt is the closed lie
- * in degrees, straightened to 0 on open; openW is the expanded width in px and
- * size is the pill's font-size, which scales the whole pill.
+/* ⚠ `x`, `y` AND `tilt` ARE DEAD FIELDS — THE LAYOUT IS A STACK NOW. They
+ * are kept only because /faq-tuner imports this export and would fail
+ * without them; the section ignores all three. `openW` and `size` are
+ * likewise unused, since a stacked pill takes the column's width and one
+ * shared font-size. Editing any of them changes nothing on the page.
+ * The live dials are the column cap and gap in the markup below.
  *
  * ⚠ THE ANSWERS ARE THE OWNER'S, FROM `copy.md` — DO NOT REWRITE THEM.
  * copy.md carries ten questions; these are its 1, 2, 5, 6, 7 and 10, which
@@ -28,21 +27,24 @@ import { StickerLayer, type Sticker } from "@/components/Stickers";
  * because `openW` and the scatter were tuned against these exact strings.
  *
  * The answer text is verbatim from copy.md. The one change is typographic:
- * straight apostrophes become curly to match the rest of the site. */
+ * straight apostrophes become curly to match the rest of the site.
+ *
+ * ⚠ THE LAYOUT IS A TWO-COLUMN GRID, NOT A SCATTER, AND THE TILTS ARE 0.
+ * Three rows at y 14 / 44 / 74, a left column at x 4-6 and a right column at
+ * x 62-66. The right column's x is set PER PILL from that pill's own width
+ * so every one ends near the same right edge — widths differ (24.9% to
+ * 33.5% of the section), so a single shared x would leave a ragged margin.
+ * Measured: the rows clear the centred FAQ wordmark, which spans 41.9-58.1%
+ * horizontally, so no pill crosses it at any width. */
 export const PILLS = [
-  { q: "What is Larpzwallet?", a: "It is a display app for content and entertainment. People use it to film larp clips for TikTok, YouTube and Instagram, to screenshot a portfolio that does not exist, to prank friends, and to show what a wallet interface looks like without touching real funds. Every number on screen is a value you typed in yourself.", x: 37.4, y: 21, tilt: 0, openW: 550, size: 27.5 },
-  { q: "Do i need a seed phrase or a real wallet to use it ?", a: "No, never. Larpz Wallet does not ask for a seed phrase, a private key, or a connection to any real wallet — and it has no blockchain connection to use one with. You set your own balances, and they are displayed on top of live market prices.", x: 35.1, y: 78.5, tilt: -0.3, openW: 490, size: 20 },
-  { q: "Will it look exactly like the real crypto apps?", a: "Yes. Each wallet is designed to be pixel-perfect — identical to the real app on mobile. Prices are pulled live from CoinGecko, the 24-hour chart is interactive, and the send flow screens look and behave like the real thing.", x: 6.3, y: 16.2, tilt: -20, openW: 520, size: 20 },
-  { q: "Does it work on Iphone and Android?", a: "Yes. Larpz Wallet is a PWA (Progressive Web App) that installs directly to your home screen. Use Safari on iOS or Chrome on Android — no App Store download required.", x: 65, y: 16.4, tilt: 16.7, openW: 520, size: 20 },
-  { q: "Can i add custom tokens and memecoins?", a: "Yes. On the apps, you can add any Solana or Ethereum token by contract address. The app fetches the live price and token image from DexScreener automatically.", x: 3.9, y: 59.4, tilt: 14.8, openW: 520, size: 20 },
-  { q: "Is my payment anonymous", a: "Crypto payments (SOL, ETH, BNB, BTC, TRX, USDT, USDC) require no personal information at all — no account, no email. Card payments (credit card, Apple Pay, Google Pay) require an email address, which is passed directly to the payment processor and is not stored by us. Either way, your license key is all you need to use the app.", x: 78.8, y: 59.8, tilt: -17, openW: 520, size: 20 },
+  { q: "What is Larpzwallet?", a: "It is a display app for content and entertainment. People use it to film larp clips for TikTok, YouTube and Instagram, to screenshot a portfolio that does not exist, to prank friends, and to show what a wallet interface looks like without touching real funds. Every number on screen is a value you typed in yourself.", x: 6.0, y: 14.0, tilt: 0, openW: 550, size: 27.5 },
+  { q: "Do i need a seed phrase or a real wallet to use it ?", a: "No, never. Larpz Wallet does not ask for a seed phrase, a private key, or a connection to any real wallet — and it has no blockchain connection to use one with. You set your own balances, and they are displayed on top of live market prices.", x: 62.0, y: 14.0, tilt: 0, openW: 490, size: 20 },
+  { q: "Will it look exactly like the real crypto apps?", a: "Yes. Each wallet is designed to be pixel-perfect — identical to the real app on mobile. Prices are pulled live from CoinGecko, the 24-hour chart is interactive, and the send flow screens look and behave like the real thing.", x: 4.0, y: 44.0, tilt: 0, openW: 520, size: 20 },
+  { q: "Does it work on Iphone and Android?", a: "Yes. Larpz Wallet is a PWA (Progressive Web App) that installs directly to your home screen. Use Safari on iOS or Chrome on Android — no App Store download required.", x: 66.0, y: 44.0, tilt: 0, openW: 520, size: 20 },
+  { q: "Can i add custom tokens and memecoins?", a: "Yes. On the apps, you can add any Solana or Ethereum token by contract address. The app fetches the live price and token image from DexScreener automatically.", x: 6.0, y: 74.0, tilt: 0, openW: 520, size: 20 },
+  { q: "Is my payment anonymous", a: "Crypto payments (SOL, ETH, BNB, BTC, TRX, USDT, USDC) require no personal information at all — no account, no email. Card payments (credit card, Apple Pay, Google Pay) require an email address, which is passed directly to the payment processor and is not stored by us. Either way, your license key is all you need to use the app.", x: 66.0, y: 74.0, tilt: 0, openW: 520, size: 20 },
 ];
 
-
-/* how far the nearest neighbour is pushed, in px, and how far the opening pill
-   rises. Both subtle — this is room being made, not a scatter. */
-const PUSH = 54;
-const LIFT = 0.42;
 
 export const FAQ_STICKERS: Sticker[] = [];
 
@@ -59,212 +61,50 @@ export default function Faq({
   stageRef?: React.Ref<HTMLDivElement>;
   tuning?: boolean;
 } = {}) {
-  const wrap = useRef<HTMLDivElement>(null);
-  /* which pill currently owns the layout — see the onToggle guard below. */
-  const active = useRef<number | null>(null);
-
-  /* Reset layout on resize below 1024px to prevent stale GSAP transforms */
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024 && active.current !== null) {
-        active.current = null;
-        move(null, 0);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  /* ⚠ THE SECTION MOVES THE PILLS, NOT THE PILL ITSELF. A pill knows nothing
-     about its neighbours; the arrangement lives here.
-
-     ⚠ MEASURED AFTER THE PILL HAS OPENED, NOT BEFORE. The first version ran on
-     the click, before the <details> had expanded, so it pushed against the
-     CLOSED box and made the same gap whatever the answer's length. It is
-     called from onToggle after the open now, so `grown` below is the real
-     height the content needs and the push is proportional to it.
-
-     ⚠ THE OPENING PILL RISES BY ITS OWN GROWTH. It expands downward from a
-     fixed top, so a pill low in the section pushed its own answer off the
-     bottom edge while the neighbours politely moved — which is the gimmick
-     with no purpose. Lifting it by a fraction of what it grew keeps the answer
-     on screen and reads as the pill making room for itself. */
-  const move = (i: number | null, grown: number) => {
-    const root = wrap.current;
-    if (!root) return;
-    const cards = [...root.querySelectorAll<HTMLElement>("[data-pill]")];
-
-    if (i === null) {
-      gsap.to(cards, { x: 0, y: 0, duration: 0.5, ease: "power3.out", overwrite: "auto" });
-      return;
-    }
-
-    /* ⚠ MEASURED WITH THE PUSH REMOVED. A rect read while the pills are
-       already displaced includes the previous push, so switching from one pill
-       to another would compound the offsets and the arrangement would drift
-       further apart with every click. Reading each card's own x/y back out and
-       subtracting it gives the resting position every time. */
-    const home = (c: HTMLElement) => {
-      const r = c.getBoundingClientRect();
-      return {
-        cx: r.left + r.width / 2 - (Number(gsap.getProperty(c, "x")) || 0),
-        cy: r.top + r.height / 2 - (Number(gsap.getProperty(c, "y")) || 0),
-      };
-    };
-
-    const rootRect = root.getBoundingClientRect();
-    /* Safe boundary margin within the desktop stage: minimum 24px or 3% */
-    const marginX = Math.max(24, rootRect.width * 0.03);
-    const marginY = 16;
-
-    const { cx: fx, cy: fy } = home(cards[i]);
-
-    cards.forEach((c, j) => {
-      if (j === i) {
-        /* Lift the active card by a fraction of what it grew, with dual-bound top and bottom safety */
-        const currentY = Number(gsap.getProperty(c, "y")) || 0;
-        const restingTop = c.getBoundingClientRect().top - currentY - rootRect.top;
-        const targetLift = -grown * LIFT;
-        const maxUpwardLift = marginY - restingTop; // most negative allowed Y (cannot lift above marginY)
-
-        // Check bottom boundary on shallow laptop viewports (e.g. 1024x600):
-        const maxBottom = rootRect.height - marginY;
-        const projectedBottom = restingTop + c.offsetHeight + grown + targetLift;
-        let lift = targetLift;
-        if (projectedBottom > maxBottom) {
-          lift += maxBottom - projectedBottom;
-        }
-
-        const clampedY = Math.max(lift, maxUpwardLift);
-
-        gsap.to(c, { x: 0, y: Math.min(0, clampedY), duration: 0.55, ease: "power3.out", overwrite: "auto" });
-        return;
-      }
-      const { cx, cy } = home(c);
-      const dx = cx - fx;
-      const dy = cy - fy;
-      const d = Math.hypot(dx, dy) || 1;
-      /* nearest move most, the far side barely stirs. */
-      const force = Math.min(1, 340 / d);
-      /* scaled by how much the pill actually grew, so a one-line answer
-         nudges and a long one clears real space. */
-      const amount = PUSH * force * Math.min(1.4, grown / 70);
-
-      const rawTargetX = (dx / d) * amount;
-      const rawTargetY = (dy / d) * amount;
-
-      /* Clamp X to prevent pushing beyond root boundaries on compact desktops */
-      const currentX = Number(gsap.getProperty(c, "x")) || 0;
-      const cardRect = c.getBoundingClientRect();
-      const restingLeft = cardRect.left - currentX - rootRect.left;
-      const restingRight = restingLeft + c.offsetWidth;
-
-      const minTargetX = marginX - restingLeft;
-      const maxTargetX = rootRect.width - marginX - restingRight;
-
-      const clampedX = minTargetX <= maxTargetX
-        ? Math.max(minTargetX, Math.min(maxTargetX, rawTargetX))
-        : rawTargetX;
-
-      /* Clamp Y to prevent pushing out of vertical bounds */
-      const currentY = Number(gsap.getProperty(c, "y")) || 0;
-      const restingTop = cardRect.top - currentY - rootRect.top;
-      const restingBottom = restingTop + c.offsetHeight;
-
-      const minTargetY = marginY - restingTop;
-      const maxTargetY = rootRect.height - marginY - restingBottom;
-
-      const clampedY = minTargetY <= maxTargetY
-        ? Math.max(minTargetY, Math.min(maxTargetY, rawTargetY))
-        : rawTargetY;
-
-      gsap.to(c, {
-        x: clampedX,
-        y: clampedY,
-        duration: 0.55,
-        ease: "power3.out",
-        overwrite: "auto",
-      });
-    });
-  };
-
   return (
-    /* bleed: the pills are placed against the full section, not the centred
-       content column, so the percentages mean what the tuner showed. */
+    /* bleed: the column centres itself against the full section, and the
+       sticker stage is the whole section so x/y keep meaning what the tuner
+       showed. */
     <Section id="faq" bleed className="bg-[#c98ef0] text-[#3D065F]">
-      {/* Desktop scattered pill layout (>= 1024px) - bounded within canvas ceiling */}
+      {/* ⚠ ONE STACKED COLUMN AT EVERY WIDTH. This was a desktop scatter —
+          six absolutely-placed pills with per-pill x/y/tilt and a GSAP
+          neighbour-push that moved the others out of an opening pill's way.
+          It is a plain centred stack now, the same shape the phone always
+          had, so there is ONE layout to reason about instead of two and
+          nothing to re-tune when a question's length changes.
+
+          Gone with it: the `move()` push, the `active` ref that tracked which
+          pill owned the layout, the resize handler that cleared stale GSAP
+          transforms below 1024, and the x/y/tilt dials. `PILLS` keeps `x`,
+          `y` and `tilt` as dead fields ONLY because /faq-tuner still reads
+          the export — they are ignored here. */}
       <div
         ref={(el) => {
-          wrap.current = el;
           if (typeof stageRef === "function") stageRef(el);
           else if (stageRef) (stageRef as React.RefObject<HTMLDivElement | null>).current = el;
         }}
         data-faq-wrap
-        className="relative mx-auto hidden min-h-[var(--section-fill)] w-full max-w-[var(--canvas-max-width,120rem)] overflow-hidden lg:block"
+        className="relative mx-auto min-h-[var(--section-fill)] w-full max-w-[var(--canvas-max-width,120rem)]"
       >
         <StickerLayer stickers={stickers} hide={hideStickers} />
         {children}
-        {/* the wordmark, centred. pointer-events-none so it never blocks a
-            pill that overlaps it. Tuned opacity on compact desktop (1024px-1280px) to preserve pill readability. */}
-        <h2 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[clamp(4.5rem,1.6rem+7.4vw,12.5rem)] leading-[0.9] uppercase select-none opacity-20 xl:opacity-100 transition-opacity duration-300">
-          FAQ
-        </h2>
 
-        {PILLS.map((p, i) => (
-          <div
-            key={p.q}
-            data-pill
-            style={{ left: `${p.x}%`, top: `${p.y}%` }}
-            /* ⚠ THE OPEN PILL PAINTS ABOVE ITS NEIGHBOURS AND STICKERS. */
-            className="absolute z-10 has-[details[open]]:z-30"
-          >
-            <FaqItem
-              q={p.q}
-              a={p.a}
-              tilt={p.tilt}
-              openW={p.openW}
-              size={p.size}
-              /* ⚠ A CLOSE ONLY COUNTS IF IT IS THE ACTIVE PILL. Opening B makes
-                 the browser close A, which fires A's onToggle(false) a moment
-                 AFTER B has already pushed everything — so an unguarded reset
-                 would undo B's push instantly. Only the pill that currently
-                 owns the layout may send it home. */
-              onToggle={(isOpen, grown) => {
-                if (isOpen) {
-                  active.current = i;
-                  move(i, grown);
-                } else if (active.current === i) {
-                  active.current = null;
-                  move(null, 0);
-                }
-              }}
-            />
+        <div className="relative z-10 flex flex-col items-center px-2 py-8">
+          <h2 className="mb-8 text-center font-display text-[clamp(3.5rem,14vw,12.5rem)] leading-[0.9] uppercase select-none">
+            FAQ
+          </h2>
+
+          {/* ⚠ THE COLUMN IS CAPPED, NOT FULL-BLEED. A pill opens to its own
+              measure and a line of body copy past ~32rem stops being
+              readable, so the cap is the measure rather than the screen.
+              It scales with the root above 1920 like everything else. */}
+          <div className="flex w-full max-w-[min(32rem,100vw-16px)] flex-col items-center gap-3">
+            {PILLS.map((p) => (
+              <div key={p.q} className="flex w-full justify-center">
+                <FaqItem q={p.q} a={p.a} tilt={0} size={16} />
+              </div>
+            ))}
           </div>
-        ))}
-
-      </div>
-
-      {/* Mobile & Tablet stacked accordion (< 1024px) */}
-      {/* ⚠ px-2, NOT px-4. The pills are capped at `100vw - 20px` and this
-          padding is subtracted from that again, so 16px a side was 32px of
-          the ~310px a 360 screen has — enough to force the longest question
-          onto a second line. The pills centre themselves, so the gutter is
-          cosmetic here; the width is not. */}
-      <div className="flex flex-col items-center px-2 py-8 lg:hidden">
-        <h2 className="mb-8 font-display text-[clamp(3.5rem,14vw,6rem)] leading-[0.9] uppercase select-none text-center">
-          FAQ
-        </h2>
-        <div className="flex w-full max-w-[min(32rem,100vw-16px)] flex-col items-center gap-3">
-          {PILLS.map((p) => (
-            <div key={p.q} className="flex w-full justify-center">
-              <FaqItem
-                q={p.q}
-                a={p.a}
-                tilt={0}
-                size={16}
-              />
-            </div>
-          ))}
         </div>
       </div>
     </Section>
