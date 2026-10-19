@@ -11,6 +11,96 @@ session would get wrong without being told.
 
 ---
 
+## Session — 2026-10-19 (session 21) — Claude
+
+A sticker system: 63 assets imported, a five-section tuner rebuilt around
+drag/pin/arrange, and the first arrangement baked into Testimonials. On
+`feat/sticker-system-testimonials`, not yet merged.
+
+### Done
+
+- **63 stickers imported** from `C:/Websites/STICKERS/removed bg` to
+  `public/images/stickers/` as trimmed webp — 3.27MB total, 53KB average.
+  Three families, and they are NOT interchangeable: `pop` (20, flat purple
+  die-cut — the only set that matches `--color-grape`/`--color-violet`),
+  `squiggle` (28, 3D gradient ribbons + star/rose/hand), `cartoon` (15, loud
+  hand-drawn faces that clash with the palette).
+  `index.json` beside them is the manifest the tuner's library reads, so
+  adding a sticker later needs no code change — re-run the import.
+- **`components/Stickers.tsx`** — one shared type and two render layers for
+  every section. `StickerLayer` for stage-anchored (free-floating),
+  `CardStickers` for card-anchored.
+- **`/sticker-tuner` rebuilt for five sections.** Was hardcoded to How it
+  works, because the responsive pass had deleted the other five sections'
+  sticker arrays. Now: section switcher, per-section drafts that survive
+  switching, a library grid with family filters, add/duplicate/delete,
+  behind/in-front, desktop-only toggle, and a pasteable config per section.
+  Seeds from each section's own export, never writes a section.
+- **Four sections re-wired** to take stickers again — `Features`, `Faq`,
+  `Pricing`, `Testimonials` each gained an export, a `stickers` prop, a
+  `stageRef` and a render layer. `HowItWorks` kept its own and its type is
+  now an alias of the shared one.
+- **Testimonials has four card-pinned stickers**, alternating corners:
+  cards 0 and 2 top-left, 1 and 3 bottom-right. Measured at 5 viewports —
+  the corner centres are byte-identical (2,2 and 98,98) at every width, and
+  the width holds 19.8-23.7% of its card.
+
+### What the next session would get wrong
+
+- **There are FOUR testimonial cards, not eight.** The row renders the set
+  twice for the seamless loop. A card sticker is therefore drawn in both
+  copies — that is the same card coming round again, and `hideStickers` must
+  NOT be set on the duplicate or the sticker vanishes for half the loop. I
+  wrote that bug and caught it before it shipped.
+- **⚠ THE TUNER'S DRAG WAS DEAD FOR TWO SEPARATE REASONS, AND FIXING ONE
+  LOOKS LIKE FIXING BOTH.** Worth reading before touching any overlay here:
+  1. Testimonials' sticker stage is `pointer-events-none` on the live site
+     so it never swallows a click. A `pointer-events-auto` CHILD cannot
+     override a `none` ancestor — that direction does not work. The stage now
+     takes `pointer-events-auto` only when the `tuning` prop is passed.
+  2. The stage and the marquee are SIBLINGS and the stage comes first with no
+     `z-index`, so it made no stacking context. The marquee's `z-10` painted
+     over the whole stage and every click landed on a card. `z-[500]` on the
+     overlay was meaningless — it only competed inside an unstacked parent.
+     The stage is `z-20` now.
+  I fixed (2) first, reported it done, and the owner correctly said it still
+  did not work. Verify a pointer bug by what is actually on top, not by the
+  first plausible cause.
+- **`overflow-hidden` clips BOTH axes — the marquee only needs one.** The
+  corner stickers overhang vertically and two ancestors were cutting them.
+  Both are `overflow-x-clip` now. ⚠ `clip`, not `hidden`: setting
+  `overflow-x: hidden` forces the other axis to compute as `auto` and yields
+  a scrollbar. Verified: zero clipped at 390/768/1440/1920, and no horizontal
+  scroll at any of them.
+- **A card sticker's width is `cqi`, a fraction of the CARD.** Not `vw`. The
+  card is not a fixed fraction of the viewport, so a viewport unit drifts the
+  moment the grid reflows. The card needs `[container-type:inline-size]` or
+  `cqi` resolves against the wrong box.
+- **The tuner pauses the marquee while tuning.** Without it a drag fights the
+  animation — the card slides out from under the pointer mid-gesture and the
+  percentage written is wrong by the distance it travelled.
+- **Card handles in the tuner are re-measured every frame on rAF**, because
+  the marquee moves. A handle positioned once is off its card by the next
+  frame.
+
+### Still open
+
+- **@snvzyn has NOT been told, and this touches his territory.**
+  `fix/restore-how-it-works-lock` is still unmerged and rewrites
+  `HowItWorks.tsx` stickers and stage scaling (−72 lines). My change to that
+  file is small — a type alias, an import, one prop — but it will conflict.
+  Four of the six files here are ones both devs edit.
+- **Only Testimonials is arranged.** Features, Faq and Pricing are wired and
+  have empty arrays waiting. The owner is arranging them in the tuner.
+- **Nothing on this branch has been reviewed**, and the big-screen report
+  from session 20 is still undiagnosed — @snvzyn's viewport is still not
+  recorded anywhere.
+- Everything from session 20's open list still stands: the 6/20 sweep
+  baseline, the two pre-existing eslint errors, the Vercel public/private
+  dance.
+
+---
+
 ## Session — 2026-10-18 (session 20) — Claude
 
 Responsive pass over every section, a Phantom-style page-colour system, iOS

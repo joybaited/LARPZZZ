@@ -2,6 +2,7 @@
 
 import Section from "@/components/Section";
 import PixelatedImageReveal from "@/components/PixelatedImageReveal";
+import { type Sticker } from "@/components/Stickers";
 
 /* How it works. Four cards in two flanking columns with an empty middle.
  *
@@ -85,16 +86,7 @@ export const HOW_IT_WORKS_CARDS: HowItWorksCard[] = [
   },
 ];
 
-export type HowItWorksSticker = {
-  name: string;
-  src: string;
-  alt?: string;
-  x: number;
-  y: number;
-  w: number;
-  rotate?: string;
-  z?: number;
-};
+export type HowItWorksSticker = Sticker;
 
 export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
   {
@@ -162,12 +154,14 @@ export default function HowItWorks({
   hideStickers = false,
   children,
   stageRef,
+  tuning,
 }: {
   cards?: HowItWorksCard[];
   stickers?: HowItWorksSticker[];
   hideStickers?: boolean;
   children?: React.ReactNode;
   stageRef?: React.Ref<HTMLDivElement>;
+  tuning?: boolean;
 } = {}) {
   return (
     <Section id="how-it-works" bleed heading="How it works" className="text-grape">

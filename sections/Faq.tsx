@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import Section from "@/components/Section";
 import FaqItem from "@/components/FaqItem";
+import { StickerLayer, type Sticker } from "@/components/Stickers";
 
 /* Section five. FAQ — the wordmark centred, pills scattered around it.
  *
@@ -33,7 +34,21 @@ export const PILLS = [
 const PUSH = 54;
 const LIFT = 0.42;
 
-export default function Faq() {
+export const FAQ_STICKERS: Sticker[] = [];
+
+export default function Faq({
+  children,
+  stickers = FAQ_STICKERS,
+  hideStickers,
+  stageRef,
+  tuning,
+}: {
+  children?: React.ReactNode;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+  stageRef?: React.Ref<HTMLDivElement>;
+  tuning?: boolean;
+} = {}) {
   const wrap = useRef<HTMLDivElement>(null);
   /* which pill currently owns the layout — see the onToggle guard below. */
   const active = useRef<number | null>(null);
@@ -169,10 +184,16 @@ export default function Faq() {
     <Section id="faq" bleed className="text-[#3D065F]">
       {/* Desktop scattered pill layout (>= 1024px) - bounded within canvas ceiling */}
       <div
-        ref={wrap}
+        ref={(el) => {
+          wrap.current = el;
+          if (typeof stageRef === "function") stageRef(el);
+          else if (stageRef) (stageRef as React.RefObject<HTMLDivElement | null>).current = el;
+        }}
         data-faq-wrap
         className="relative mx-auto hidden min-h-[var(--section-fill)] w-full max-w-[var(--canvas-max-width,120rem)] overflow-hidden lg:block"
       >
+        <StickerLayer stickers={stickers} hide={hideStickers} />
+        {children}
         {/* the wordmark, centred. pointer-events-none so it never blocks a
             pill that overlaps it. Tuned opacity on compact desktop (1024px-1280px) to preserve pill readability. */}
         <h2 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[clamp(4.5rem,1.6rem+7.4vw,12.5rem)] leading-[0.9] uppercase select-none opacity-20 xl:opacity-100 transition-opacity duration-300">

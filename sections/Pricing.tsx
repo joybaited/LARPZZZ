@@ -1,5 +1,6 @@
 import Section from "@/components/Section";
 import PriceEl from "@/components/PriceEl";
+import { StickerLayer, CardStickers, type Sticker } from "@/components/Stickers";
 
 /* Pricing. Three cards in a centred row, carried over from LZ-2's section 04.
  *
@@ -176,7 +177,21 @@ export const CARDS: { name: string; els: PriceEl[]; fill?: string }[] = [
 ];
 
 
-export default function Pricing() {
+export const PRICING_STICKERS: Sticker[] = [];
+
+export default function Pricing({
+  children,
+  stickers = PRICING_STICKERS,
+  hideStickers,
+  stageRef,
+  tuning,
+}: {
+  children?: React.ReactNode;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+  stageRef?: React.Ref<HTMLDivElement>;
+  tuning?: boolean;
+} = {}) {
   return (
     <Section id="pricing" heading="Pricing" className="text-grape">
       {/* ⚠ THE SEAM INTO THE FOOTER. Pricing's ground is the tweened root
@@ -200,19 +215,25 @@ export default function Pricing() {
           half the surplus under the heading (measured 331px at 1024x1290).
           Phones were already fine at ~4% because the cards stack and overflow
           the fill anyway; this fixes the tablet case without touching them. */}
-      <div className="relative z-10 @container flex items-center justify-center py-8 [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0">
+      <div
+        ref={stageRef}
+        className="relative z-10 @container flex items-center justify-center py-8 [@media(min-aspect-ratio:1/1)]:min-h-[var(--section-fill)] [@media(min-aspect-ratio:1/1)]:py-0"
+      >
+        <StickerLayer stickers={stickers} hide={hideStickers} />
+        {children}
         <ul
           role="list"
           className="@container [container-type:inline-size] m-0 flex w-full max-w-[min(120rem,calc(1200px*var(--scale-factor,1)))] list-none flex-col items-center gap-6 p-0 lg:flex-row lg:items-stretch lg:justify-center lg:gap-[clamp(24px,4.2vw,60px)]"
         >
-          {CARDS.map((card) => (
+          {CARDS.map((card, ci) => (
             <li
               key={card.name}
+              data-sticker-card={ci}
               /* Desktop card height scaled proportionally via QDPA and bounded by
                  --section-fill to eliminate laptop vertical overflow (e.g. 1536x742).
                  Stacked on mobile via aspect ratio. */
               style={card.fill ? { background: card.fill } : undefined}
-              className="relative z-10 w-full max-w-[380px] min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape aspect-[360/500] sm:aspect-[360/480] lg:max-w-none lg:aspect-auto lg:h-[min(calc(640px*var(--scale-factor,1)),calc(var(--section-fill)-2rem))]"
+              className="relative z-10 [container-type:inline-size] w-full max-w-[380px] min-w-0 flex-1 rounded-[20px] border-[3px] border-grape bg-grape aspect-[360/500] sm:aspect-[360/480] lg:max-w-none lg:aspect-auto lg:h-[min(calc(640px*var(--scale-factor,1)),calc(var(--section-fill)-2rem))]"
             >
               {/* the inner <article>. `relative` is what the elements' x/y
                   percentages resolve against, so they are card-relative and
@@ -222,6 +243,9 @@ export default function Pricing() {
                   <PriceEl key={el.name} el={el} />
                 ))}
               </article>
+              {/* card-anchored stickers sit OUTSIDE the article so a sticker
+                  on an outside corner is not clipped by the card's radius. */}
+              <CardStickers stickers={stickers} index={ci} hide={hideStickers} />
             </li>
           ))}
         </ul>
