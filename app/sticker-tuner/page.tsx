@@ -409,7 +409,7 @@ export default function StickerTuner() {
   /* The overlay is a child of the SAME stage box the section positions its own
      layer against, so these coordinates transfer 1:1. */
   const overlay = (
-    <div className="pointer-events-none absolute inset-0 z-[500]">
+    <div className="pointer-events-none absolute inset-0">
       {drafts
         .filter((d) => d.anchor === "stage")
         .map((d) => (
@@ -633,22 +633,50 @@ export default function StickerTuner() {
                 step={4}
               />
 
-              {/* z below the card = behind it. The section's cards sit at
-                  z-10, so anything under that paints behind. */}
-              <div className="mt-2 flex gap-1">
+              {/* Layer depth presets:
+                  z <= 2: behind text/headline
+                  z = 5: behind images/phone artwork
+                  z = 15: behind cards/UI elements
+                  z >= 25: in front of content */}
+              <label className="mt-2 mb-1 block text-white/50">layer depth</label>
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
                 <button
-                  onClick={() => patch(active.name, { z: 5 })}
-                  className={`flex-1 rounded px-2 py-1 transition ${
-                    active.z < 10 ? "bg-[#EAC2FF] text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  type="button"
+                  onClick={() => patch(active.name, { z: 1 })}
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z <= 2 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
                   }`}
+                  title="Behind text / headlines (z: 1)"
+                >
+                  behind text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => patch(active.name, { z: 5 })}
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z > 2 && active.z < 10 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  }`}
+                  title="Behind phone / image artwork (z: 5)"
+                >
+                  behind image
+                </button>
+                <button
+                  type="button"
+                  onClick={() => patch(active.name, { z: 15 })}
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z >= 10 && active.z < 25 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  }`}
+                  title="Behind cards / UI (z: 15)"
                 >
                   behind card
                 </button>
                 <button
+                  type="button"
                   onClick={() => patch(active.name, { z: 25 })}
-                  className={`flex-1 rounded px-2 py-1 transition ${
-                    active.z >= 10 ? "bg-[#EAC2FF] text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z >= 25 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
                   }`}
+                  title="In front of content (z: 25)"
                 >
                   in front
                 </button>

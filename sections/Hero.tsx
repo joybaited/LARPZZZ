@@ -282,11 +282,12 @@ export const HERO_STICKERS: Sticker[] = [
     name: "pop-16",
     src: "/images/stickers/pop-16.webp",
     alt: "",
-    x: 43.8,
-    y: 11.2,
-    w: 3.9,
+    x: 18,
+    y: 0,
+    w: 16.5,
     rotate: "-9deg",
     z: 25,
+    anchor: "phone",
     cap: 148,
   },
 ];
@@ -724,6 +725,7 @@ export default function Hero({
                Centre stays HERO.art.x/y. */
             <div
               aria-hidden="true"
+              data-sticker-phone
               className="pointer-events-none absolute z-10 aspect-[521/1055]"
               style={{
                 left: `${HERO.art.x}%`,
@@ -733,6 +735,7 @@ export default function Hero({
               }}
             >
               <HeroSteps className="size-full" />
+              <StickerLayer stickers={stickers} hide={hideStickers} anchor="phone" />
             </div>
           )}
 
@@ -769,7 +772,7 @@ export default function Hero({
 
         </div>
 
-        <StickerLayer stickers={stickers} hide={hideStickers} />
+        <StickerLayer stickers={stickers} hide={hideStickers} anchor="stage" />
         {children}
       </div>
 

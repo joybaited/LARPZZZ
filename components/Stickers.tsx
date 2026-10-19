@@ -24,16 +24,16 @@
    percentage is the bug above. The cap is the guard rail, not the design —
    tune the proportion, leave the cap alone. */
 
-export type StickerAnchor = "stage" | "card";
+export type StickerAnchor = "stage" | "card" | "phone";
 
 export type Sticker = {
   name: string;
   src: string;
   alt?: string;
-  /** % of the stage (anchor "stage") or of the card (anchor "card") */
+  /** % of the stage (anchor "stage"), of the card (anchor "card"), or of the phone (anchor "phone") */
   x: number;
   y: number;
-  /** % of the stage, or cqi of the card */
+  /** % of the stage, cqi of the card, or % of the phone */
   w: number;
   rotate?: string;
   z?: number;
@@ -48,20 +48,22 @@ export type Sticker = {
   desktopOnly?: boolean;
 };
 
-/** Stage-anchored stickers for a section. Mount inside the SAME box the
-    tuner measures, as a child of the section's stage. */
+/** Stage-anchored or phone-anchored stickers for a section. Mount inside the SAME box the
+    tuner measures, as a child of the section's stage or phone. */
 export function StickerLayer({
   stickers,
   hide,
+  anchor = "stage",
 }: {
   stickers?: Sticker[];
   hide?: boolean;
+  anchor?: StickerAnchor;
 }) {
   if (hide || !stickers?.length) return null;
   return (
     <>
       {stickers
-        .filter((s) => (s.anchor ?? "stage") === "stage")
+        .filter((s) => (s.anchor ?? "stage") === anchor)
         .map((s) => (
           <div
             key={s.name}
