@@ -133,7 +133,19 @@ export default function FaqItem({
       const container = d.closest("[data-faq-wrap]");
       const edge = container?.getBoundingClientRect();
       const GUTTER = 24;
-      const viewportMaxW = typeof window !== "undefined" ? Math.min(520, window.innerWidth - 48) : 520;
+      /* ⚠ THE 520 CEILING SCALES WITH THE ROOT, OR THE SCATTER COLLAPSES.
+         The pill TEXT is `calc(size * var(--px))` so it grows with the page,
+         but this cap was a raw 520 — so on a big screen every question hit
+         the ceiling and five of the six pills came out exactly 520px wide.
+         Measured at 2160x1440: widths 520/520/520/520/520/461 against
+         382/515/465/415/460/328 at 1536x742, i.e. the six different widths
+         that MAKE the scatter all flattened to one. Scaling the cap by the
+         same --px the type uses keeps the proportion; at a 16px root this is
+         the same 520 it has always been. */
+      const px = typeof window !== "undefined"
+        ? parseFloat(getComputedStyle(document.documentElement).fontSize) / 16
+        : 1;
+      const viewportMaxW = typeof window !== "undefined" ? Math.min(520 * px, window.innerWidth - 48) : 520;
       const maxW = edge ? Math.max(280, Math.min(viewportMaxW, edge.width - GUTTER * 2)) : viewportMaxW;
       let slide = 0;
 
@@ -216,7 +228,7 @@ export default function FaqItem({
          pill. Solid `#3D065F` with `#EAC2FF` text is the hero nav's own
          treatment (purple bar, pink labels), so the two sections match.
          No border: at full opacity the fill is the edge. */
-      className="group w-fit max-w-[min(520px,calc(100vw-20px))] overflow-hidden rounded-[999px] bg-[#3D065F] text-[#EAC2FF] px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-[#4d0878] open:bg-[#4d0878] lg:max-w-[min(520px,calc(100vw-48px))]"
+      className="group w-fit max-w-[min(32.5rem,calc(100vw-20px))] overflow-hidden rounded-[999px] bg-[#3D065F] text-[#EAC2FF] px-[1.6em] transition-colors duration-200 will-change-transform hover:bg-[#4d0878] open:bg-[#4d0878] lg:max-w-[min(32.5rem,calc(100vw-48px))]"
     >
       <summary
         onClick={toggle}
