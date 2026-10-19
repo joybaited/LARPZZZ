@@ -3,6 +3,7 @@
 import Section from "@/components/Section";
 import FaqItem from "@/components/FaqItem";
 import { StickerLayer, type Sticker } from "@/components/Stickers";
+import FaqPoppingStickers from "@/components/FaqPoppingStickers";
 
 /* Section five. FAQ — the wordmark centred over one column of equal rows.
  *
@@ -93,6 +94,7 @@ export default function Faq({
         className="relative mx-auto w-full max-w-[var(--canvas-max-width,120rem)]"
       >
         <StickerLayer stickers={stickers} hide={hideStickers} />
+        {!hideStickers && <FaqPoppingStickers />}
         {children}
 
         <div className="relative z-10 flex flex-col items-center px-(--gutter) py-8">
