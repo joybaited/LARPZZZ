@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
-import PageTint from "@/components/PageTint";
 import { PillStyle } from "@/components/pillHover";
 import PillTouch from "@/components/PillTouch";
 import ViewportHUD from "@/components/ViewportHUD";
@@ -19,7 +18,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             which CLAUDE.md stubs up front and asks not to edit again. */}
         <SmoothScroll />
         {/* drives --page-bg/--page-fg on <html>; the tween is in globals.css */}
-        <PageTint />
         {/* ⚠ THE PILL BUTTON'S STYLESHEET, MOUNTED ONCE AND NOT INSIDE A
             BUTTON. It used to render inside each one, which put the whole
             CSS string into that button's textContent — a probe reading a

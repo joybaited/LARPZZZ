@@ -193,7 +193,7 @@ export default function Pricing({
   tuning?: boolean;
 } = {}) {
   return (
-    <Section id="pricing" heading="Pricing" className="text-grape">
+    <Section id="pricing" heading="Pricing" className="bg-[#f7ecff] text-grape">
       {/* ⚠ THE SEAM INTO THE FOOTER. Pricing's ground is the tweened root
           colour and the footer paints its own #e3b5fb — two different
           surfaces meeting on a hard line. This fades the second one UP over

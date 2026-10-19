@@ -164,7 +164,7 @@ export default function HowItWorks({
   tuning?: boolean;
 } = {}) {
   return (
-    <Section id="how-it-works" bleed heading="How it works" className="text-grape">
+    <Section id="how-it-works" bleed heading="How it works" className="bg-[#d9a3f7] text-grape">
       {/* ⚠ min-h-[var(--section-fill)] with lg:h-[var(--section-fill)] so desktop holds the exact measured ratio while mobile expands naturally without clipping. */}
       <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center px-(--gutter)">
         <div

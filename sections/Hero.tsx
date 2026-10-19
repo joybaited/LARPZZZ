@@ -268,7 +268,10 @@ export default function Hero() {
           cover the tween and the hero would be the one section that never
           changed colour. The div stays because the trail and the stickers are
           positioned against it. */}
-      <div className="absolute inset-0 -z-20" />
+      {/* the hero's ground. Painted here rather than on <Section> because
+          this layer already exists and grows with the section's bottom
+          padding, so the extra space below the hero is the same colour. */}
+      <div className="absolute inset-0 -z-20 bg-[#f3e2ff]" />
 
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
           ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so

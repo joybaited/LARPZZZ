@@ -168,16 +168,23 @@ body {
    Seeded with the hero's pair so the first paint is already right — a null
    start would flash white before the observer fires. */
 :root {
-  --page-bg: var(--color-paper);
-  --page-fg: var(--color-ink);
+  /* the flat page base. It shows only in the gaps — every section paints
+     over it — so it is the hero's ground, which is what the top of the page
+     is before anything scrolls. */
+  --page-bg: #f3e2ff;
+  --page-fg: var(--color-grape);
 }
 
 html {
+  /* ⚠ NO TWEEN, AND NO JS DRIVING THIS ANY MORE. Each section paints its own
+     ground, the way metamask.io does — the colour belongs to the section, so
+     it arrives and leaves with it instead of the whole page crossfading
+     between bands as you scroll. `components/PageTint.tsx` was what drove
+     the two variables below and it is gone.
+     The root keeps a flat base colour so there is never a white flash
+     between sections or under the footer, which paints its own #e3b5fb. */
   background-color: var(--page-bg);
   color: var(--page-fg);
-  transition-property: background-color, color;
-  transition-duration: 0.4s;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body {
