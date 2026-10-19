@@ -8,6 +8,7 @@ import Features, { FEATURES_STICKERS } from "@/sections/Features";
 import Testimonials, { TESTIMONIALS_STICKERS } from "@/sections/Testimonials";
 import Faq, { FAQ_STICKERS } from "@/sections/Faq";
 import Pricing, { PRICING_STICKERS } from "@/sections/Pricing";
+import Hero, { HERO_STICKERS } from "@/sections/Hero";
 
 /* ⚠ A TUNER NEVER WRITES THE SECTION IT TUNES. It prints a config block to
    copy; the section is edited by hand from it. That is what stops a tuner
@@ -42,7 +43,7 @@ type Draft = {
   desktopOnly: boolean;
 };
 
-type SectionKey = "howitworks" | "features" | "testimonials" | "faq" | "pricing";
+type SectionKey = "hero" | "howitworks" | "features" | "testimonials" | "faq" | "pricing";
 
 const SECTIONS: {
   key: SectionKey;
@@ -52,6 +53,14 @@ const SECTIONS: {
   cards: number;
   note: string;
 }[] = [
+  {
+    key: "hero",
+    label: "Hero",
+    exportName: "HERO_STICKERS",
+    seed: HERO_STICKERS,
+    cards: 0,
+    note: "Desktop Hero stage stickers. Mobile uses separate vertical flow.",
+  },
   {
     key: "testimonials",
     label: "Testimonials",
@@ -438,6 +447,11 @@ export default function StickerTuner() {
     >
       {/* ⚠ THE STAGE IS THE FULL VIEWPORT and carries the real section, so the
           stage is the shape of the real page. */}
+      {sectionKey === "hero" && (
+        <Hero {...stageProps} stickers={drafts as unknown as Sticker[]} tuning>
+          {overlay}
+        </Hero>
+      )}
       {sectionKey === "testimonials" && (
         <Testimonials {...stageProps} stickers={drafts as unknown as Sticker[]} tuning>
           {overlay}

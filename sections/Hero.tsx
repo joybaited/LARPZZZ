@@ -10,6 +10,7 @@ import PillButton from "@/components/PillButton";
 import { LEGAL, SECTION_LINKS, SOCIALS, TELEGRAM, UPDATES } from "@/lib/site";
 import ImageTrail from "@/components/ImageTrail";
 import PixelatedImageReveal from "@/components/PixelatedImageReveal";
+import { StickerLayer, type Sticker } from "@/components/Stickers";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -273,7 +274,24 @@ const PHONE: PhoneTune = {
   ...HERO.phone.parallax,
 };
 
-export default function Hero() {
+/* Free-floating decoration for this section. Stage-anchored: x/y are
+   percentages of the stage box below, which is the same box /sticker-tuner
+   measures. Tune in /sticker-tuner and paste the block back here. */
+export const HERO_STICKERS: Sticker[] = [];
+
+export default function Hero({
+  children,
+  stickers = HERO_STICKERS,
+  hideStickers,
+  stageRef,
+  tuning,
+}: {
+  children?: React.ReactNode;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+  stageRef?: React.Ref<HTMLDivElement>;
+  tuning?: boolean;
+} = {}) {
   const { nav, headline: h } = HERO;
   const subtitleEl = HERO.els.find((e) => e.name === "text 2");
 
@@ -337,7 +355,12 @@ export default function Hero() {
 
       {/* ── 120REM CANVAS STAGE ──────────────────────────────────────────────────────────
           Anchors nav, desktop stage, and mobile orchestrator within 120rem ceiling */}
-      <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)]">
+      <div
+        ref={stageRef}
+        className={`pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] ${
+          tuning ? "pointer-events-auto" : ""
+        }`}
+      >
 
 
         {/*
@@ -733,6 +756,9 @@ export default function Hero() {
           </div>
 
         </div>
+
+        <StickerLayer stickers={stickers} hide={hideStickers} />
+        {children}
       </div>
 
       {/* ── MOBILE / TABLET ORCHESTRATOR (< 1024px) ─────────────────────────────────
