@@ -156,6 +156,15 @@ export const HERO = {
       { label: "FAQ", href: "#faq" },
     ],
     card: { eyebrow: "Plans from", price: "$14", detail: "All six apps, iOS & Android, no seed phrase." },
+    /* ⚠ THE UPDATES CARD. Edit freely — add or remove `items`, each gets a
+       NEW tag. Keep it to two or three lines or the card outgrows its pair.
+       The wallet names are not in the repo yet; name them here. */
+    updates: {
+      eyebrow: "What's new",
+      title: "2 new wallets",
+      items: ["Two new wallet UIs added", "Switch between them from your dashboard"],
+      cta: { label: "See the wallets", href: "#features" },
+    },
     socials: [
       { label: "Telegram", href: "#" },
       { label: "X", href: "#" },
@@ -447,7 +456,12 @@ export default function Hero() {
                   ⚠ EVERY TOP-LEVEL PIECE IS A `.panel-link` WITH ITS OWN `--i`,
                   so the stagger in globals.css runs links -> card -> strip as
                   one sweep. That CSS existed already; nothing new animates. */}
-              <div className="grid gap-x-[clamp(24px,4vw,96px)] gap-y-[clamp(20px,2.5vw,40px)] p-[clamp(20px,1rem+2vw,48px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+              {/* ⚠ THE CARDS STACK UNTIL xl. Side by side they need ~46rem,
+                  and at 1024-1279 the links column cannot spare it. From xl
+                  the links take only their own width (`auto`) and the pair is
+                  pushed to the right edge, capped so it does not balloon on a
+                  2560 screen. */}
+              <div className="grid gap-x-[clamp(24px,4vw,96px)] gap-y-[clamp(20px,2.5vw,40px)] p-[clamp(20px,1rem+2vw,48px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:grid-cols-[auto_minmax(0,52rem)] xl:justify-between">
                 {/* the links. On hover-capable screens the rest dim while one
                     is pointed at — osmo's focus effect, CSS only. */}
                 <ul className="group/list m-0 flex list-none flex-col gap-[clamp(2px,0.15rem+0.4vw,12px)] p-0">
@@ -470,6 +484,7 @@ export default function Hero() {
                   ))}
                 </ul>
 
+                <div className="grid gap-[clamp(12px,1vw,20px)] xl:grid-cols-2">
                 {/* the get-started card, where the video box was. The phone is
                     the hero's own art — already loaded above, so it costs no
                     request — cropped into the corner. Absolute, so it adds no
@@ -516,13 +531,59 @@ export default function Hero() {
                   </div>
                 </div>
 
+                {/* the updates card — the price card's inverse (violet ground,
+                    grape type) so the pair reads as two different things.
+                    Osmo's pattern: a live dot, then each update with a NEW
+                    tag. The content is all in HERO.panel.updates. */}
+                <div
+                  className="panel-link flex flex-col justify-between gap-[clamp(16px,2vw,32px)] rounded-[16px] p-[clamp(18px,1.6vw,32px)]"
+                  style={{
+                    background: HERO.navLinks.color,
+                    color: HERO.nav.fill,
+                    "--i": HERO.panel.links.length + 1,
+                  } as React.CSSProperties}
+                >
+                  <div>
+                    <p className="m-0 flex items-center gap-2 text-[clamp(12px,0.5rem+0.3vw,0.875rem)] tracking-[0.08em] uppercase opacity-70">
+                      <span aria-hidden="true" className="relative flex size-2">
+                        <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-60 motion-reduce:animate-none" />
+                        <span className="relative inline-flex size-2 rounded-full bg-current" />
+                      </span>
+                      {HERO.panel.updates.eyebrow}
+                    </p>
+                    <p className="m-0 mt-1 font-display text-[clamp(32px,1.4rem+1.8vw,3.25rem)] leading-[0.95] uppercase">{HERO.panel.updates.title}</p>
+                    <ul className="m-0 mt-3 flex list-none flex-col gap-2 p-0">
+                      {HERO.panel.updates.items.map((u) => (
+                        <li key={u} className="flex items-start gap-2 text-[clamp(13px,0.55rem+0.35vw,1rem)] leading-snug">
+                          <span className="mt-[0.1em] shrink-0 rounded-full px-2 py-[1px] text-[0.7em] font-semibold tracking-[0.06em] uppercase" style={{ background: HERO.nav.fill, color: HERO.navLinks.color }}>
+                            New
+                          </span>
+                          {u}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <PillButton
+                      href={HERO.panel.updates.cta.href}
+                      fill={HERO.nav.fill}
+                      color={HERO.navLinks.color}
+                      className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
+                      style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+                    >
+                      {HERO.panel.updates.cta.label}
+                    </PillButton>
+                  </div>
+                </div>
+                </div>
+
                 {/* the strip: socials big enough to hit, legal line beside. */}
                 <div
                   className="panel-link flex flex-col gap-4 border-t pt-[clamp(16px,1.6vw,28px)] sm:flex-row sm:items-end sm:justify-between lg:col-span-2"
                   style={{
                     color: HERO.navLinks.color,
                     borderColor: `color-mix(in srgb, ${HERO.navLinks.color} 20%, transparent)`,
-                    "--i": HERO.panel.links.length + 1,
+                    "--i": HERO.panel.links.length + 2,
                   } as React.CSSProperties}
                 >
                   <ul className="m-0 flex list-none flex-wrap gap-x-[clamp(18px,2.2vw,44px)] gap-y-2 p-0">
