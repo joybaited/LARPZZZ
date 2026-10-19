@@ -513,8 +513,8 @@ export default function Hero({
                 href="/login"
                 fill={HERO.navLinks.ctaFill}
                 color={HERO.navLinks.ctaColor}
-                className="whitespace-nowrap px-[clamp(16px,0.4rem+1vw,2rem)] py-[clamp(7px,0.2rem+0.45vw,0.875rem)] leading-none font-semibold"
-                style={{ fontSize: "clamp(13px, 0.4rem + 0.65vw, 1.25rem)" }}
+                className="whitespace-nowrap px-[clamp(20px,0.7rem+0.6vw,26px)] py-[clamp(6px,0.2rem+0.2vw,7.5px)] leading-none font-semibold"
+                style={{ fontSize: "clamp(16.5px, 0.45rem + 0.8vw, 18.5px)" }}
               >
                 {HERO.navLinks.cta}
               </PillButton>
