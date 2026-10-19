@@ -164,6 +164,12 @@ export default function Features({
          cards set their own ink. Black on this ground is unreadable. */
       className="overflow-hidden bg-[#3d065f] text-violet"
     >
+      {/* ⚠ THE SEAM INTO TESTIMONIALS. Cross-fades to Testimonials ground colour (#efd4ff). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
+        style={{ background: "linear-gradient(to bottom, transparent, #efd4ff)" }}
+      />
       {/* ⚠ FULL --section-fill ONLY ON A LANDSCAPE SCREEN. On a portrait one
           the carousel is a fixed card height however tall the viewport is, so
           reserving a whole fill and centring in it pooled the surplus under

@@ -164,6 +164,12 @@ export default function HowItWorks({
 } = {}) {
   return (
     <Section id="how-it-works" bleed heading="How it works" className="bg-[#d9a3f7] text-grape">
+      {/* ⚠ THE SEAM INTO FEATURES. Cross-fades to Features ground colour (#3d065f). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
+        style={{ background: "linear-gradient(to bottom, transparent, #3d065f)" }}
+      />
       {/* ⚠ min-h-[var(--section-fill)] with lg:h-[var(--section-fill)] so desktop holds the exact measured ratio while mobile expands naturally without clipping. */}
       <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center px-(--gutter)">
         <div

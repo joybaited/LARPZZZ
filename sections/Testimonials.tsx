@@ -309,6 +309,12 @@ export default function Testimonials({
     /* bleed: the rows are deliberately wider than the screen, so they must not
        sit in the centred content column. */
     <Section id="testimonials" bleed heading="Testimonials" className="bg-[#efd4ff] text-[#3D065F]">
+      {/* ⚠ THE SEAM INTO FAQ. Cross-fades to Faq ground colour (#c98ef0). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
+        style={{ background: "linear-gradient(to bottom, transparent, #c98ef0)" }}
+      />
       {/* ⚠ RATIO-LOCKED STICKER STAGE. The sticker x/y are percentages, and a
           percentage is only proportional while the box it measures is the same
           SHAPE. On `inset-0` this box took the section's aspect ratio, which

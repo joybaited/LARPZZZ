@@ -356,6 +356,13 @@ export default function Hero({
         />
       </div>
 
+      {/* ⚠ THE SEAM INTO HOW IT WORKS. Cross-fades to How It Works ground colour (#d9a3f7). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[clamp(80px,14vh,200px)]"
+        style={{ background: "linear-gradient(to bottom, transparent, #d9a3f7)" }}
+      />
+
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
           ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so
           images pass behind all three rather than over the type.

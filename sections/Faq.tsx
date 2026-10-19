@@ -58,6 +58,12 @@ export default function Faq({
        measured, the section grew 0px at 768x1024 and 2160x1440 and 0-28px at
        1024x768 while a row opened. */
     <Section id="faq" bleed className="!min-h-0 bg-[#c98ef0] text-[#3D065F]">
+      {/* ⚠ THE SEAM INTO PRICING. Cross-fades to Pricing ground colour (#f7ecff). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[clamp(80px,14vh,200px)]"
+        style={{ background: "linear-gradient(to bottom, transparent, #f7ecff)" }}
+      />
       {/* ⚠ ONE STACKED COLUMN AT EVERY WIDTH, every row the column's width.
           It was a desktop scatter, then a centred stack of pills that each
           hugged its own question — a ragged edge on both sides. Equal rows
