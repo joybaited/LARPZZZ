@@ -36,22 +36,19 @@ export default function FooterCloudContent() {
         ["--edge-low" as string]: `calc(var(--cloud-target-x, 58.5vw) - 8.2vh - ${GAP})`,
       }}
     >
-      <div className="flex h-full flex-col gap-3 px-5 pt-[clamp(14px,4.5vw,28px)] md:justify-between md:gap-0 md:py-[clamp(28px,5vh,72px)] md:pl-[clamp(24px,4vw,88px)] md:pr-0">
+      <div className="flex h-full flex-col gap-2.5 px-5 pt-[clamp(12px,4.5vw,28px)] md:justify-between md:gap-0 md:py-[clamp(28px,5vh,72px)] md:pl-[clamp(24px,4vw,88px)] md:pr-0">
         {/* ── the sign-off ── */}
         <div className="pointer-events-auto md:w-[calc(var(--edge-top)-clamp(24px,4vw,88px))]">
-          <p className="m-0 hidden text-[clamp(11px,0.45rem+0.3vw,0.875rem)] font-semibold tracking-[0.12em] uppercase opacity-70 md:block">
-            Larpz Wallet
-          </p>
-          <p className="m-0 font-display text-[clamp(22px,7vw,34px)] md:mt-1 leading-[0.92] uppercase text-balance md:text-[clamp(30px,1.2rem+3.4vw,7rem)]">
+          <p className="m-0 font-display text-[clamp(24px,7.8vw,40px)] leading-[0.92] uppercase text-balance md:text-[clamp(36px,1.4rem+4.2vw,8.5rem)]">
             Fake it till you make it.
           </p>
-          <div className="mt-[clamp(12px,2vh,28px)] flex flex-wrap gap-2.5">
+          <div className="mt-2.5 flex flex-wrap gap-3 md:mt-[clamp(14px,2.4vh,32px)]">
             <PillButton
               href="#pricing"
               fill={INK}
               color={VIOLET}
-              className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
-              style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+              className="min-h-12 px-[clamp(26px,1.2rem+1.2vw,48px)] py-[clamp(12px,0.5rem+0.6vw,20px)] leading-none font-semibold"
+              style={{ fontSize: "clamp(17px, 0.7rem + 0.6vw, 1.5rem)" }}
             >
               Buy
             </PillButton>
@@ -59,8 +56,8 @@ export default function FooterCloudContent() {
               href="/login"
               fill={`color-mix(in srgb, ${INK} 12%, transparent)`}
               color={INK}
-              className="min-h-11 px-[clamp(20px,1rem+0.8vw,32px)] py-[clamp(10px,0.4rem+0.4vw,14px)] leading-none font-semibold"
-              style={{ fontSize: "clamp(15px, 0.6rem + 0.45vw, 1.125rem)" }}
+              className="min-h-12 px-[clamp(26px,1.2rem+1.2vw,48px)] py-[clamp(12px,0.5rem+0.6vw,20px)] leading-none font-semibold"
+              style={{ fontSize: "clamp(17px, 0.7rem + 0.6vw, 1.5rem)" }}
             >
               Login
             </PillButton>
@@ -69,8 +66,10 @@ export default function FooterCloudContent() {
 
         {/* ── the columns + legal ── */}
         <div className="pointer-events-auto flex flex-col gap-3 md:w-[calc(var(--edge-low)-clamp(24px,4vw,88px))] md:gap-[clamp(16px,3vh,40px)]">
-          {/* phones: one compact row of the section links */}
-          <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-[clamp(13px,3.6vw,15px)] font-semibold md:hidden">
+          {/* phones: one compact row of the section links. Gone below 360,
+              where the cloud band is too short to hold it with the legal
+              line — the nav carries the same five links. */}
+          <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-[clamp(13px,3.6vw,15px)] font-semibold max-[359px]:hidden md:hidden">
             {SECTION_LINKS.map((l) => (
               <li key={l.href}>
                 <a href={l.href} className="inline-block py-1 no-underline" style={{ color: INK }}>
