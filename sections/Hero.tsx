@@ -349,6 +349,8 @@ export default function Hero({
           positioned against it. */}
       <div className="pointer-events-none absolute inset-0 -z-20 overflow-hidden bg-[#f3e2ff]">
         <img
+          fetchPriority="low"
+          decoding="async"
           src="/images/herotextre/herotext.jpg"
           alt=""
           aria-hidden="true"

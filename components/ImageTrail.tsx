@@ -54,6 +54,14 @@ export default function ImageTrail({ images, size = 190, exclude }: Props) {
     const imgs = Array.from(el.querySelectorAll<HTMLImageElement>("img"));
     if (!imgs.length) return;
 
+    /* the trail loads LAST of the hero: its src is held in data-src until the
+       page has finished loading, so it never competes with the fonts and the
+       phone. A touch or reduced-motion visitor returns above and never
+       downloads it at all. */
+    const loadTrail = () => imgs.forEach((img) => { img.src = img.dataset.src ?? ""; });
+    if (document.readyState === "complete") loadTrail();
+    else window.addEventListener("load", loadTrail, { once: true });
+
     const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 
     let winH = window.innerHeight;
@@ -146,6 +154,7 @@ export default function ImageTrail({ images, size = 190, exclude }: Props) {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMoveCapture, true);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("load", loadTrail);
       gsap.killTweensOf(imgs);
     };
   }, [images, size, exclude]);
@@ -161,7 +170,7 @@ export default function ImageTrail({ images, size = 190, exclude }: Props) {
       {images.map((src) => (
         <img
           key={src}
-          src={src}
+          data-src={src}
           alt=""
           draggable={false}
           className="absolute top-0 left-0 object-contain opacity-0 will-change-transform"

@@ -253,6 +253,8 @@ export default function HowItWorks({
                   style={{ transform: `rotate(${stickers[i].rotate ?? "0deg"})` }}
                 >
                   <img
+                    loading="lazy"
+                    decoding="async"
                     src={stickers[i].src}
                     alt=""
                     className="h-auto w-full object-contain select-none drop-shadow-md"
@@ -293,6 +295,8 @@ export default function HowItWorks({
               }}
             >
               <img
+                loading="lazy"
+                decoding="async"
                 src={st.src}
                 alt={st.alt ?? ""}
                 className="block h-auto w-full max-w-none select-none drop-shadow-xl"

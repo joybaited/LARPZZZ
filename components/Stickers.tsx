@@ -80,6 +80,8 @@ export function StickerLayer({
             }}
           >
             <img
+              loading="lazy"
+              decoding="async"
               src={s.src}
               alt={s.alt ?? ""}
               className="block h-auto w-full max-w-none select-none drop-shadow-xl"
@@ -125,6 +127,8 @@ export function CardStickers({
             }}
           >
             <img
+              loading="lazy"
+              decoding="async"
               src={s.src}
               alt={s.alt ?? ""}
               className="block h-auto w-full max-w-none select-none drop-shadow-xl"

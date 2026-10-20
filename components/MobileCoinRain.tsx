@@ -204,6 +204,8 @@ export default function MobileCoinRain() {
             }}
           >
             <img
+              loading="lazy"
+              decoding="async"
               ref={(el) => {
                 imgRefs.current[i] = el;
               }}

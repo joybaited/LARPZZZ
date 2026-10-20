@@ -252,6 +252,8 @@ function PoppingSpot({
       className={`pointer-events-auto cursor-pointer select-none transition-transform hover:scale-110 active:scale-90 ${getAnimationClass()}`}
     >
       <img
+        loading="lazy"
+        decoding="async"
         src={data.src}
         alt=""
         draggable={false}

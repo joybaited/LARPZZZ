@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { preload } from "react-dom";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import { PillStyle } from "@/components/pillHover";
@@ -22,7 +23,20 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: SHARE_TITLE, description: SHARE },
 };
 
+/* LOAD ORDER: fonts first, then the phones. Everything else is deferred
+   where it renders (the trail waits for window load, the rest is lazy).
+   ⚠ A FONT PRELOAD NEEDS crossOrigin even on the same origin, or the browser
+   fetches it a second time for the @font-face rule.
+   The step screens are the desktop hero only, hence the media query. */
+const FONTS = ["Megion-Bold", "NeueMontreal-Regular", "NeueMontreal-Medium"];
+const STEP_PHONES = ["a", "b", "c", "d", "e", "f"];
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  for (const f of FONTS) preload(`/fonts/${f}.woff2`, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  STEP_PHONES.forEach((k, i) =>
+    preload(`/images/steps-phone-${k}.webp`, { as: "image", media: "(min-width: 1024px)", fetchPriority: i === 0 ? "high" : "auto" }),
+  );
+  preload("/images/hero-phone.webp", { as: "image", fetchPriority: "high" });
   return (
     <html lang="en">
       <body>
