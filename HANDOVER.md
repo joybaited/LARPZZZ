@@ -11,6 +11,126 @@ session would get wrong without being told.
 
 ---
 
+## Session — 2026-10-19 (session 22) — Claude
+
+A long one. Big-screen scaling, per-section colour, a rebuilt nav panel, a
+stacked FAQ, content inside the footer cloud, the real copy everywhere, the
+hero and How it works phones swapped, and new pricing cards. All on `main`:
+PRs **#15**, **#16**, **#17** (squash-merged, owner's call — no review wait).
+
+### Done
+
+- **Merged snv's PR #14, then reverted its How it works layout.** Removing
+  the `max(1200px,...)` stage floor, raising the type clamps and dropping the
+  `cqi` margin reservation together clipped two cards' last lines (the card
+  is a fixed `aspect-[381/265]`, so it cannot grow for its own text). Only
+  that diff was reverted; the sticker plumbing on top of it stayed. (#15)
+- **A MetaMask 1:1 rebuild of How it works was attempted and fully
+  reverted** at the owner's call. Its ~57 scratch files (`sections/MSectionBp.tsx`,
+  `css_dump/`, `js_dump/`, `public/metamask/`, ~40 `.py`) are still in the
+  tree, UNTRACKED on purpose — the owner chose to leave them out of git.
+- **PageTint is gone.** No colour tween down the page; each section paints
+  its own `bg-[...]`, metamask.io style. `components/PageTint.tsx` deleted. (#15)
+- **Big screens.** Root font ceiling 22px → 36px in `globals.css`; Hero's
+  `fluid()` / `headSize()` ceilings in rem, not px. (#15)
+- **FAQ:** one equal-width stacked column at every size; opening a row
+  pushes the page down (`!min-h-0`); answers, then all ten questions, from
+  `copy.md`, a size up. (#16, #17)
+- **Nav panel built** (osmo.supply-style): section links with dot markers, a
+  price card, a "what's new" card with Join Telegram, a socials strip.
+  Scrolls internally, closes on link click, `inert` when closed. Closed bar:
+  links roll on hover like the Login pill. (#17)
+- **`lib/site.ts`** — one source for `SITE_URL`, `SOCIALS` (simple-icons
+  SVG paths inlined), `TELEGRAM`, `UPDATES`, `SECTION_LINKS`, `WALLETS`,
+  `LEGAL`. Nav and footer both read it.
+- **Footer:** `FooterCloudContent` — sign-off, Buy/Login, link columns, legal
+  line — a layer over snv's cloud, sized to the cloud png's MEASURED edge
+  (alpha-sampled at 12 sizes). `TicketSocials` — a cycling QR
+  (`qrcode-generator@2.0.4`, new dep) + socials + CTA in the ticket strip.
+- **Real copy:** Features cards from `copy.md`, the 14 live Telegram reviews
+  (7 per row), How it works typos, and the live site's title / description /
+  OG / Twitter card / icons (`app/opengraph-image.png` etc. are the live
+  `logo_m.png`; the Next default `favicon.ico` is deleted).
+- **Hero ↔ How it works phones swapped.** The hero (desktop) runs the six
+  step screens with the pixel transition; phones keep the static hero phone;
+  How it works shows the old hero phone, static. (#17)
+- **Pixel transition smoothed:** the band eases (`sine.inOut`) and cells
+  fade instead of snapping; one tween per cell.
+- **Pricing rebuilt** from `copy.md`: name + badge, price with the full one
+  struck through, Save %, button above the features (all three line up),
+  ✓/✗ list. A flow layout, no tuner elements. (#17)
+
+### What the next session would get wrong
+
+- **⚠ MEGION IS THE PERSONAL-USE CUT. Its 5, 6, 7, 8 and 9 are "PERSONAL
+  USE ONLY" stamps, not digits** (78-contour glyphs; 0–4 and every letter
+  are real). "$199" rendered as "$1" + a badge. Never set a number in
+  `font-display`. The pricing prices are Neue Montreal for this reason. The
+  site needs the commercial licence before launch — that is a legal issue,
+  not just a glyph one.
+- **`PriceEl` is shared by Hero and (formerly) Pricing.** Making its text
+  scale with `--px` globally grew Pricing's text 20 → 27px at 2082 wide —
+  a regression the owner caught. It is opt-in now (`fluidText`, Hero only).
+  The owner's rule from that: **do not fix what was not reported broken.**
+- **The `PriceEl` TYPE still lives in `sections/Pricing.tsx`**, though
+  Pricing no longer uses it — Hero, `PriceEl.tsx`, `/hero-tuner` and
+  `/pricing-tuner` import it from there.
+- **`/faq-tuner` and `/pricing-tuner` drive nothing now.** FAQ's `PILLS`
+  carry dead x/y/tilt/openW/size only so `/faq-tuner` compiles; the old
+  pricing arrangement lives inside `/pricing-tuner` itself. Retire or repoint
+  both.
+- **The hero phone is HEIGHT-bound**, `min(85%, 54vw, 64.8rem)`, centred
+  `HERO.art.y` = 56.5 (was 58.5). The step screens are 521x1055 (0.49) vs the
+  old phone's 0.80, so a width rule makes them 1.6x taller and runs them off
+  the bottom. `HERO.art.src` is still the old phone — the open nav's card
+  crops it.
+- **`PixelatedImageReveal` keys its frames by `src`.** Two identical images
+  = React duplicate-key error. It also cannot be "static" with one image —
+  use a plain `<img>`.
+- **The transition was already 60fps** (p95 16.8ms). "Not smooth" was the
+  motion — linear climb, cells snapping. Measure before rewriting to canvas.
+- **Footer link hit areas use `py-N -my-N`** — bigger target, identical
+  layout box. Growing real padding there pushes content past the cloud's
+  outline on a 320 phone (it did once; the link row is now hidden below
+  360px wide for that reason).
+- **In Playwright, click the real `<summary>`** — `details.open = true`
+  skips FaqItem's GSAP path and measures a pill that never opened.
+- **Long heredocs fail in Git Bash here** — written into CLAUDE.md. Write
+  the script to the scratchpad and run it.
+- **⚠ `git stash` once took the whole working tree.** A chained
+  `git stash && … ; git stash pop` was interrupted after the stash: every
+  uncommitted change vanished from the tree (recovered with `git stash
+  pop`). Commit checkpoints instead of stashing around a check.
+- **The owner stops long probes.** Keep checks to one page load resized
+  through the sizes, and say what is being measured first.
+
+### Still open
+
+- **Megion commercial licence** — before launch (see above).
+- **Social `href`s are all `#`** in `lib/site.ts`; QR codes fall back to
+  `SITE_URL` until set. The live site's Telegram is `t.me/larpzwalletcom` —
+  the owner said leave socials for now.
+- **`/buy` and `/login` do not exist** in this app; buttons point at them
+  (the live site uses `/buy`).
+- **`UPDATES.items` are generic** — the two new wallet UIs need real names.
+- **QR scan on small phones unverified** — decodes at desktop sizes; the
+  jsQR harness failed at 360x640 for an unfound reason. Parked by the owner.
+- **Not re-verified after the last edits:** pricing cards across all sizes
+  (prices/buttons measured at 9 sizes, the full spill check was stopped) and
+  the footer-in-cloud check after the 11 → 12px text bump. Both ~1 minute.
+- **Tell snv:** the `qrcode-generator` dependency (package.json), the layer
+  over his `Footer.tsx` cloud, the PR #14 How it works revert, and the
+  pricing rebuild.
+- **Design ideas pitched, not built:** hero — receive-notification toasts by
+  the phone, a ★★★★★ 480+ reviews line, a price ticker; How it works — step
+  numbers 01–04, the phone following the active step, the phone back on
+  mobile. Pricing on phones is still ~3 tall cards stacked.
+- **Assets:** stickers `pop-06/08` are 900px drawn at ~110px (resize);
+  `step-flex.webp` and `mockup-phone-e/l@2x` are too small for 3x phones;
+  `idek.webm` is 1MB served to phones too.
+
+---
+
 ## Session — 2026-10-19 (session 21) — Claude
 
 A sticker system: 63 assets imported, a five-section tuner rebuilt around
