@@ -92,31 +92,34 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     name: "step-cash",
     src: "/images/step-cash.webp",
     alt: "",
-    x: 33.5,
-    y: 40.0,
-    w: 14.2,
+    x: 29.6,
+    y: 38.5,
+    w: 13.3,
     rotate: "16deg",
     z: 25,
+    cap: 148,
   },
   {
     name: "step-key",
     src: "/images/step-key.webp",
     alt: "",
-    x: 31.5,
-    y: 88.0,
+    x: 28.4,
+    y: 89.9,
     w: 12.8,
     rotate: "6deg",
     z: 25,
+    cap: 148,
   },
   {
     name: "step-activate",
     src: "/images/step-activate.webp",
     alt: "",
-    x: 97.0,
-    y: 36.0,
+    x: 97,
+    y: 36,
     w: 8.1,
     rotate: "12deg",
     z: 25,
+    cap: 148,
   },
   {
     name: "step-flex",
@@ -127,6 +130,7 @@ export const HOW_IT_WORKS_STICKERS: HowItWorksSticker[] = [
     w: 9.6,
     rotate: "6deg",
     z: 25,
+    cap: 148,
   },
 ];
 
@@ -164,6 +168,15 @@ export default function HowItWorks({
 } = {}) {
   return (
     <Section id="how-it-works" bleed heading="How it works" className="bg-[#d9a3f7] text-grape">
+      {/* ⚠ THE SEAM INTO FEATURES. Eased smootherstep cross-fade to Features ground colour (#3d065f). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -bottom-1 z-0 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(61,6,95,0) 0%, rgba(61,6,95,0.015) 8%, rgba(61,6,95,0.06) 16%, rgba(61,6,95,0.14) 25%, rgba(61,6,95,0.25) 34%, rgba(61,6,95,0.38) 43%, rgba(61,6,95,0.54) 52%, rgba(61,6,95,0.70) 62%, rgba(61,6,95,0.83) 72%, rgba(61,6,95,0.92) 81%, rgba(61,6,95,0.97) 90%, rgba(61,6,95,0.995) 96%, #3d065f 100%)",
+        }}
+      />
       {/* ⚠ min-h-[var(--section-fill)] with lg:h-[var(--section-fill)] so desktop holds the exact measured ratio while mobile expands naturally without clipping. */}
       <div className="flex min-h-[var(--section-fill)] h-auto lg:h-[var(--section-fill)] items-center justify-center px-(--gutter)">
         <div
@@ -240,6 +253,8 @@ export default function HowItWorks({
                   style={{ transform: `rotate(${stickers[i].rotate ?? "0deg"})` }}
                 >
                   <img
+                    loading="lazy"
+                    decoding="async"
                     src={stickers[i].src}
                     alt=""
                     className="h-auto w-full object-contain select-none drop-shadow-md"
@@ -280,6 +295,8 @@ export default function HowItWorks({
               }}
             >
               <img
+                loading="lazy"
+                decoding="async"
                 src={st.src}
                 alt={st.alt ?? ""}
                 className="block h-auto w-full max-w-none select-none drop-shadow-xl"

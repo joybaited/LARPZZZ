@@ -10,6 +10,7 @@ import PillButton from "@/components/PillButton";
 import { LEGAL, SECTION_LINKS, SOCIALS, TELEGRAM, UPDATES } from "@/lib/site";
 import ImageTrail from "@/components/ImageTrail";
 import PixelatedImageReveal from "@/components/PixelatedImageReveal";
+import { StickerLayer, type Sticker } from "@/components/Stickers";
 import type { PriceEl as El } from "@/sections/Pricing";
 /* ⚠ TYPE-ONLY. components/Phone is reached only through SceneMount's
    dynamic(..., { ssr: false }) chunk, so importing a VALUE from it gives
@@ -109,7 +110,7 @@ export const HERO = {
     x: 52.2,
     /* 56.5, not the model's 58.5: the step phones are height-bound at 85% of
        the hero, and 58.5 would run them off the bottom. */
-    y: 56.5,
+    y: 54,
     w: 33,
     rotate: 0,
     show: true,
@@ -273,7 +274,48 @@ const PHONE: PhoneTune = {
   ...HERO.phone.parallax,
 };
 
-export default function Hero() {
+/* Free-floating decoration for this section. Stage-anchored: x/y are
+   percentages of the stage box below, which is the same box /sticker-tuner
+   measures. Tune in /sticker-tuner and paste the block back here. */
+export const HERO_STICKERS: Sticker[] = [
+  {
+    name: "pop-16",
+    src: "/images/stickers/pop-16.webp",
+    alt: "",
+    x: 17,
+    y: -1,
+    w: 18,
+    rotate: "-9deg",
+    z: 25,
+    anchor: "phone",
+    cap: 148,
+  },
+  {
+    name: "squiggle-20",
+    src: "/images/stickers/squiggle-20.webp",
+    alt: "",
+    x: 31.7,
+    y: 52.5,
+    w: 7.8,
+    rotate: "18deg",
+    z: 1,
+    cap: 148,
+  },
+];
+
+export default function Hero({
+  children,
+  stickers = HERO_STICKERS,
+  hideStickers,
+  stageRef,
+  tuning,
+}: {
+  children?: React.ReactNode;
+  stickers?: Sticker[];
+  hideStickers?: boolean;
+  stageRef?: React.Ref<HTMLDivElement>;
+  tuning?: boolean;
+} = {}) {
   const { nav, headline: h } = HERO;
   const subtitleEl = HERO.els.find((e) => e.name === "text 2");
 
@@ -305,10 +347,26 @@ export default function Hero() {
           cover the tween and the hero would be the one section that never
           changed colour. The div stays because the trail and the stickers are
           positioned against it. */}
-      {/* the hero's ground. Painted here rather than on <Section> because
-          this layer already exists and grows with the section's bottom
-          padding, so the extra space below the hero is the same colour. */}
-      <div className="absolute inset-0 -z-20 bg-[#f3e2ff]" />
+      <div className="pointer-events-none absolute inset-0 -z-20 overflow-hidden bg-[#f3e2ff]">
+        <img
+          fetchPriority="low"
+          decoding="async"
+          src="/images/herotextre/herotext.jpg"
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover opacity-30 select-none"
+        />
+      </div>
+
+      {/* ⚠ THE SEAM INTO HOW IT WORKS. Eased smootherstep cross-fade to How It Works ground colour (#d9a3f7). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -bottom-1 -z-10 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(217,163,247,0) 0%, rgba(217,163,247,0.015) 8%, rgba(217,163,247,0.06) 16%, rgba(217,163,247,0.14) 25%, rgba(217,163,247,0.25) 34%, rgba(217,163,247,0.38) 43%, rgba(217,163,247,0.54) 52%, rgba(217,163,247,0.70) 62%, rgba(217,163,247,0.83) 72%, rgba(217,163,247,0.92) 81%, rgba(217,163,247,0.97) 90%, rgba(217,163,247,0.995) 96%, #d9a3f7 100%)",
+        }}
+      />
 
       {/* ⚠ THE TRAIL IS z-[1]: ABOVE THE GROUND (-z-20), BELOW EVERYTHING
           ELSE. The phone art is z-10, the headline z-20 and the nav z-30, so
@@ -337,7 +395,12 @@ export default function Hero() {
 
       {/* ── 120REM CANVAS STAGE ──────────────────────────────────────────────────────────
           Anchors nav, desktop stage, and mobile orchestrator within 120rem ceiling */}
-      <div className="pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)]">
+      <div
+        ref={stageRef}
+        className={`pointer-events-none absolute inset-0 mx-auto w-full max-w-[var(--canvas-max-width,120rem)] ${
+          tuning ? "pointer-events-auto" : ""
+        }`}
+      >
 
 
         {/*
@@ -452,8 +515,8 @@ export default function Hero() {
                 href="/login"
                 fill={HERO.navLinks.ctaFill}
                 color={HERO.navLinks.ctaColor}
-                className="whitespace-nowrap px-[clamp(16px,0.4rem+1vw,2rem)] py-[clamp(7px,0.2rem+0.45vw,0.875rem)] leading-none font-semibold"
-                style={{ fontSize: "clamp(13px, 0.4rem + 0.65vw, 1.25rem)" }}
+                className="whitespace-nowrap px-[clamp(20px,0.7rem+0.6vw,26px)] py-[clamp(6px,0.2rem+0.2vw,7.5px)] leading-none font-semibold"
+                style={{ fontSize: "clamp(16.5px, 0.45rem + 0.8vw, 18.5px)" }}
               >
                 {HERO.navLinks.cta}
               </PillButton>
@@ -689,6 +752,7 @@ export default function Hero() {
                Centre stays HERO.art.x/y. */
             <div
               aria-hidden="true"
+              data-sticker-phone
               className="pointer-events-none absolute z-10 aspect-[521/1055]"
               style={{
                 left: `${HERO.art.x}%`,
@@ -698,6 +762,7 @@ export default function Hero() {
               }}
             >
               <HeroSteps className="size-full" />
+              <StickerLayer stickers={stickers} hide={hideStickers} anchor="phone" />
             </div>
           )}
 
@@ -733,6 +798,9 @@ export default function Hero() {
           </div>
 
         </div>
+
+        <StickerLayer stickers={stickers} hide={hideStickers} anchor="stage" />
+        {children}
       </div>
 
       {/* ── MOBILE / TABLET ORCHESTRATOR (< 1024px) ─────────────────────────────────

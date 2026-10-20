@@ -3,6 +3,7 @@
 import Section from "@/components/Section";
 import FaqItem from "@/components/FaqItem";
 import { StickerLayer, type Sticker } from "@/components/Stickers";
+import FaqPoppingStickers from "@/components/FaqPoppingStickers";
 
 /* Section five. FAQ — the wordmark centred over one column of equal rows.
  *
@@ -30,10 +31,23 @@ const QA: [string, string][] = [
   ["Is my payment anonymous?", "Crypto payments (SOL, ETH, BNB, BTC, TRX, USDT, USDC) require no personal information at all — no account, no email. Card payments (credit card, Apple Pay, Google Pay) require an email address, which is passed directly to the payment processor and is not stored by us. Either way, your license key is all you need to use the app."],
 ];
 
+
 export const PILLS = QA.map(([q, a]) => ({ q, a, x: 0, y: 0, tilt: 0, openW: 0, size: 20 }));
 
 
-export const FAQ_STICKERS: Sticker[] = [];
+export const FAQ_STICKERS: Sticker[] = [
+  {
+    name: "pop-03",
+    src: "/images/stickers/pop-03.webp",
+    alt: "",
+    x: 43.5,
+    y: -9.4,
+    w: 39.5,
+    rotate: "0deg",
+    z: 1,
+    anchor: "heading",
+  },
+];
 
 export default function Faq({
   children,
@@ -58,6 +72,15 @@ export default function Faq({
        measured, the section grew 0px at 768x1024 and 2160x1440 and 0-28px at
        1024x768 while a row opened. */
     <Section id="faq" bleed className="!min-h-0 bg-[#c98ef0] text-[#3D065F]">
+      {/* ⚠ THE SEAM INTO PRICING. Eased smootherstep cross-fade to Pricing ground colour (#f7ecff). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -bottom-1 z-0 h-[clamp(140px,22vh,300px)]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(247,236,255,0) 0%, rgba(247,236,255,0.015) 8%, rgba(247,236,255,0.06) 16%, rgba(247,236,255,0.14) 25%, rgba(247,236,255,0.25) 34%, rgba(247,236,255,0.38) 43%, rgba(247,236,255,0.54) 52%, rgba(247,236,255,0.70) 62%, rgba(247,236,255,0.83) 72%, rgba(247,236,255,0.92) 81%, rgba(247,236,255,0.97) 90%, rgba(247,236,255,0.995) 96%, #f7ecff 100%)",
+        }}
+      />
       {/* ⚠ ONE STACKED COLUMN AT EVERY WIDTH, every row the column's width.
           It was a desktop scatter, then a centred stack of pills that each
           hugged its own question — a ragged edge on both sides. Equal rows
@@ -71,11 +94,13 @@ export default function Faq({
         className="relative mx-auto w-full max-w-[var(--canvas-max-width,120rem)]"
       >
         <StickerLayer stickers={stickers} hide={hideStickers} />
+        {!hideStickers && <FaqPoppingStickers />}
         {children}
 
         <div className="relative z-10 flex flex-col items-center px-(--gutter) py-8">
-          <h2 className="mb-8 text-center font-display text-[clamp(3.5rem,14vw,12.5rem)] leading-[0.9] uppercase select-none">
+          <h2 className="relative mb-8 text-center font-display text-[clamp(3.5rem,14vw,12.5rem)] leading-[0.9] uppercase select-none">
             FAQ
+            <StickerLayer stickers={stickers} hide={hideStickers} anchor="heading" />
           </h2>
 
           {/* ⚠ THE COLUMN WIDTH IS THE ANSWER'S MEASURE. 54rem at 24px type is

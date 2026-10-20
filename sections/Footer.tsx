@@ -103,6 +103,8 @@ export default function Footer() {
 
             {/* Cloud graphic with black comic outline */}
             <img
+              loading="lazy"
+              decoding="async"
               src="/images/footer/cloud-violet.png"
               alt=""
               className="h-full w-auto max-w-none object-contain select-none pointer-events-none"
@@ -125,6 +127,8 @@ export default function Footer() {
           {/* Cloud graphic with right side facing downwards and subtle breathing micro-animation */}
           <div className="pointer-events-none relative h-full w-full animate-cloud-breathe-mob will-change-transform">
             <img
+              loading="lazy"
+              decoding="async"
               src="/images/footer/cloud-mobile-violet.png"
               alt=""
               className="h-full w-full object-fill select-none pointer-events-none"

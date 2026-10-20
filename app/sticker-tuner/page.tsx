@@ -8,6 +8,7 @@ import Features, { FEATURES_STICKERS } from "@/sections/Features";
 import Testimonials, { TESTIMONIALS_STICKERS } from "@/sections/Testimonials";
 import Faq, { FAQ_STICKERS } from "@/sections/Faq";
 import Pricing, { PRICING_STICKERS } from "@/sections/Pricing";
+import Hero, { HERO_STICKERS } from "@/sections/Hero";
 
 /* ⚠ A TUNER NEVER WRITES THE SECTION IT TUNES. It prints a config block to
    copy; the section is edited by hand from it. That is what stops a tuner
@@ -42,7 +43,7 @@ type Draft = {
   desktopOnly: boolean;
 };
 
-type SectionKey = "howitworks" | "features" | "testimonials" | "faq" | "pricing";
+type SectionKey = "hero" | "howitworks" | "features" | "testimonials" | "faq" | "pricing";
 
 const SECTIONS: {
   key: SectionKey;
@@ -52,6 +53,14 @@ const SECTIONS: {
   cards: number;
   note: string;
 }[] = [
+  {
+    key: "hero",
+    label: "Hero",
+    exportName: "HERO_STICKERS",
+    seed: HERO_STICKERS,
+    cards: 0,
+    note: "Desktop Hero stage stickers. Mobile uses separate vertical flow.",
+  },
   {
     key: "testimonials",
     label: "Testimonials",
@@ -358,9 +367,13 @@ export default function StickerTuner() {
         ];
         if (d.anchor === "card") {
           lines.push(`    anchor: "card",`, `    card: ${d.card},`);
+        } else if (d.anchor === "phone") {
+          lines.push(`    anchor: "phone",`);
+        } else if (d.anchor === "heading") {
+          lines.push(`    anchor: "heading",`);
         }
         lines.push(`    cap: ${d.cap},`);
-        if (d.anchor === "card" ? d.desktopOnly : !d.desktopOnly) {
+        if (d.anchor === "card" || d.anchor === "heading" ? d.desktopOnly : !d.desktopOnly) {
           lines.push(`    desktopOnly: ${d.desktopOnly},`);
         }
         return `  {\n${lines.join("\n")}\n  },`;
@@ -400,7 +413,7 @@ export default function StickerTuner() {
   /* The overlay is a child of the SAME stage box the section positions its own
      layer against, so these coordinates transfer 1:1. */
   const overlay = (
-    <div className="pointer-events-none absolute inset-0 z-[500]">
+    <div className="pointer-events-none absolute inset-0">
       {drafts
         .filter((d) => d.anchor === "stage")
         .map((d) => (
@@ -438,6 +451,11 @@ export default function StickerTuner() {
     >
       {/* ⚠ THE STAGE IS THE FULL VIEWPORT and carries the real section, so the
           stage is the shape of the real page. */}
+      {sectionKey === "hero" && (
+        <Hero {...stageProps} stickers={drafts as unknown as Sticker[]} tuning>
+          {overlay}
+        </Hero>
+      )}
       {sectionKey === "testimonials" && (
         <Testimonials {...stageProps} stickers={drafts as unknown as Sticker[]} tuning>
           {overlay}
@@ -619,22 +637,50 @@ export default function StickerTuner() {
                 step={4}
               />
 
-              {/* z below the card = behind it. The section's cards sit at
-                  z-10, so anything under that paints behind. */}
-              <div className="mt-2 flex gap-1">
+              {/* Layer depth presets:
+                  z <= 2: behind text/headline
+                  z = 5: behind images/phone artwork
+                  z = 15: behind cards/UI elements
+                  z >= 25: in front of content */}
+              <label className="mt-2 mb-1 block text-white/50">layer depth</label>
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
                 <button
-                  onClick={() => patch(active.name, { z: 5 })}
-                  className={`flex-1 rounded px-2 py-1 transition ${
-                    active.z < 10 ? "bg-[#EAC2FF] text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  type="button"
+                  onClick={() => patch(active.name, { z: 1 })}
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z <= 2 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
                   }`}
+                  title="Behind text / headlines (z: 1)"
+                >
+                  behind text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => patch(active.name, { z: 5 })}
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z > 2 && active.z < 10 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  }`}
+                  title="Behind phone / image artwork (z: 5)"
+                >
+                  behind image
+                </button>
+                <button
+                  type="button"
+                  onClick={() => patch(active.name, { z: 15 })}
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z >= 10 && active.z < 25 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  }`}
+                  title="Behind cards / UI (z: 15)"
                 >
                   behind card
                 </button>
                 <button
+                  type="button"
                   onClick={() => patch(active.name, { z: 25 })}
-                  className={`flex-1 rounded px-2 py-1 transition ${
-                    active.z >= 10 ? "bg-[#EAC2FF] text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
+                  className={`rounded px-1.5 py-1 text-center transition ${
+                    active.z >= 25 ? "bg-[#EAC2FF] font-semibold text-[#3D065F]" : "bg-white/10 hover:bg-white/20"
                   }`}
+                  title="In front of content (z: 25)"
                 >
                   in front
                 </button>

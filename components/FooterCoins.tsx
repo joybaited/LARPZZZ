@@ -424,6 +424,8 @@ export default function FooterCoins() {
           }}
         >
           <img
+            loading="lazy"
+            decoding="async"
             src={coin.src}
             alt={coin.alt}
             className="h-full w-full object-contain select-none pointer-events-none"
