@@ -50,7 +50,7 @@ const CARDS: CardData[] = [
   {
     heading: ["No Data", "Collected"],
     copy: "We don’t ask for seed phrases, private keys, or personal information. Completely safe to use.",
-    media: { kind: "image", src: "/images/no-data.webp", w: 632, h: 632 },
+    media: { kind: "image", src: "/images/no-data.webp", w: 732, h: 732 },
   },
   {
     heading: ["Send Between", "Users"],
