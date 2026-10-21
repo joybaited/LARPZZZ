@@ -30,8 +30,8 @@ import Card, { type CardData } from "@/components/Card";
  * drag, the momentum and the bounds for free. */
 
 /* The media, back on after the restyle — it was parked for a few passes while
- * the cards were sized and the text moved to the foot. Five of the six carry
- * one; card three never had any.
+ * the cards were sized and the text moved to the foot. All six carry
+ * one; card three got its image last.
  *
  * It now fills the region ABOVE the splitter rather than the space under the
  * copy, which is where the restyle left it. Card.tsx holds that layout and the
@@ -50,6 +50,7 @@ const CARDS: CardData[] = [
   {
     heading: ["No Data", "Collected"],
     copy: "We don’t ask for seed phrases, private keys, or personal information. Completely safe to use.",
+    media: { kind: "image", src: "/images/no-data.webp", w: 632, h: 632 },
   },
   {
     heading: ["Send Between", "Users"],
