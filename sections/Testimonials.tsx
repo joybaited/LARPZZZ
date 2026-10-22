@@ -141,7 +141,7 @@ function Card({
           the two genuinely shallow viewports (843x546, 844x340 — both ~2
           lines of room) it is 2. 580px is below every normal phone portrait
           (730+) and above both of those, so no real phone is affected. */}
-      <p className="min-h-0 flex-1 overflow-hidden text-[clamp(15px,min(0.95rem+0.7vw,2.2vh),24px)] leading-[1.35] [-webkit-box-orient:vertical] [display:-webkit-box] [-webkit-line-clamp:2] [@media(min-height:580px)]:[-webkit-line-clamp:4]">
+      <p className="min-h-0 flex-1 overflow-hidden text-[clamp(17px,min(1.05rem+0.85vw,2.6vh),28px)] leading-[1.3] [-webkit-box-orient:vertical] [display:-webkit-box] [-webkit-line-clamp:2] [@media(min-height:580px)]:[-webkit-line-clamp:4]">
         {t.quote}
       </p>
       {/* ⚠ THE NAME IS THE CARD'S HEADING, AND IT IS THE ONLY MEGION HERE.
